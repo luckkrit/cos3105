@@ -1,0 +1,394 @@
+---
+title: Lab2 - Process
+---
+import { Image } from 'astro:assets';
+import { Steps } from "@astrojs/starlight/components";
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import im1 from '../../../assets/images/new_vm.png';
+
+:::note
+เรียนรู้คำสั่งเกี่ยวกับ **Process** โดยใช้ **ภาษา C** และ **ระบบปฏิบัติการ Ubuntu**
+:::
+
+## Download Ubuntu
+
+<Steps>
+  1. Download Ubuntu 24.04.1 LTS :
+  [https://ubuntu.com/download/desktop/thank-you?version=24.04.1\&architecture=amd64\&lts=true](https://ubuntu.com/download/desktop/thank-you?version=24.04.1&architecture=amd64&lts=true)
+  2. ตรวจสอบค่า sum ของ ISO File ใน Powershell:
+</Steps>
+
+```ps title="Powershell - Check SUM SHA256"
+Get-FileHash C:\Users\xxxx\Downloads\ubuntu-24.04.1-desktop-amd64.iso -Algorithm SHA256 | Format-List
+```
+
+:::caution[ค่า sum ควรมีค่าเท่ากับ]
+**C2E6F4DC37AC944E2ED507F87C6188DD4D3179BF4A3F9E110D3C88D1F3294BDC**
+:::
+
+## ติดตั้ง Ubuntu
+<Steps>
+
+  3. ติดตั้ง Ubuntu 24.04.1 LTS บท VirtualBox <Image src={im1} alt="New VM" loading="eager" /> 
+  4. ตรง Name ใส่ Ubuntu 24.04.1 ![New VM Ubuntu](../../../assets/images/new_vm_ubuntu.png) 
+  5. ตรง Folder ก็ตามค่าเริ่มต้นไป 
+  6. ตรง ISO Image กดปุ่ม Other ![SelectISO](../../../assets/images/select_iso.png) 
+  7. หาไฟล์ ISO ที่ Download มา ![Open ISO](../../../assets/images/open_iso.png) 
+  8. แล้วกด Open 
+  9. ติ๊กถูก Skip Unattended Installation ![Skip Unattended](../../../assets/images/setup_ubuntu_skip_unattended.png)
+  10. กดปุ่ม Finish แล้ว Virtual Box จะรันหน้าต่างขึ้นมา
+  11. กด Enter เลือก \*Try or Install Ubuntu ![BootVM](../../../assets/images/boot_vm.png) 
+  12. จะโหลด Ubuntu ขึ้นมาดังรูป ![Setup Ubuntu](../../../assets/images/setup_ubuntu.png) 
+  13. ระบบจะติดตั้ง Ubuntu กด Next ![Setup Ubuntu2](../../../assets/images/setup_ubuntu2.png) 
+  14. กด Next ![Setup Ubuntu3](../../../assets/images/setup_ubuntu3.png) 
+  15. กด Next ![Setup Ubuntu4](../../../assets/images/setup_ubuntu4.png) 
+  16. กด Next ![Setup Ubuntu5](../../../assets/images/setup_ubuntu5.png) 
+  17. กด Next ![Setup Ubuntu6](../../../assets/images/setup_ubuntu6.png) 
+  18. กด Next ![Setup Ubuntu7](../../../assets/images/setup_ubuntu7.png) 
+  19. กด Next ![Setup Ubuntu8](../../../assets/images/setup_ubuntu8.png) 
+  20. กด Next ![Setup Ubuntu9](../../../assets/images/setup_ubuntu9.png) 
+  21. ตรง Yourname ใสชื่อตัวเรา และตรง Password ให้ตั้งค่า password แล้วกด Next ![Setup Ubuntu10](../../../assets/images/setup_ubuntu10.png) 
+  22. กด Next ![Setup Ubuntu11](../../../assets/images/setup_ubuntu11.png) 
+  23. กด Install ![Setup Ubuntu12](../../../assets/images/setup_ubuntu12.png) 
+  24. ระบบจะติดตั้ง Ubuntu ![Setup Ubuntu13](../../../assets/images/setup_ubuntu13.png) 
+
+</Steps>
+
+## ติดตั้ง C Compiler
+
+## ติดตั้ง VSCode
+
+## ตัวอย่าง Code
+
+**1. ไปที่ Terminal**
+![Find Terminal](../../../assets/images/find_terminal.png)
+
+**2. เปิด Terminal**
+![Open Terminal](../../../assets/images/open_terminal.png)
+
+### Process : Create Process
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+int main()
+{
+     pid_t p;
+     p=fork();
+     if(p==0) //child
+     {
+         printf("I am child having PID %d\n",getpid());
+         printf("My parent PID is %d\n",getppid());
+     }
+     else //parent
+     {
+         printf("I am parent having PID %d\n",getpid());
+         printf("My child PID is %d\n",p);
+     }
+}
+```
+
+### Process : Create Orphan Process
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+int main()
+{
+    pid_t p;
+    p=fork();
+    if(p==0)
+    {
+        sleep(5); //child goes to sleep and in the mean time parent terminates
+        printf("I am child having PID %d\n",getpid());
+        printf("My parent PID is %d\n",getppid());
+    }
+    else
+    {
+        printf("I am parent having PID %d\n",getpid());
+        printf("My child PID is %d\n",p);
+    }
+}
+
+```
+
+### Process : Create Zombie Process
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+int main()
+{
+    pid_t t;
+    t=fork();
+    if(t==0)
+    {
+   	    printf("Child having id %d\n",getpid());
+	}
+	else
+	{
+    	printf("Parent having id %d\n",getpid());
+    	sleep(15); // Parent sleeps. Run the ps command during this time
+	}
+}
+
+```
+
+### Process : Prevent Zombie process by wait()
+
+```c
+#include <unistd.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <sys/wait.h>
+int main()
+{
+    pid_t p;
+    printf("before fork\n");
+    p=fork();
+    if(p==0)//child
+    {
+        printf("I am child having id %d\n",getpid());
+        printf("My parent's id is %d\n",getppid());
+    }
+    else//parent
+    {
+        wait(NULL); // [!code highlight]
+        printf("My child's id is %d\n",p);
+        printf("I am parent having id %d\n",getpid());
+    }
+    printf("Common\n");
+}
+
+```
+
+### IPC : Shared memory
+
+<Tabs>
+  <TabItem label="Write">
+```c
+// write_shared_memory.c
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<sys/shm.h>
+#include<string.h>
+int main()
+{
+    int i;
+    void *shared_memory;
+    char buff[100];
+    int shmid;
+
+    /* creates shared memory segment with key 2345, having size 1024 bytes.
+       IPC_CREAT is used to create the shared segment if it does not exist.
+       0666 are the permisions on the shared segment */
+    shmid=shmget((key_t)2345, 1024, 0666|IPC_CREAT);
+    printf("Key of shared memory is %d\n",shmid);
+
+    //process attached to shared memory segment
+    shared_memory=shmat(shmid,NULL,0);
+
+    //this prints the address where the segment is attached with this process
+    printf("Process attached at %p\n",shared_memory);
+
+    printf("Enter some data to write to shared memory\n");
+    //get some input from user
+    read(0,buff,100);
+    //data written to shared memory
+    strcpy(shared_memory,buff); // [!code highlight]
+    printf("You wrote : %s\n",(char *)shared_memory);
+}
+
+```
+</TabItem>
+<TabItem label="Read">
+
+```c
+// read_shared_memory.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/shm.h>
+#include <string.h>
+int main()
+{
+    int i;
+    void *shared_memory;
+    char buff[100];
+    int shmid;
+    shmid=shmget((key_t)2345, 1024, 0666);
+    printf("Key of shared memory is %d\n",shmid);
+    shared_memory=shmat(shmid,NULL,0); //process attached to shared memory segment
+    printf("Process attached at %p\n",shared_memory);
+    printf("Data read from shared memory is : %s\n",(char *)shared_memory); // [!code highlight]
+}
+
+```
+  </TabItem>
+</Tabs>
+
+
+
+
+### IPC : Message queue
+
+<Tabs>
+  <TabItem label="Send">
+```c 
+//send_queue.c
+#include<stdlib.h>
+#include<stdio.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/ipc.h>
+#include<sys/msg.h>
+
+#define MAX_TEXT 512   //maximum length of the message that can be sent allowed
+
+struct my_msg{
+    long int msg_type;
+    char some_text[MAX_TEXT];
+};
+
+int main()
+{
+    int running=1;
+    int msgid;
+    struct my_msg some_data;
+    char buffer[50]; //array to store user input
+    msgid=msgget((key_t)14534,0666|IPC_CREAT);
+
+    if (msgid == -1) // -1 means the message queue is not created
+    {
+            printf("Error in creating queue\n");
+            exit(0);
+    }
+
+    while(running)
+    {
+            printf("Enter some text:\n");
+            fgets(buffer,50,stdin);
+            some_data.msg_type=1;
+            strcpy(some_data.some_text,buffer);
+            if(msgsnd(msgid,(void *)&some_data, MAX_TEXT,0)==-1) // msgsnd returns -1 if the message is not sent
+            {
+                    printf("Msg not sent\n");
+            }
+            if(strncmp(buffer,"end",3)==0)
+            {
+                    running=0;
+            }
+    }
+}
+
+
+```
+</TabItem>
+
+<TabItem label="Read">
+```c 
+//read_queue.c
+#include<stdlib.h>
+#include<stdio.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/ipc.h>
+#include<sys/msg.h>
+
+struct my_msg{
+    long int msg_type;
+    char some_text[BUFSIZ];
+};
+
+int main()
+{
+    int running=1;
+    int msgid;
+    struct my_msg some_data;
+    long int msg_to_rec=0;
+    msgid=msgget((key_t)14534,0666|IPC_CREAT);
+    while(running)
+    {
+        msgrcv(msgid,(void *)&some_data,BUFSIZ,msg_to_rec,0);
+        printf("Data received: %s\n",some_data.some_text);
+        if(strncmp(some_data.some_text,"end",3)==0)
+        {
+                running=0;
+        }
+    }
+     msgctl(msgid,IPC_RMID,0);
+}
+
+
+```
+</TabItem>
+</Tabs>
+
+### IPC : Producer, Consumer
+
+<Tabs>
+<TabItem label="Producer">
+```c
+//producer.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+int main(){
+    const int SIZE = 4096;
+    const char *name = "OS";
+    const char *message_0 = "Hello";
+    const char *message_1 = "World!";
+    int fd;
+    char *ptr;
+    fd = shm_open(name, 0_CREATE|0_RDWR,0666);
+    ftruncate(fd, SIZE);
+    ptr = (char*)mmap(0, SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    sprintf(ptr, "%s", message_0);
+    ptr += strlen(message_0);
+    sprintf(ptr, "%s", message_1);
+    ptr += strlen(message_1);
+    getchar();
+    return 0;
+}
+
+```
+</TabItem>
+<TabItem label="Consumer">
+```c 
+//consumer.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+int main(){
+    const int SIZE = 4096;
+    const char *name = "OS";
+    int fd;
+    char *ptr;
+    fd = shm_open(name, 0_RDWR,0666);
+    ptr = (char*)mmap(0, SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    printf("%s\n", (char *)ptr);
+    shm_unlink(name);
+    return 0;
+}
+
+```
+</TabItem>
+</Tabs>
