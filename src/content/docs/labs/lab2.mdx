@@ -36,39 +36,96 @@ Get-FileHash C:\Users\xxxx\Downloads\ubuntu-24.04.1-desktop-amd64.iso -Algorithm
   7. หาไฟล์ ISO ที่ Download มา ![Open ISO](../../../assets/images/open_iso.png) 
   8. แล้วกด Open 
   9. ติ๊กถูก Skip Unattended Installation ![Skip Unattended](../../../assets/images/setup_ubuntu_skip_unattended.png)
-  10. กดปุ่ม Finish แล้ว Virtual Box จะรันหน้าต่างขึ้นมา
-  11. กด Enter เลือก \*Try or Install Ubuntu ![BootVM](../../../assets/images/boot_vm.png) 
-  12. จะโหลด Ubuntu ขึ้นมาดังรูป ![Setup Ubuntu](../../../assets/images/setup_ubuntu.png) 
-  13. ระบบจะติดตั้ง Ubuntu กด Next ![Setup Ubuntu2](../../../assets/images/setup_ubuntu2.png) 
-  14. กด Next ![Setup Ubuntu3](../../../assets/images/setup_ubuntu3.png) 
-  15. กด Next ![Setup Ubuntu4](../../../assets/images/setup_ubuntu4.png) 
-  16. กด Next ![Setup Ubuntu5](../../../assets/images/setup_ubuntu5.png) 
-  17. กด Next ![Setup Ubuntu6](../../../assets/images/setup_ubuntu6.png) 
-  18. กด Next ![Setup Ubuntu7](../../../assets/images/setup_ubuntu7.png) 
-  19. กด Next ![Setup Ubuntu8](../../../assets/images/setup_ubuntu8.png) 
-  20. กด Next ![Setup Ubuntu9](../../../assets/images/setup_ubuntu9.png) 
-  21. ตรง Yourname ใสชื่อตัวเรา และตรง Password ให้ตั้งค่า password แล้วกด Next ![Setup Ubuntu10](../../../assets/images/setup_ubuntu10.png) 
-  22. กด Next ![Setup Ubuntu11](../../../assets/images/setup_ubuntu11.png) 
-  23. กด Install ![Setup Ubuntu12](../../../assets/images/setup_ubuntu12.png) 
-  24. ระบบจะติดตั้ง Ubuntu ![Setup Ubuntu13](../../../assets/images/setup_ubuntu13.png) 
+  10. ตรง Hardware เปลี่ยน Base memory เป็น 4096 mb ![Ram 4096mb](../../../assets/images/memory_4gb.png)
+      :::danger[ระวัง]
+      minimum requirements ของ Ubuntu 24.04.1 คือ 4GB ถ้าตั้งน้อยกว่านั้นตอนติดตั้งจะค้างได้
+      :::
+  11. กดปุ่ม Finish แล้ว Virtual Box จะรันหน้าต่างขึ้นมา
+  12. กด Enter เลือก \*Try or Install Ubuntu ![BootVM](../../../assets/images/boot_vm.png) 
+  13. จะโหลด Ubuntu ขึ้นมาดังรูป ![Setup Ubuntu](../../../assets/images/setup_ubuntu.png) 
+  14. ระบบจะติดตั้ง Ubuntu กด Next ![Setup Ubuntu2](../../../assets/images/setup_ubuntu2.png) 
+  15. กด Next ![Setup Ubuntu3](../../../assets/images/setup_ubuntu3.png) 
+  16. กด Next ![Setup Ubuntu4](../../../assets/images/setup_ubuntu4.png) 
+  17. กด Next ![Setup Ubuntu5](../../../assets/images/setup_ubuntu5.png) 
+  18. กด Next ![Setup Ubuntu6](../../../assets/images/setup_ubuntu6.png) 
+  19. กด Next ![Setup Ubuntu7](../../../assets/images/setup_ubuntu7.png) 
+  20. กด Next ![Setup Ubuntu8](../../../assets/images/setup_ubuntu8.png) 
+  21. กด Next ![Setup Ubuntu9](../../../assets/images/setup_ubuntu9.png) 
+  22. ตรง Your name ใสชื่อตัวเรา และตรง Password ให้ตั้งค่าตามที่เราต้องการ แล้วกด Next ![Setup Ubuntu10](../../../assets/images/setup_ubuntu10.png) 
+  23. กด Next ![Setup Ubuntu11](../../../assets/images/setup_ubuntu11.png) 
+  24. กด Install ![Setup Ubuntu12](../../../assets/images/setup_ubuntu12.png) 
+  25. ระบบจะติดตั้ง Ubuntu ![Setup Ubuntu13](../../../assets/images/setup_ubuntu13.png) 
+  26. ระบบจะให้เรา Reboot
+  27. Login เข้ามาจะเจอหน้า Welcome ให้กด Next ไปเรื่อยๆ ![Welcome Ubuntu](../../../assets/images/welcome_ubuntu.png)
+  28. ให้กด Next ![Welcome Ubuntu](../../../assets/images/welcome_ubuntu2.png)
+  29. ให้กด Next ![Welcome Ubuntu](../../../assets/images/welcome_ubuntu3.png)
+  30. ให้กด Finish ![Welcome Ubuntu](../../../assets/images/welcome_ubuntu4.png)
 
 </Steps>
 
 ## ติดตั้ง C Compiler
+<Steps>
+1. ไปที่ Terminal
+![Find Terminal](../../../assets/images/find_terminal.png)
+
+2. เปิด Terminal
+![Open Terminal](../../../assets/images/open_terminal.png)
+
+3. ติดตั้ง C/C++ Compiler
+   ```sh title="Bash - Terminal"
+   sudo apt install build-essential
+   ```
+
+4. พิมพ์ <kbd>y</kbd> แล้ว <kbd>Enter</kbd> ![Install c/c++](../../../assets/images/install_c_cpp.png)
+5. ทำการ Check ว่า C/C++ Compiler ติดตั้งสมบูรณ์มั๊ยด้วย 
+    <Tabs>
+    <TabItem label="C">
+    ```sh title="Bash - Terminal"
+    gcc
+    ```
+    </TabItem>
+    <TabItem label="C++">
+    ```sh title="Bash - Terminal"
+    g++
+    ```
+    </TabItem>
+    </Tabs>
+
+    ดูได้จากรูป
+    ![Check c/c++](../../../assets/images/check_gcc_gpp.png)
+
+</Steps>
 
 ## ติดตั้ง VSCode
 
+<Steps>
+1. ไปที่ [VSCode Website](https://code.visualstudio.com)
+2. กด Download VSCode เลือก .deb ![VSCode DEB](../../../assets/images/vscode_website.png)
+3. รอโหลด VSCode ![Download VSCode](../../../assets/images/download_vscode.png)
+4. Open File และ Install ![Install VSCode](../../../assets/images/install_vscode.png)
+5. Open VSCode ![Open VSCode](../../../assets/images/open_vscode.png)
+</Steps>
+
 ## ตัวอย่าง Code
+:::tip
+ดู process ที่รันอยู่ปัจจุบัน
+```sh 
+ps aux 
+```
 
-**1. ไปที่ Terminal**
-![Find Terminal](../../../assets/images/find_terminal.png)
+จะต้องทำการ debug program เพื่อไม่ให้ process exit ดังรูปด้านล่าง
+![debug create_process](../../../assets/images/debug_create_process.png)
 
-**2. เปิด Terminal**
-![Open Terminal](../../../assets/images/open_terminal.png)
+ในกรณีที่ต้องการดูเฉพาะโปรแกรมที่รันอยู่ ในกรณีนี้ชื่อ create_process 
 
+```sh
+ps aux | grep 'create_process'
+```
+:::
 ### Process : Create Process
 
 ```c
+//create_process.c
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -91,7 +148,8 @@ int main()
 
 ### Process : Create Orphan Process
 
-```c
+```c ins={11}
+//create_orphan_process.c
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -116,7 +174,8 @@ int main()
 
 ### Process : Create Zombie Process
 
-```c
+```c ins={14}
+//create_zombie_process.c
 #include <stdio.h>
 #include <unistd.h>
 int main()
@@ -138,7 +197,8 @@ int main()
 
 ### Process : Prevent Zombie process by wait()
 
-```c
+```c ins={17}
+//prevent_zombie_process.c
 #include <unistd.h>
 #include <sys/types.h>
 #include <stdio.h>
@@ -155,7 +215,7 @@ int main()
     }
     else//parent
     {
-        wait(NULL); // [!code highlight]
+        wait(NULL); 
         printf("My child's id is %d\n",p);
         printf("I am parent having id %d\n",getpid());
     }
@@ -165,10 +225,12 @@ int main()
 ```
 
 ### IPC : Shared memory
-
+:::tip[ข้อควรรู้]
+**Shared memory** จะต้อง **create shared memory segment** ด้วย **key** และ **size** มีขนาดเป็น **byte**
+:::
 <Tabs>
   <TabItem label="Write">
-```c
+```c ins={30}
 // write_shared_memory.c
 #include<stdio.h>
 #include<stdlib.h>
@@ -198,7 +260,7 @@ int main()
     //get some input from user
     read(0,buff,100);
     //data written to shared memory
-    strcpy(shared_memory,buff); // [!code highlight]
+    strcpy(shared_memory,buff); 
     printf("You wrote : %s\n",(char *)shared_memory);
 }
 
@@ -206,7 +268,7 @@ int main()
 </TabItem>
 <TabItem label="Read">
 
-```c
+```c ins={17}
 // read_shared_memory.c
 #include <stdio.h>
 #include <stdlib.h>
@@ -223,7 +285,7 @@ int main()
     printf("Key of shared memory is %d\n",shmid);
     shared_memory=shmat(shmid,NULL,0); //process attached to shared memory segment
     printf("Process attached at %p\n",shared_memory);
-    printf("Data read from shared memory is : %s\n",(char *)shared_memory); // [!code highlight]
+    printf("Data read from shared memory is : %s\n",(char *)shared_memory); 
 }
 
 ```

@@ -29,6 +29,10 @@ export default defineConfig({
 					autogenerate: { directory: 'labs' },
 				},
 			],
+			customCss: [
+				// Relative path to your custom CSS file
+				'./src/styles/kbd.css',
+			],
 		}),
 	],
 });
