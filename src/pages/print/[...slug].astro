@@ -1,0 +1,34 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import {Content as Lab1} from '../../content/docs/labs/lab1.mdx'
+import {Content as Lab2} from '../../content/docs/labs/lab2.mdx'
+import {Content as Lab3} from '../../content/docs/labs/lab3.mdx'
+export async function getStaticPaths() {
+
+  return [{
+    params: {slug:'lab1'},
+    props: {Data:Lab1}
+  },{
+    params: {slug:'lab2'},
+    props: {Data:Lab2}
+  },{
+    params: {slug:'lab3'},
+    props: {Data:Lab3}
+  }]
+}
+const { slug} = Astro.params;
+const { Data } = Astro.props;
+---
+<style is:global>
+    .header {
+        display: none;
+    }
+</style>
+
+<StarlightPage frontmatter={{title: slug, template: 'splash'}}>
+  <Data/>
+</StarlightPage>
+
+<script>
+  window.print();
+</script>

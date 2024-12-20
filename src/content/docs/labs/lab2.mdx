@@ -2,9 +2,10 @@
 title: Lab2 - Process
 ---
 import { Image } from 'astro:assets';
-import { Steps } from "@astrojs/starlight/components";
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-import im1 from '../../../assets/images/new_vm.png';
+import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
+import im1 from '../../../assets/images/lab2/new_vm.png';
+
+<LinkButton href={"/cos3105/print/lab2"} icon="seti:pdf" target={"_blank"}>Print</LinkButton>
 
 :::note
 เรียนรู้คำสั่งเกี่ยวกับ **Process** โดยใช้ **ภาษา C** และ **ระบบปฏิบัติการ Ubuntu**
@@ -18,7 +19,7 @@ import im1 from '../../../assets/images/new_vm.png';
   2. ตรวจสอบค่า sum ของ ISO File ใน Powershell:
 </Steps>
 
-```ps title="Powershell - Check SUM SHA256"
+```ps title="Powershell - Check SUM SHA256" wrap
 Get-FileHash C:\Users\xxxx\Downloads\ubuntu-24.04.1-desktop-amd64.iso -Algorithm SHA256 | Format-List
 ```
 
@@ -30,53 +31,53 @@ Get-FileHash C:\Users\xxxx\Downloads\ubuntu-24.04.1-desktop-amd64.iso -Algorithm
 <Steps>
 
   3. ติดตั้ง Ubuntu 24.04.1 LTS บท VirtualBox <Image src={im1} alt="New VM" loading="eager" /> 
-  4. ตรง Name ใส่ Ubuntu 24.04.1 ![New VM Ubuntu](../../../assets/images/new_vm_ubuntu.png) 
+  4. ตรง Name ใส่ Ubuntu 24.04.1 ![New VM Ubuntu](../../../assets/images/lab2/new_vm_ubuntu.png) 
   5. ตรง Folder ก็ตามค่าเริ่มต้นไป 
-  6. ตรง ISO Image กดปุ่ม Other ![SelectISO](../../../assets/images/select_iso.png) 
-  7. หาไฟล์ ISO ที่ Download มา ![Open ISO](../../../assets/images/open_iso.png) 
+  6. ตรง ISO Image กดปุ่ม Other ![SelectISO](../../../assets/images/lab2/select_iso.png) 
+  7. หาไฟล์ ISO ที่ Download มา ![Open ISO](../../../assets/images/lab2/open_iso.png) 
   8. แล้วกด Open 
-  9. ติ๊กถูก Skip Unattended Installation ![Skip Unattended](../../../assets/images/setup_ubuntu_skip_unattended.png)
-  10. ตรง Hardware เปลี่ยน Base memory เป็น 4096 mb ![Ram 4096mb](../../../assets/images/memory_4gb.png)
+  9. ติ๊กถูก Skip Unattended Installation ![Skip Unattended](../../../assets/images/lab2/setup_ubuntu_skip_unattended.png)
+  10. ตรง Hardware เปลี่ยน Base memory เป็น 4096 mb ![Ram 4096mb](../../../assets/images/lab2/memory_4gb.png)
       :::danger[ระวัง]
       minimum requirements ของ Ubuntu 24.04.1 คือ 4GB ถ้าตั้งน้อยกว่านั้นตอนติดตั้งจะค้างได้
       :::
   11. กดปุ่ม Finish แล้ว Virtual Box จะรันหน้าต่างขึ้นมา
-  12. กด Enter เลือก \*Try or Install Ubuntu ![BootVM](../../../assets/images/boot_vm.png) 
-  13. จะโหลด Ubuntu ขึ้นมาดังรูป ![Setup Ubuntu](../../../assets/images/setup_ubuntu.png) 
-  14. ระบบจะติดตั้ง Ubuntu กด Next ![Setup Ubuntu2](../../../assets/images/setup_ubuntu2.png) 
-  15. กด Next ![Setup Ubuntu3](../../../assets/images/setup_ubuntu3.png) 
-  16. กด Next ![Setup Ubuntu4](../../../assets/images/setup_ubuntu4.png) 
-  17. กด Next ![Setup Ubuntu5](../../../assets/images/setup_ubuntu5.png) 
-  18. กด Next ![Setup Ubuntu6](../../../assets/images/setup_ubuntu6.png) 
-  19. กด Next ![Setup Ubuntu7](../../../assets/images/setup_ubuntu7.png) 
-  20. กด Next ![Setup Ubuntu8](../../../assets/images/setup_ubuntu8.png) 
-  21. กด Next ![Setup Ubuntu9](../../../assets/images/setup_ubuntu9.png) 
-  22. ตรง Your name ใสชื่อตัวเรา และตรง Password ให้ตั้งค่าตามที่เราต้องการ แล้วกด Next ![Setup Ubuntu10](../../../assets/images/setup_ubuntu10.png) 
-  23. กด Next ![Setup Ubuntu11](../../../assets/images/setup_ubuntu11.png) 
-  24. กด Install ![Setup Ubuntu12](../../../assets/images/setup_ubuntu12.png) 
-  25. ระบบจะติดตั้ง Ubuntu ![Setup Ubuntu13](../../../assets/images/setup_ubuntu13.png) 
+  12. กด Enter เลือก \*Try or Install Ubuntu ![BootVM](../../../assets/images/lab2/boot_vm.png) 
+  13. จะโหลด Ubuntu ขึ้นมาดังรูป ![Setup Ubuntu](../../../assets/images/lab2/setup_ubuntu.png) 
+  14. ระบบจะติดตั้ง Ubuntu กด Next ![Setup Ubuntu2](../../../assets/images/lab2/setup_ubuntu2.png) 
+  15. กด Next ![Setup Ubuntu3](../../../assets/images/lab2/setup_ubuntu3.png) 
+  16. กด Next ![Setup Ubuntu4](../../../assets/images/lab2/setup_ubuntu4.png) 
+  17. กด Next ![Setup Ubuntu5](../../../assets/images/lab2/setup_ubuntu5.png) 
+  18. กด Next ![Setup Ubuntu6](../../../assets/images/lab2/setup_ubuntu6.png) 
+  19. กด Next ![Setup Ubuntu7](../../../assets/images/lab2/setup_ubuntu7.png) 
+  20. กด Next ![Setup Ubuntu8](../../../assets/images/lab2/setup_ubuntu8.png) 
+  21. กด Next ![Setup Ubuntu9](../../../assets/images/lab2/setup_ubuntu9.png) 
+  22. ตรง Your name ใสชื่อตัวเรา และตรง Password ให้ตั้งค่าตามที่เราต้องการ แล้วกด Next ![Setup Ubuntu10](../../../assets/images/lab2/setup_ubuntu10.png) 
+  23. กด Next ![Setup Ubuntu11](../../../assets/images/lab2/setup_ubuntu11.png) 
+  24. กด Install ![Setup Ubuntu12](../../../assets/images/lab2/setup_ubuntu12.png) 
+  25. ระบบจะติดตั้ง Ubuntu ![Setup Ubuntu13](../../../assets/images/lab2/setup_ubuntu13.png) 
   26. ระบบจะให้เรา Reboot
-  27. Login เข้ามาจะเจอหน้า Welcome ให้กด Next ไปเรื่อยๆ ![Welcome Ubuntu](../../../assets/images/welcome_ubuntu.png)
-  28. ให้กด Next ![Welcome Ubuntu](../../../assets/images/welcome_ubuntu2.png)
-  29. ให้กด Next ![Welcome Ubuntu](../../../assets/images/welcome_ubuntu3.png)
-  30. ให้กด Finish ![Welcome Ubuntu](../../../assets/images/welcome_ubuntu4.png)
+  27. Login เข้ามาจะเจอหน้า Welcome ให้กด Next ไปเรื่อยๆ ![Welcome Ubuntu](../../../assets/images/lab2/welcome_ubuntu.png)
+  28. ให้กด Next ![Welcome Ubuntu](../../../assets/images/lab2/welcome_ubuntu2.png)
+  29. ให้กด Next ![Welcome Ubuntu](../../../assets/images/lab2/welcome_ubuntu3.png)
+  30. ให้กด Finish ![Welcome Ubuntu](../../../assets/images/lab2/welcome_ubuntu4.png)
 
 </Steps>
 
 ## ติดตั้ง C Compiler
 <Steps>
 1. ไปที่ Terminal
-![Find Terminal](../../../assets/images/find_terminal.png)
+![Find Terminal](../../../assets/images/lab2/find_terminal.png)
 
 2. เปิด Terminal
-![Open Terminal](../../../assets/images/open_terminal.png)
+![Open Terminal](../../../assets/images/lab2/open_terminal.png)
 
 3. ติดตั้ง C/C++ Compiler
    ```sh title="Bash - Terminal"
    sudo apt install build-essential
    ```
 
-4. พิมพ์ <kbd>y</kbd> แล้ว <kbd>Enter</kbd> ![Install c/c++](../../../assets/images/install_c_cpp.png)
+4. พิมพ์ <kbd>y</kbd> แล้ว <kbd>Enter</kbd> ![Install c/c++](../../../assets/images/lab2/install_c_cpp.png)
 5. ทำการ Check ว่า C/C++ Compiler ติดตั้งสมบูรณ์มั๊ยด้วย 
     <Tabs>
     <TabItem label="C">
@@ -92,7 +93,7 @@ Get-FileHash C:\Users\xxxx\Downloads\ubuntu-24.04.1-desktop-amd64.iso -Algorithm
     </Tabs>
 
     ดูได้จากรูป
-    ![Check c/c++](../../../assets/images/check_gcc_gpp.png)
+    ![Check c/c++](../../../assets/images/lab2/check_gcc_gpp.png)
 
 </Steps>
 
@@ -100,13 +101,17 @@ Get-FileHash C:\Users\xxxx\Downloads\ubuntu-24.04.1-desktop-amd64.iso -Algorithm
 
 <Steps>
 1. ไปที่ [VSCode Website](https://code.visualstudio.com)
-2. กด Download VSCode เลือก .deb ![VSCode DEB](../../../assets/images/vscode_website.png)
-3. รอโหลด VSCode ![Download VSCode](../../../assets/images/download_vscode.png)
-4. Open File และ Install ![Install VSCode](../../../assets/images/install_vscode.png)
-5. Open VSCode ![Open VSCode](../../../assets/images/open_vscode.png)
+2. กด Download VSCode เลือก .deb ![VSCode DEB](../../../assets/images/lab2/vscode_website.png)
+3. รอโหลด VSCode ![Download VSCode](../../../assets/images/lab2/download_vscode.png)
+4. Open File และ Install ![Install VSCode](../../../assets/images/lab2/install_vscode.png)
+5. Open VSCode ![Open VSCode](../../../assets/images/lab2/open_vscode.png)
+6. Install C/C++ Extension Pack ![Install C/C++ Extension Pack](../../../assets/images/lab2/install_c_cpp_extension_pack.png)
 </Steps>
 
 ## ตัวอย่าง Code
+
+สร้างไฟล์ใน VSCode แล้วลง Extension
+
 :::tip
 ดู process ที่รันอยู่ปัจจุบัน
 ```sh 
@@ -114,7 +119,7 @@ ps aux
 ```
 
 จะต้องทำการ debug program เพื่อไม่ให้ process exit ดังรูปด้านล่าง
-![debug create_process](../../../assets/images/debug_create_process.png)
+![debug create_process](../../../assets/images/lab2/debug_create_process.png)
 
 ในกรณีที่ต้องการดูเฉพาะโปรแกรมที่รันอยู่ ในกรณีนี้ชื่อ create_process 
 
@@ -122,7 +127,9 @@ ps aux
 ps aux | grep 'create_process'
 ```
 :::
+
 ### Process : Create Process
+<Card>
 
 ```c
 //create_process.c
@@ -146,7 +153,19 @@ int main()
 }
 ```
 
+**OUTPUT**
+
+```bash
+I am parent having PID 9445
+My child PID is 9446
+I am child having PID 9446
+My parent PID is 1835
+```
+</Card>
+
 ### Process : Create Orphan Process
+
+<Card>
 
 ```c ins={11}
 //create_orphan_process.c
@@ -172,12 +191,25 @@ int main()
 
 ```
 
+ **OUTPUT**
+
+ :::caution
+ในกรณี orphan process ตัว parent process ได้จบการทำงานไปก่อน ทำให้ id จะเปลี่ยนไป ไม่ใช่ id เดิม
+ :::
+
+ <video src="/cos3105/videos/lab2/output_orphan_process.webm" autoplay loop>
+ </video>
+
+</Card>
+
 ### Process : Create Zombie Process
+<Card>
 
 ```c ins={14}
 //create_zombie_process.c
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>
 int main()
 {
     pid_t t;
@@ -194,10 +226,24 @@ int main()
 }
 
 ```
+ **OUTPUT**
+
+ :::caution
+ในกรณี zombie process ตัว child process ได้จบการทำงานไปก่อน แต่ยังต้องคาเอาไว้เพราะตัว parent process ยังถือว่าทำงานอยู่
+ :::
+
+ <video src="/cos3105/videos/lab2/output_zombie_process.webm" autoplay loop>
+ </video>
+
+
+
+</Card>
 
 ### Process : Prevent Zombie process by wait()
 
-```c ins={17}
+<Card>
+
+```c ins={18}
 //prevent_zombie_process.c
 #include <unistd.h>
 #include <sys/types.h>
@@ -224,11 +270,21 @@ int main()
 
 ```
 
+ **OUTPUT**
+
+![Prevent Zombie Process](../../../assets/images/lab2/prevent_zombie_process.png)
+
+</Card>
+
 ### IPC : Shared memory
+
 :::tip[ข้อควรรู้]
 **Shared memory** จะต้อง **create shared memory segment** ด้วย **key** และ **size** มีขนาดเป็น **byte**
 :::
+<Card>
+
 <Tabs>
+
   <TabItem label="Write">
 ```c ins={30}
 // write_shared_memory.c
@@ -265,7 +321,14 @@ int main()
 }
 
 ```
+
+ **OUTPUT**
+
+  ![Write Shared Memory](../../../assets/images/lab2/write_shared_memory.png)
+
+
 </TabItem>
+
 <TabItem label="Read">
 
 ```c ins={17}
@@ -289,9 +352,14 @@ int main()
 }
 
 ```
+
+ **OUTPUT**
+
+  ![Read Shared Memory](../../../assets/images/lab2/read_shared_memory.png)
   </TabItem>
 </Tabs>
 
+</Card>
 
 
 
@@ -299,6 +367,7 @@ int main()
 
 <Tabs>
   <TabItem label="Send">
+
 ```c 
 //send_queue.c
 #include<stdlib.h>
@@ -347,11 +416,16 @@ int main()
     }
 }
 
-
 ```
+
+**OUTPUT**
+
+![Send Message Queue](../../../assets/images/lab2/send_message_queue.png)
+
 </TabItem>
 
 <TabItem label="Read">
+
 ```c 
 //read_queue.c
 #include<stdlib.h>
@@ -388,13 +462,21 @@ int main()
 
 
 ```
+
+**OUTPUT**
+
+![Read Message Queue](../../../assets/images/lab2/read_message_queue.png)
+
 </TabItem>
 </Tabs>
 
 ### IPC : Producer, Consumer
 
+<Card>
+
 <Tabs>
 <TabItem label="Producer">
+
 ```c
 //producer.c
 #include <stdio.h>
@@ -413,7 +495,7 @@ int main(){
     const char *message_1 = "World!";
     int fd;
     char *ptr;
-    fd = shm_open(name, 0_CREATE|0_RDWR,0666);
+    fd = shm_open(name, O_CREAT|O_RDWR,0666);
     ftruncate(fd, SIZE);
     ptr = (char*)mmap(0, SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
     sprintf(ptr, "%s", message_0);
@@ -444,7 +526,7 @@ int main(){
     const char *name = "OS";
     int fd;
     char *ptr;
-    fd = shm_open(name, 0_RDWR,0666);
+    fd = shm_open(name, O_RDWR,0666);
     ptr = (char*)mmap(0, SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
     printf("%s\n", (char *)ptr);
     shm_unlink(name);
@@ -454,3 +536,11 @@ int main(){
 ```
 </TabItem>
 </Tabs>
+
+**OUTPUT**
+
+```sh
+HelloWorld!
+```
+
+</Card>

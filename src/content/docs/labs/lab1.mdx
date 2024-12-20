@@ -1,0 +1,152 @@
+---
+title: Lab1 - Boot Loader, System Call
+---
+import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
+
+<LinkButton href={"/cos3105/print/lab1"} icon="seti:pdf" target={"_blank"}>Print</LinkButton>
+
+:::tip
+กระบวนการหลังจากเปิดคอมพิวเตอร์ขึ้นมาจะเป็นดังรูป
+:::
+
+## Boot Loader
+
+<Card>
+![Boot loader](../../../assets/images/lab1/bootloader.png)
+
+<center>
+**รูป 1: แสดงการโหลดโปรแกรม boot loader จากอุปกรณ์ไปยัง memory**
+</center>
+
+:::caution
+โปรแกรม boot loader จะมีขนาดไม่เกิน 512 Byte เพราะใน 1 sector ของ HDD มีขนาด 512 Byte
+:::
+
+</Card>
+
+## Bochs Emulator
+
+<Card>
+<center>
+![Bochs Emulator](../../../assets/images/lab1/bochs_emulator.png)
+</center>
+
+<Steps>
+1. โหลด bochs emulator โดยไปที่ https://sourceforge.net/projects/bochs/files/bochs/2.8/Bochs-win64-2.8.exe/download
+2. ติดตั้ง bochs emulator
+3. เพิ่ม path ของโปรแกรมไปใน environment variables 
+![Environment Variables](../../../assets/images/lab1/environment_variables.png)
+![Environment Variables](../../../assets/images/lab1/environment_variables2.png)
+![Environment Variables](../../../assets/images/lab1/environment_variables3.png)
+</Steps>
+</Card>
+## NASM Compiler
+
+<Card>
+<Steps>
+1.  โหลดโปรแกรม NASM โดยโหลดที่ https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-installer-x64.exe
+
+2. ติดตั้ง NASM
+
+3. เพิ่ม path ของโปรแกรมไปใน environment variables
+![Environment Variables](../../../assets/images/lab1/environment_variables4.png)
+</Steps>
+
+**Example Boot Loader**
+```asm
+[org 7c00h]          	; BIOS will load us to this address
+mov ax, 0b800h       	; Console memory is at 0xb8000
+                        ; set up a segment
+mov es, ax           	; for the start of the console text.
+;
+; Let's clear the screen....
+;
+xor di, di           	; Start at beginning of screen
+mov cx, 80*25        	; Number of chars in the screen
+mov al, ' '          	; Space character
+mov ah, 0fh          	; Color (white on black)
+repne stosw          	; Copy!
+
+
+mov byte [es:0], 'H' 	; Write an 'H'
+mov byte [es:1], 08ch
+
+
+sleep:
+hlt                  	; Halts CPU until the next external  
+                        ;interrupt is fired
+jmp sleep            	; Loop forever
+
+times 510-($-$$) db 0	; Pad to 510 bytes
+dw 0aa55h            	; Add boot magic word to mark us                
+                        ; as bootable
+
+```
+
+:::note
+การพิมพ์ตัวอักษรออกสู่หน้าจอ จะมีข้อกำหนดดังนี้
+
+อ้างอิงไปที่ memory address ในกรณีนี้ อ้างอิงไปที่ memory address ของ register es โดยโครงสร้าง memory จะแบ่งเป็น segment:offset
+
+1 ตัวอักษรจะใช้ 2 byte โดย byte แรกแทนตัวอักษร และ byte สองแทน attribute นั่นก็คือ สีของข้อความและพื้นหลัง โดยเก็บในรูปฐาน 16
+
+```sh frame="none"
+       Bit 76543210
+           ||||||||
+           |||||^^^-สีตัวอักษร
+           ||||^----สีตัวอักษร+ความสว่าง
+           |^^^-----สีพื้นหลัง
+           ^--------สีพื้นหลัง OR ทำให้กระพริบ
+```
+
+![VGA Color](../../../assets/images/lab1/vga_color.png)
+
+```sh frame="none"
+ตัวอย่าง 8c = 1000 1100
+            7654 3210
+```
+:::
+
+</Card>
+
+## Boot image
+
+<Card>
+
+<Steps>
+1. นำโค๊ดด้านบนไปใส่ในไฟล์ boot.asm
+2. compile ไปเป็น .bin ไฟล์ 
+   ```ps
+   nasm -f bin boot.asm boot.bin
+   ```
+
+3. สร้างไฟล์ .bochsrc
+   ```bash frame="none"
+    ata0-master: type=disk, path="boot.bin", mode=flat, cylinders=1, heads=1, spt=1
+    boot: disk
+    megs: 128
+   ```
+4. กดรัน <kbd>bochs</kbd> + <kbd>Enter</kbd>
+    ```ps
+    bochs
+    ```
+
+    ![Bochs](../../../assets/images/lab1/run_bochs.png)
+
+    ![Bochs Bootloader](../../../assets/images/lab1/bochs_bootloader.png)
+</Steps>
+
+</Card>
+
+## ติดตั้ง Virtual Box
+
+<Card>
+<Steps>
+1. ติดตั้ง Virtual Box https://download.virtualbox.org/virtualbox/7.1.4/VirtualBox-7.1.4-165100-Win.exe
+2. download https://drive.google.com/file/d/1f8esR9U6tHWqP3cBJAGBROHnHuwpO8Zx/view?usp=sharing
+3. แตกไฟล์ rar
+4. เปิด Virtual Box แล้วกด Add
+![VirtualBox Dos6](../../../assets/images/lab1/virtualbox_dos6.png)
+![Dos6 VDI](../../../assets/images/lab1/select_dos6_vdi.png)
+</Steps>
+</Card>
