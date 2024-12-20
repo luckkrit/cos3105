@@ -9,7 +9,7 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 กระบวนการหลังจากเปิดคอมพิวเตอร์ขึ้นมาจะเป็นดังรูป
 :::
 
-## Boot Loader
+## การทำงานของ Boot Loader 
 
 <Card>
 ![Boot loader](../../../assets/images/lab1/bootloader.png)
@@ -24,7 +24,7 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 
 </Card>
 
-## Bochs Emulator
+## ติดตั้ง Bochs Emulator
 
 <Card>
 <center>
@@ -40,7 +40,7 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 ![Environment Variables](../../../assets/images/lab1/environment_variables3.png)
 </Steps>
 </Card>
-## NASM Compiler
+## ติดตั้ง NASM Compiler
 
 <Card>
 <Steps>
@@ -109,7 +109,7 @@ dw 0aa55h            	; Add boot magic word to mark us
 
 </Card>
 
-## Boot image
+## การทำ Boot image
 
 <Card>
 
@@ -145,8 +145,18 @@ dw 0aa55h            	; Add boot magic word to mark us
 1. ติดตั้ง Virtual Box https://download.virtualbox.org/virtualbox/7.1.4/VirtualBox-7.1.4-165100-Win.exe
 2. download https://drive.google.com/file/d/1f8esR9U6tHWqP3cBJAGBROHnHuwpO8Zx/view?usp=sharing
 3. แตกไฟล์ rar
-4. เปิด Virtual Box แล้วกด Add
+</Steps>
+</Card>
+
+## เพิ่ม DOS6 ลงใน Virtual Box
+
+<Card>
+<Steps>
+1. เปิด Virtual Box แล้วกด Add
 ![VirtualBox Dos6](../../../assets/images/lab1/virtualbox_dos6.png)
-![Dos6 VDI](../../../assets/images/lab1/select_dos6_vdi.png)
+![DOS6 VDI](../../../assets/images/lab1/select_dos6_vdi.png)
+2. กด Open
+3. กด Start จะรัน DOS6 ขึ้นมา
+![DOS6](../../../assets/images/lab1/dos6.png)
 </Steps>
 </Card>
