@@ -3,11 +3,339 @@ title: Lab3 - Thread
 lastUpdated: 2024-12-20
 ---
 
-import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
+import {
+  Steps,
+  Card,
+  Tabs,
+  TabItem,
+  LinkButton,
+} from "@astrojs/starlight/components";
 
-<LinkButton href={"/cos3105/print/lab3"} icon="seti:pdf" target={"_blank"}>Print</LinkButton>
+<LinkButton href={"/cos3105/print/lab3"} icon="seti:pdf" target={"_blank"}>
+  Print
+</LinkButton>
 
 :::tip
 ใน Lab นี้จะเรียนรู้เกี่ยวกับการใช้งาน Thread ซึ่ง Library ที่ใช้จะชื่อ Pthreads ซึ่งจะพบในตระกูล Unix เช่น Linux และ Mac OS X
 :::
 
+## Thread Creation
+
+:::note
+ตัวอย่างต่อไปนี้จะสร้าง Thread ขึ้นมา โดยใช้คำสั่ง pthread_create และใช้ pthread_join เพื่อรอคอย Thread ของ Process จบการทำงาน
+:::
+
+<Card>
+
+<Tabs>
+<TabItem label="Thread 1 ตัว">
+
+
+ตัวอย่างถัดไปแสดงการทำงานแยกกันของ Thread กับ main Process
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<pthread.h>
+
+void * thread_function(void * arg);
+int i, j;
+int main() {
+  pthread_t a_thread; //thread declaration
+  pthread_create( & a_thread, NULL, thread_function, NULL);
+  //thread is created
+  pthread_join(a_thread, NULL); //process waits for thread to finish . //Comment this line to see the difference
+  printf("Inside Main Program\n");
+  for (j = 20; j < 25; j++) {
+    printf("%d\n", j);
+    sleep(1);
+  }
+}
+void * thread_function(void * arg) {
+  // the work to be done by the thread is defined in this function
+  printf("Inside Thread\n");
+  for (i = 0; i < 5; i++) {
+    printf("%d\n", i);
+    sleep(1);
+  }
+}
+```
+
+**OUTPUT**
+
+```bash
+
+0
+1
+2
+3
+4
+Inside Main Program
+20
+21
+22
+23
+24
+
+```
+</TabItem>
+<TabItem label="Thread 2 ตัว">
+```c
+#include <stdio.h>
+#include <stdlib.h>  // for srand(), rand()
+#include <unistd.h>  // for sleep(), usleep()
+#include <pthread.h> // the header file for the pthread library
+
+void *thread_entry_func( void *arg ) {
+long id = (long)arg;
+printf( "Thread '%ld' started\n", id );
+// sleep for some seconds (randomized between 1..10)
+sleep( 1 + (rand() % 10) );
+printf( "Thread '%ld' finished\n", id );
+return NULL;
+}
+
+int main( int argc, char \*argv[] ) {
+int retval; // return value from a function call
+pthread_t thread1, thread2; // thread handles
+
+// initialize the pseudo-random generator with a seed
+srand( time(NULL) );
+
+// create Thread 1
+retval = pthread_create(
+&thread1 /_ used to identify thread 1 _/,
+NULL /_ default attributes _/,
+thread_entry_func /_ start routine _/,
+(void*) 1 /* thread argument \*/ );
+printf( "Thread creation (1): %s\n", retval ? "FAILED" : "OK" );
+
+// create Thread 2
+retval = pthread_create(
+&thread2 /_ used to identify thread 2 _/,
+NULL /_ default attributes _/,
+thread_entry_func /_ start routine _/,
+(void*) 2 /* thread argument */ );
+printf( "Thread creation (2): %s\n", retval ? "FAILED" : "OK" );
+// sleep for 10msec
+usleep( 10000 /*usec\*/ );
+// wait until both threads (thread 1 and 2) are finished.
+printf( "\nWaiting for threads to be finished...\n" );
+if ( thread1 ) {
+pthread_join( thread1, NULL ); // wait for thread 1
+}
+if ( thread2 ) {
+pthread_join( thread2, NULL ); // wait for thread 2
+}
+printf( "Done...\n\n" );
+return 0;
+}
+
+````
+
+**OUTPUT**
+
+```bash
+Thread creation (1): OK
+Thread '1' started
+Thread creation (2): OK
+Thread '2' started
+
+Waiting for threads to be finished...
+Thread '1' finished
+Thread '2' finished
+Done...
+````
+
+</TabItem>
+
+<TabItem label="Thread 10 ตัว">
+
+**จะใช้การสร้าง Thread เก็บไว้ใน Array**
+
+```c
+#include <stdio.h>
+#include <stdlib.h>  // for srand(), rand()
+#include <unistd.h>  // for sleep(), usleep()
+#include <pthread.h> // the header file for the pthread lib
+
+#define NUM_THREADS   (10)
+
+void *thread_entry_func( void *arg ) {
+  long id = (long)arg;
+  printf( "Thread '%ld' started (0x%08lX)\n", id, pthread_self() );
+  // sleep for some seconds (randomized between 1..10)
+  sleep( 1 + (rand() % 10) );
+  printf( "Thread '%ld' finished\n", id );
+  return NULL;
+}
+
+int main( int argc, char *argv[] ) {
+  int retval;
+  pthread_t threads[ NUM_THREADS ]; // array of thread handles
+
+  // initialize the pseudorandom generator with a seed
+  srand( time(NULL) );
+
+  // create a number of threads
+  for ( int i=0; i < NUM_THREADS; i++ ) {
+    long id = (i+1); // used as thread argument
+    retval = pthread_create(
+                &threads[i], NULL,
+                thread_entry_func,
+                (void*) id );
+    printf( "main> thread creation (%ld): %s\n", id,
+         retval ? "FAILED" : "OK" );
+    if ( retval ) { // thread creation error
+      printf( "Program terminated...\n" );
+      exit(1);
+    }
+  }
+  // sleep for 1msec before proceeding
+  usleep( 1000 /*usec*/ );
+  // wait until all threads are finished.
+  printf( "\nWaiting for all threads to be finished..\n" );
+  for ( int i=0; i < NUM_THREADS; i++ ) {
+    pthread_join( threads[i], NULL ); // wait for thread
+  }
+  printf( "Done...\n\n" );
+  return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+main> thread creation (1): OK
+Thread '1' started (0x7FE7F8F41700)
+main> thread creation (2): OK
+Thread '2' started (0x7FE7F8740700)
+main> thread creation (3): OK
+Thread '3' started (0x7FE7F7F3F700)
+main> thread creation (4): OK
+Thread '4' started (0x7FE7F773E700)
+main> thread creation (5): OK
+Thread '5' started (0x7FE7F6F3D700)
+main> thread creation (6): OK
+Thread '6' started (0x7FE7F673C700)
+main> thread creation (7): OK
+Thread '7' started (0x7FE7F5F3B700)
+main> thread creation (8): OK
+Thread '8' started (0x7FE7F573A700)
+main> thread creation (9): OK
+Thread '9' started (0x7FE7F4F39700)
+main> thread creation (10): OK
+Thread '10' started (0x7FE7F4738700)
+
+Waiting for all threads to be finished..
+Thread '10' finished
+Thread '3' finished
+Thread '4' finished
+Thread '6' finished
+Thread '2' finished
+Thread '5' finished
+Thread '7' finished
+Thread '9' finished
+Thread '8' finished
+Thread '1' finished
+Done...
+```
+
+</TabItem>
+</Tabs>
+
+
+</Card>
+
+
+## Thread คืนค่าไปให้ main Process
+
+:::note
+จะใช้ pthread_exit() คืนค่าไปให้ main Process
+:::
+
+<Card>
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<pthread.h>
+#include<string.h>
+
+void * thread_function(void * arg);
+int i, n, j;
+int main() {
+  char * m = "5";
+  pthread_t a_thread; //thread declaration
+  void * result;
+  pthread_create( & a_thread, NULL, thread_function, m); //thread is created
+  pthread_join(a_thread, & result);
+  printf("Thread joined\n");
+  for (j = 20; j < 25; j++) {
+    printf("%d\n", j);
+    sleep(1);
+  }
+  printf("thread returned %s\n", (char * ) result);
+}
+void * thread_function(void * arg) {
+  int sum = 0;
+  n = atoi(arg);
+  for (i = 0; i < n; i++) {
+    printf("%d\n", i);
+    sleep(1);
+  }
+  pthread_exit("Done"); // Thread returns "Done"
+}
+```
+
+**OUTPUT**
+
+```bash
+//TODO รันโค๊ดแล้วเก็บ OUTPUT
+```
+
+</Card>
+
+## Parameter Passing ไปยัง Thread 
+
+:::note
+การส่งค่าทำได้หลายวิธี แต่ในตัวอย่างนี้จะใช้ Structure เพราะสามารถประยุกต์ในการส่งหลายๆค่าได้ โดยส่งผ่าน pthread_create
+:::
+
+<Card>
+
+```c
+#include<stdio.h>
+
+#include<pthread.h>
+
+struct arg_struct { //structure which contains multiple variables that are to passed as input to the thread
+  int arg1;
+  int arg2;
+};
+void * arguments(void * arguments) {
+  struct arg_struct * args = arguments;
+  printf("%d\n", args -> arg1);
+  printf("%d\n", args -> arg2);
+  pthread_exit(NULL);
+}
+int main() {
+  pthread_t t;
+  struct arg_struct args;
+  args.arg1 = 5;
+  args.arg2 = 7;
+  pthread_create( & t, NULL, arguments, & args);
+  //structure passed as 4th argument
+  pthread_join(t, NULL); /* Wait until thread is finished */
+}
+```
+
+**OUTPUT**
+
+```bash
+5
+7
+```
+</Card>
+<iframe src="https://onlinegdb.com/ms5CO_AuW" frameborder="0" style="overflow:hidden;height:720px;width:1280px" height="768" width="1366"></iframe>
