@@ -13,7 +13,7 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 ## การทำงานของ Boot Loader 
 
 <Card>
-![Boot loader](../../../assets/images/lab1/bootloader.png)
+![Boot loader](/cos3105/images/lab1/bootloader.png)
 
 <center>
 **รูป 1: แสดงการโหลดโปรแกรม boot loader จากอุปกรณ์ไปยัง memory**
@@ -29,16 +29,16 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 
 <Card>
 <center>
-![Bochs Emulator](../../../assets/images/lab1/bochs_emulator.png)
+![Bochs Emulator](/cos3105/images/lab1/bochs_emulator.png)
 </center>
 
 <Steps>
 1. โหลด bochs emulator โดยไปที่ https://sourceforge.net/projects/bochs/files/bochs/2.8/Bochs-win64-2.8.exe/download
 2. ติดตั้ง bochs emulator
 3. เพิ่ม path ของโปรแกรมไปใน environment variables 
-![Environment Variables](../../../assets/images/lab1/environment_variables.png)
-![Environment Variables](../../../assets/images/lab1/environment_variables2.png)
-![Environment Variables](../../../assets/images/lab1/environment_variables3.png)
+![Environment Variables](/cos3105/images/lab1/environment_variables.png)
+![Environment Variables](/cos3105/images/lab1/environment_variables2.png)
+![Environment Variables](/cos3105/images/lab1/environment_variables3.png)
 </Steps>
 </Card>
 ## ติดตั้ง NASM Compiler
@@ -50,7 +50,7 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 2. ติดตั้ง NASM
 
 3. เพิ่ม path ของโปรแกรมไปใน environment variables
-![Environment Variables](../../../assets/images/lab1/environment_variables4.png)
+![Environment Variables](/cos3105/images/lab1/environment_variables4.png)
 </Steps>
 
 **Example Boot Loader**
@@ -100,7 +100,7 @@ dw 0aa55h            	; Add boot magic word to mark us
            ^--------สีพื้นหลัง OR ทำให้กระพริบ
 ```
 
-![VGA Color](../../../assets/images/lab1/vga_color.png)
+![VGA Color](/cos3105/images/lab1/vga_color.png)
 
 ```sh frame="none"
 ตัวอย่าง 8c = 1000 1100
@@ -118,7 +118,7 @@ dw 0aa55h            	; Add boot magic word to mark us
 1. นำโค๊ดด้านบนไปใส่ในไฟล์ boot.asm
 2. compile ไปเป็น .bin ไฟล์ 
    ```ps
-   nasm -f bin boot.asm boot.bin
+   nasm -f bin boot.asm -o boot.bin
    ```
 
 3. สร้างไฟล์ .bochsrc
@@ -132,9 +132,9 @@ dw 0aa55h            	; Add boot magic word to mark us
     bochs
     ```
 
-    ![Bochs](../../../assets/images/lab1/run_bochs.png)
+    ![Bochs](/cos3105/images/lab1/run_bochs.png)
 
-    ![Bochs Bootloader](../../../assets/images/lab1/bochs_bootloader.png)
+    ![Bochs Bootloader](/cos3105/images/lab1/bochs_bootloader.png)
 </Steps>
 
 </Card>
@@ -154,11 +154,11 @@ dw 0aa55h            	; Add boot magic word to mark us
 <Card>
 <Steps>
 1. เปิด Virtual Box แล้วกด Add
-![VirtualBox Dos6](../../../assets/images/lab1/virtualbox_dos6.png)
-![DOS6 VDI](../../../assets/images/lab1/select_dos6_vdi.png)
+![VirtualBox Dos6](/cos3105/images/lab1/virtualbox_dos6.png)
+![DOS6 VDI](/cos3105/images/lab1/select_dos6_vdi.png)
 2. กด Open
 3. กด Start จะรัน DOS6 ขึ้นมา
-![DOS6](../../../assets/images/lab1/dos6.png)
+![DOS6](/cos3105/images/lab1/dos6.png)
 </Steps>
 </Card>
 
@@ -178,8 +178,6 @@ dw 0aa55h            	; Add boot magic word to mark us
 ตัวอย่างอันนี้จะใช้ได้ทั้ง Linux, Windows หรือ DOS
 :::
 
-<Tabs>
-<TabItem label="Linux, Windows, DOS">
 ```c
 #include <stdio.h>
 int main(void) {
@@ -187,10 +185,9 @@ int main(void) {
   return 0;
 }
 ```
-</TabItem>
 
-<TabItem label="Linux">
-**ตัวอย่าง 1**
+
+**ตัวอย่าง 1 - ใช้ได้เฉพาะ Linux **
 ```c
 #include <unistd.h>
 int main(void) {
@@ -198,7 +195,7 @@ int main(void) {
   return 0;
 }
 ```
-**ตัวอย่าง 2**
+**ตัวอย่าง 2 - ใช้ได้เฉพาะ Linux **
 ```c
 #include <unistd.h>
 #include <sys/syscall.h>
@@ -208,8 +205,6 @@ int main(void) {
 }
 
 ```
-</TabItem>
-</Tabs>
 
 </Card>
 
@@ -226,9 +221,11 @@ int main(void) {
 ### Interrupt 21
 
 <Card>
-<Tabs>
-<TabItem label="ฟังก์ชั่น 2">
-```c ins={4,5}
+
+**ฟังก์ชั่น 2**
+
+```c ins={5,6}
+// i21_2.c
 #include <stdio.h>
 int main(){
     asm {
@@ -241,9 +238,11 @@ int main(){
 
 
 ```
-</TabItem>
-<TabItem label="ฟังก์ชั่น 9">
-```c ins={6,7}
+
+**ฟังก์ชั่น 9**
+
+```c ins={7,8}
+// i21_9.c
 #include <stdio.h>
 int main(){
     
@@ -256,8 +255,6 @@ int main(){
    return 0;
 }
 ```
-</TabItem>
-</Tabs>
 </Card>
 
 ### Interrupt 10
@@ -268,6 +265,7 @@ int main(){
 
 <Card>
 ```c
+// i10.c
 #include <stdio.h>
 int main(){  	
   asm {       
@@ -294,6 +292,7 @@ int main(){
 <Card>
 
 ```c
+// i8.c
 #include <stdio.h>
 #include <dos.h>
 #include <bios.h>
