@@ -1,0 +1,8 @@
+iframe.ideone{
+    min-width: 600px;
+    min-height: 600px;
+    border: 0;
+}
+iframe.ideone > body > .container .container-list > li.container-tab1 {
+    width: 1600px;
+}
