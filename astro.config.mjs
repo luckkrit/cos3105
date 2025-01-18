@@ -32,7 +32,6 @@ export default defineConfig({
 			customCss: [
 				// Relative path to your custom CSS file
 				'./src/styles/kbd.css',
-				'./src/styles/ideone_iframe.css',
 			],
 		}),
 	],
