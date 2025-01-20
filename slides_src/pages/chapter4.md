@@ -248,7 +248,81 @@ Inside Main Program
 24
 
 ```
+---
 
+```c {*}{maxHeight:'450px'}
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<pthread.h>
+
+void * thread_function(void * arg);
+int i, j;
+int main() {
+  pthread_t a_thread; //thread declaration
+  pthread_create( & a_thread, NULL, thread_function, NULL);
+  //thread is created
+  printf("Inside Main Program\n");
+  for (j = 50; j < 60; j++) {
+    printf("Main %d\n", j);
+    sleep(1);
+  }
+  printf("Main thread end\n");
+  pthread_join(a_thread, NULL); //process waits for thread to finish . //Comment this line to see the difference
+  printf("Thread end\n");
+}
+void * thread_function(void * arg) {
+  // the work to be done by the thread is defined in this function
+  printf("Inside Thread\n");
+  for (i = 0; i < 50; i++) {
+    printf("Thread %d\n", i);
+    sleep(1);
+  }
+}
+```
+---
+
+<video width="100%" height="240" controls>
+  <source src="/videos/chapter4/output1.mp4" type="video/mp4">
+</video>
+
+---
+
+```c {18}{maxHeight:'450px'}
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<pthread.h>
+
+void * thread_function(void * arg);
+int i, j;
+int main() {
+  pthread_t a_thread; //thread declaration
+  pthread_create( & a_thread, NULL, thread_function, NULL);
+  //thread is created
+  printf("Inside Main Program\n");
+  for (j = 50; j < 60; j++) {
+    printf("Main %d\n", j);
+    sleep(1);
+  }
+  printf("Main thread end\n");
+  // pthread_join(a_thread, NULL); //process waits for thread to finish . //Comment this line to see the difference
+  printf("Thread end\n");
+}
+void * thread_function(void * arg) {
+  // the work to be done by the thread is defined in this function
+  printf("Inside Thread\n");
+  for (i = 0; i < 50; i++) {
+    printf("Thread %d\n", i);
+    sleep(1);
+  }
+}
+```
+---
+
+<video width="100%" height="240" controls>
+  <source src="/videos/chapter4/output2.mp4" type="video/mp4">
+</video>
 ---
 
 # การยกเลิก Thread
