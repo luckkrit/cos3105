@@ -172,17 +172,17 @@ srand( time(NULL) );
 
 // create Thread 1
 retval = pthread_create(
-&thread1 /_ used to identify thread 1 _/,
-NULL /_ default attributes _/,
-thread_entry_func /_ start routine _/,
+&thread1 /* used to identify thread 1 */,
+NULL /* default attributes */,
+thread_entry_func /* start routine */,
 (void*) 1 /* thread argument \*/ );
 printf( "Thread creation (1): %s\n", retval ? "FAILED" : "OK" );
 
 // create Thread 2
 retval = pthread_create(
-&thread2 /_ used to identify thread 2 _/,
-NULL /_ default attributes _/,
-thread_entry_func /_ start routine _/,
+&thread2 /* used to identify thread 2 */,
+NULL /* default attributes */,
+thread_entry_func /* start routine */,
 (void*) 2 /* thread argument */ );
 printf( "Thread creation (2): %s\n", retval ? "FAILED" : "OK" );
 // sleep for 10msec
