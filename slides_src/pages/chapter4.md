@@ -282,7 +282,7 @@ void * thread_function(void * arg) {
 ```
 ---
 
-<video width="100%" height="240" controls autoplay>
+<video width="100%" height="240" controls autoplay loop>
   <source src="/videos/chapter4/output1.mp4" type="video/mp4">
 </video>
 
@@ -320,7 +320,7 @@ void * thread_function(void * arg) {
 ```
 ---
 
-<video width="100%" height="240" controls autoplay>
+<video width="100%" height="240" controls autoplay loop>
   <source src="/videos/chapter4/output2.mp4" type="video/mp4">
 </video>
 ---
