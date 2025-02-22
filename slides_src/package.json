@@ -6,8 +6,11 @@
     "build": "slidev build",
     "dev": "slidev --open",
     "export": "slidev export",
+    "export_chapter5": "slidev export --with-clicks --format pptx --output ./slides-export/chapter5",
+    "export_chapter6": "slidev export --with-clicks --format pptx --output ./slides-export/chapter6",
     "build_chapter4": "slidev build --base /cos3105/slides/chapter4/ --out ../public/slides/chapter4",
-    "build_chapter5": "slidev build --base /cos3105/slides/chapter5/ --out ../public/slides/chapter5"
+    "build_chapter5": "slidev build --base /cos3105/slides/chapter5/ --out ../public/slides/chapter5",
+    "build_chapter6": "slidev build --base /cos3105/slides/chapter6/ --out ../public/slides/chapter6"
   },
   "dependencies": {
     "@slidev/cli": "^51.0.1",

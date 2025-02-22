@@ -1,0 +1,17 @@
+---
+title: Lab6 - Install Alpine
+lastUpdated: 2025-02-22
+draft: true
+---
+
+## Setup Alpine linux
+
+1. Download Alpine Linux in virtual section (For VirtualBox) : https://alpinelinux.org/downloads/
+2. and this guide https://wiki.alpinelinux.org/wiki/Installing_Alpine_in_a_virtual_machine
+3. Install Alpine Linux follow this guides : https://itsfoss.com/alpine-linux-virtualbox/
+4. Change Hardisk to 20GB
+5. Change port forwarding from this guide : https://nsrc.org/workshops/2014/sanog23-virtualization/raw-attachment/wiki/Agenda/ex-virtualbox-portforward-ssh.htm
+6. Install GCC follow this link : https://wiki.alpinelinux.org/wiki/GCC
+7. Install GDB follow this link : https://pkgs.alpinelinux.org/package/edge/main/x86/gdb
+8. Install SSH Server follow this link : https://wiki.alpinelinux.org/wiki/Setting_up_a_SSH_server
+9. Allow portforward in SSH config in `/etc/ssh/sshd_config` by change `AllowTcpForwarding` to `yes`
