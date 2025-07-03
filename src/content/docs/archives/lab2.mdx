@@ -12,30 +12,102 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 เรียนรู้คำสั่งเกี่ยวกับ **Process** โดยใช้ **ภาษา C** และ **ระบบปฏิบัติการ Ubuntu**
 :::
 
-## ติดตั้ง VM 
+## Download Ubuntu
 
 <Steps>
-1. Download VM: https://drive.google.com/file/d/1orBRMplTzVuRwuaUqhlXepndEIQiaEaJ/view?usp=sharing
-2. Import VM: ![Import VM](/cos3105/images/lab2/import_vm.png)
-3. Select OVA File: ![OVA File](/cos3105/images/lab2/ova_file.png)
-4. กด Finish: ![Finish OVA File](/cos3105/images/lab2/finish_import_ova.png)
-5. รอ Import: ![Wait import](/cos3105/images/lab2/wait_for_import.png)
+  1. Download Ubuntu 24.04.1 LTS :
+  [https://ubuntu.com/download/desktop/thank-you?version=24.04.1\&architecture=amd64\&lts=true](https://ubuntu.com/download/desktop/thank-you?version=24.04.1&architecture=amd64&lts=true)
+  2. ตรวจสอบค่า sum ของ ISO File ใน Powershell:
 </Steps>
 
-:::note[ชื่อผู้ใช้งาน]
-username: c<br/>
-password: c
+```ps title="Powershell - Check SUM SHA256" wrap
+Get-FileHash C:\Users\xxxx\Downloads\ubuntu-24.04.1-desktop-amd64.iso -Algorithm SHA256 | Format-List
+```
+
+:::caution[ค่า sum ควรมีค่าเท่ากับ]
+**C2E6F4DC37AC944E2ED507F87C6188DD4D3179BF4A3F9E110D3C88D1F3294BDC**
 :::
 
-## เปิด CODE-SERVER ใน browser
-
+## ติดตั้ง Ubuntu
 <Steps>
-1. Start VM: ![Start VM](/cos3105/images/lab2/start_vm.png)
-2. Open browser พิมพ์ http://localhost:8080
-![CODE SERVER](/cos3105/images/lab2/code_server.png)
+
+  3. ติดตั้ง Ubuntu 24.04.1 LTS บท VirtualBox ![New VM](/cos3105/images/lab2/new_vm.png) 
+  4. ตรง Name ใส่ Ubuntu 24.04.1 ![New VM Ubuntu](/cos3105/images/lab2/new_vm_ubuntu.png) 
+  5. ตรง Folder ก็ตามค่าเริ่มต้นไป 
+  6. ตรง ISO Image กดปุ่ม Other ![SelectISO](/cos3105/images/lab2/select_iso.png) 
+  7. หาไฟล์ ISO ที่ Download มา ![Open ISO](/cos3105/images/lab2/open_iso.png) 
+  8. แล้วกด Open 
+  9. ติ๊กถูก Skip Unattended Installation ![Skip Unattended](/cos3105/images/lab2/setup_ubuntu_skip_unattended.png)
+  10. ตรง Hardware เปลี่ยน Base memory เป็น 4096 mb ![Ram 4096mb](/cos3105/images/lab2/memory_4gb.png)
+      :::danger[ระวัง]
+      minimum requirements ของ Ubuntu 24.04.1 คือ 4GB ถ้าตั้งน้อยกว่านั้นตอนติดตั้งจะค้างได้
+      :::
+  11. กดปุ่ม Finish แล้ว Virtual Box จะรันหน้าต่างขึ้นมา
+  12. กด Enter เลือก \*Try or Install Ubuntu ![BootVM](/cos3105/images/lab2/boot_vm.png) 
+  13. จะโหลด Ubuntu ขึ้นมาดังรูป ![Setup Ubuntu](/cos3105/images/lab2/setup_ubuntu.png) 
+  14. ระบบจะติดตั้ง Ubuntu กด Next ![Setup Ubuntu2](/cos3105/images/lab2/setup_ubuntu2.png) 
+  15. กด Next ![Setup Ubuntu3](/cos3105/images/lab2/setup_ubuntu3.png) 
+  16. กด Next ![Setup Ubuntu4](/cos3105/images/lab2/setup_ubuntu4.png) 
+  17. กด Next ![Setup Ubuntu5](/cos3105/images/lab2/setup_ubuntu5.png) 
+  18. กด Next ![Setup Ubuntu6](/cos3105/images/lab2/setup_ubuntu6.png) 
+  19. กด Next ![Setup Ubuntu7](/cos3105/images/lab2/setup_ubuntu7.png) 
+  20. กด Next ![Setup Ubuntu8](/cos3105/images/lab2/setup_ubuntu8.png) 
+  21. กด Next ![Setup Ubuntu9](/cos3105/images/lab2/setup_ubuntu9.png) 
+  22. ตรง Your name ใสชื่อตัวเรา และตรง Password ให้ตั้งค่าตามที่เราต้องการ แล้วกด Next ![Setup Ubuntu10](/cos3105/images/lab2/setup_ubuntu10.png) 
+  23. กด Next ![Setup Ubuntu11](/cos3105/images/lab2/setup_ubuntu11.png) 
+  24. กด Install ![Setup Ubuntu12](/cos3105/images/lab2/setup_ubuntu12.png) 
+  25. ระบบจะติดตั้ง Ubuntu ![Setup Ubuntu13](/cos3105/images/lab2/setup_ubuntu13.png) 
+  26. ระบบจะให้เรา Reboot
+  27. Login เข้ามาจะเจอหน้า Welcome ให้กด Next ไปเรื่อยๆ ![Welcome Ubuntu](/cos3105/images/lab2/welcome_ubuntu.png)
+  28. ให้กด Next ![Welcome Ubuntu](/cos3105/images/lab2/welcome_ubuntu2.png)
+  29. ให้กด Next ![Welcome Ubuntu](/cos3105/images/lab2/welcome_ubuntu3.png)
+  30. ให้กด Finish ![Welcome Ubuntu](/cos3105/images/lab2/welcome_ubuntu4.png)
+
 </Steps>
 
+## ติดตั้ง C Compiler
+<Steps>
+1. ไปที่ Terminal
+![Find Terminal](/cos3105/images/lab2/find_terminal.png)
 
+2. เปิด Terminal
+![Open Terminal](/cos3105/images/lab2/open_terminal.png)
+
+3. ติดตั้ง C/C++ Compiler
+   ```sh title="Bash - Terminal"
+   sudo apt install build-essential
+   ```
+
+4. พิมพ์ <kbd>y</kbd> แล้ว <kbd>Enter</kbd> ![Install c/c++](/cos3105/images/lab2/install_c_cpp.png)
+5. ทำการ Check ว่า C/C++ Compiler ติดตั้งสมบูรณ์มั๊ยด้วย 
+    <Tabs>
+    <TabItem label="C">
+    ```sh title="Bash - Terminal"
+    gcc
+    ```
+    </TabItem>
+    <TabItem label="C++">
+    ```sh title="Bash - Terminal"
+    g++
+    ```
+    </TabItem>
+    </Tabs>
+
+    ดูได้จากรูป
+    ![Check c/c++](/cos3105/images/lab2/check_gcc_gpp.png)
+
+</Steps>
+
+## ติดตั้ง VSCode
+
+<Steps>
+1. ไปที่ [VSCode Website](https://code.visualstudio.com)
+2. กด Download VSCode เลือก .deb ![VSCode DEB](/cos3105/images/lab2/vscode_website.png)
+3. รอโหลด VSCode ![Download VSCode](/cos3105/images/lab2/download_vscode.png)
+4. Open File และ Install ![Install VSCode](/cos3105/images/lab2/install_vscode.png)
+5. Open VSCode ![Open VSCode](/cos3105/images/lab2/open_vscode.png)
+6. Install C/C++ Extension Pack ![Install C/C++ Extension Pack](/cos3105/images/lab2/install_c_cpp_extension_pack.png)
+</Steps>
 
 ## ตัวอย่าง Code
 

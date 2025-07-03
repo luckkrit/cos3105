@@ -17,9 +17,9 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'COS3105',
-			social: {
+			social: [
 				// github: 'https://github.com/withastro/starlight',
-			},
+			],
 			sidebar: [
 				// {
 				// 	label: 'Guides',
@@ -35,6 +35,10 @@ export default defineConfig({
 				{
 					label: 'Labs',
 					autogenerate: { directory: 'labs' },
+				},
+				{
+					label: 'Archives',
+					autogenerate: { directory: 'archives' },
 				},
 			],
 			customCss: [
