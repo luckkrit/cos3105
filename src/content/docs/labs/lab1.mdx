@@ -632,6 +632,137 @@ int main(void){
 }
 
 ```
+
+## ตัวอย่างของการเขียน assembly ใน Linux
+
+ตามปกติ assembly จะต้องขึ้นต้นด้วย
+
+- `section .text` The `.text` section is where the executable code resides, such as instructions for the processor to execute. Assemblers and linkers treat this section as the code segment.
+
+```asm
+section .text
+	global _start
+```
+
+- ถ้าประกาศตัวแปรพร้อมกับค่าเริ่มต้นจะใส่ใน `section .data`
+
+```asm
+section .data
+```
+
+- ถ้าประกาศตัวแปรเฉยๆ จะใส่ใน `section .bss`
+
+```asm
+section .bss
+buffer resb 256   ; Reserve 256 bytes for a buffer
+counter resd 1    ; Reserve 1 double word (4 bytes) for a counter
+```
+
+- แต่ nasm ไม่ได้สนใจ `section .text` ดังนั้น nasm จะไปสนใจ `global _start` เลย
+
+```asm
+global _start
+
+```
+
+
+1. `global` **Directive:** 
+	- This tells the assembler that the following label (in this case, `_start`) is something that can be accessed by external files, like the linker. It essentially makes the `_start` label a global symbol.
+2.  `_label` **Label:** 
+	- `_start` is commonly used as the entry point of an assembly program. It's where the execution begins. By convention, when you create an assembly program, you define this label, and the linker expects it.
+
+
+```asm
+global _start
+_start:
+    mov eax, 1
+    mov ebx, 42
+    sub ebx, 29
+    int 0x80
+```
+
+1. เป็นการเรียกใช้ system call ที่ชื่อว่า `exit` โดยการ assign `1` ให้กับ register `eax`
+2. เป็นการบอกว่า system call ที่ชื่อว่า `exit` นี้จะ return ค่าอะไรออกมา ซึ่ง return `42` ออกมา
+3. `sub` คือการลบค่า ดังนั้น `sub ebx, 29` จะได้ `13` เป็นค่าที่ return ออกมา
+4. `int 0x80` เป็นการเรียกใช้ software interrupt ดังนั้น kernel จึงจะอ่านค่าจาก `eax` และ `ebx` 
+
+
+ใช้ nasm ในการคอมไพล์
+
+```bash
+nasm -f elf32 ex1.asm -o ex1.o
+```
+
+1. `nasm` เป็นตัวแปลงภาษา assembly (human-readable low-level instructions) into machine code
+2. `-f elf32` This specifies the output format of the object file as 32-bit ELF (Executable and Linkable Format). ELF is commonly used on Linux systems.
+3. `ex1.asm` This is the input file, which contains your assembly code.
+4. `-o ex1.o` This specifies the output file name as `ex1.o`, the object file that will be generated
+
+```bash
+ld -m elf_i386 ex1.o -o ex1
+```
+
+- `ld`: Invokes the linker to combine the object file and any necessary libraries into a single executable file.
+    
+- `-m elf_i386`: Specifies the target as 32-bit ELF format (important for 32-bit programs). If you're on a 64-bit system, this ensures compatibility for running 32-bit code.
+    
+- `ex1.o`: The input object file created by NASM during the assembly step.
+    
+- `-o ex1`: Specifies the name of the final output executable (`ex1`).
+
+```bash
+./ex1
+```
+
+1. เวลารันโปรแกรมออกมา มันจะไม่ขึ้นอะไรบนจอ
+
+```bash
+echo $?
+```
+
+1. คำสั่งนี้จะทำให้รู้ว่า exit status ของคำสั่งล่าสุดคืออะไร จะใช้ใน unix กับ linux
+
+
+## Assembly สำหรับ Linux ยังไม่เป็น real mode
+- **Real Mode**:
+    
+    - Used by the BIOS and initial stages of bootloaders.
+        
+    - Limited to 1 MB of memory and doesn't support advanced features like virtual memory.
+        
+    - If you're writing assembly for bare-metal (like bootloaders or OS kernels before transitioning to protected mode), you'll be working in real mode.
+        
+- **Protected Mode**:
+    
+    - Linux and most modern operating systems use protected mode for their normal operation.
+        
+    - Linux assembly programs use protected mode features, meaning you have access to 32-bit or 64-bit registers and advanced memory management.
+        
+    - To run assembly on Linux, you typically interact with the operating system through **system calls**, which are executed in protected mode.
+
+
+## อันนี้คือตาราง system call ใน Linux
+
+- for 32bit
+
+| **System Call** | **Purpose**                                 |
+| --------------- | ------------------------------------------- |
+| `read`          | Reads data from a file descriptor.          |
+| `write`         | Writes data to a file descriptor.           |
+| `open`          | Opens a file and returns a file descriptor. |
+| `close`         | Closes an open file descriptor.             |
+| `fork`          | Creates a new process.                      |
+| `execve`        | Executes a program.                         |
+| `exit`          | Terminates a process.                       |
+| `wait`          | Waits for child process termination.        |
+| `mmap`          | Maps files or devices into memory.          |
+| `brk`           | Changes the memory allocation of a process. |
+| `ioctl`         | Manipulates I/O device parameters.          |
+| `socket`        | Creates a socket.                           |
+| `bind`          | Assigns an address to a socket.             |
+| `listen`        | Listens for socket connections.             |
+| `accept`        | Accepts a socket connection.                |
+
 </Card>
 
 
