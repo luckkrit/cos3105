@@ -25,6 +25,200 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 
 </Card>
 
+## 510 Bytes สำคัญยังไง
+
+<Card>
+
+![510 Bytes](/cos3105/images/lab1/510bytes.png)
+
+จาก foreward ในหนังสือข้างต้น ได้เขียนสิ่งที่น่าสนใจดังนี้
+
+<Tabs>
+
+<TabItem label="Thai">
+
+---
+
+## Boot Sector: พื้นที่จำกัดกับการใช้งานที่เหนือความคาดหมาย
+
+**Boot sector** ในระบบที่เข้ากันได้กับ IBM ถูกออกแบบมาเพื่อเก็บโค้ดและข้อมูลขนาด **510 ไบต์** (2 ไบต์สุดท้ายเป็นลายเซ็นสำหรับตรวจสอบความถูกต้อง) ซึ่งเพียงพอสำหรับการระบุตำแหน่งและโหลดขั้นตอนถัดไปของการบูตเครื่อง สำหรับดิสก์ DOS มาตรฐาน โค้ดจะทำหน้าที่แยกวิเคราะห์ระบบไฟล์ **FAT12** เพื่อตรวจหาไฟล์ชื่อ **IBMBIO.COM** หรือ **IO.SYS** และ **IBMDOS.COM** หรือ **MSDOS.SYS** จากนั้นจะโหลดไฟล์ IBMBIO.COM หรือ IO.SYS (ซึ่งจะโหลดไฟล์ IBMDOS.COM หรือ MSDOS.SYS ต่อไป) มีพื้นที่เหลือใน boot sector น้อยมากสำหรับการแสดงข้อความผิดพลาดโดยละเอียด หากไม่พบไฟล์ดังกล่าว ระบบที่ไม่ใช่ DOS สามารถทำการเข้าถึงดิสก์โดยตรงหรือแยกวิเคราะห์ระบบไฟล์ของตนเองได้ แต่ข้อจำกัดด้านขนาดก็ยังคงอยู่
+
+ด้วยข้อจำกัดของสภาพแวดล้อมดังกล่าว บ่อยครั้งที่ boot sector ถูกมองข้ามว่ามีหน้าที่อื่นนอกเหนือจากการบูตระบบ อย่างไรก็ตาม ตลอดหลายปีที่ผ่านมา มีคนสองกลุ่มที่ค้นพบการใช้งานทางเลือกสำหรับมัน กลุ่มหนึ่งคือ **นักเขียนไวรัส** และอีกกลุ่มคือ **ผู้สร้างเดโม (demo maker)**
+
+---
+
+### Boot Sector กับไวรัสคอมพิวเตอร์
+
+นักเขียนไวรัสสร้าง **ไวรัสบูตเซกเตอร์** ที่จะทำงานเมื่อดิสก์ที่ติดเชื้อถูกบูตขึ้นมา โดยจะอาศัยอยู่ในหน่วยความจำและแพร่เชื้อไปยังฟล็อปปี้ดิสก์อื่น ๆ ที่ใส่เข้าไปในไดรฟ์ ไวรัสบูตเซกเตอร์มักจะคัดลอก boot sector ดั้งเดิมไปยังตำแหน่งอื่นบนดิสก์ จากนั้นจึงแทนที่โค้ดดั้งเดิมด้วยโค้ดเฉพาะของไวรัส
+
+ไวรัสบูตเซกเตอร์ยุคแรก ๆ จะคัดลอก boot sector ดั้งเดิมไปไว้ที่ท้ายดิสก์ โดยหวังว่าจะไม่มีการใช้งานพื้นที่นั้นอยู่แล้ว เทคนิคนี้ไม่ได้ถูกใช้นานนัก เพราะการบูตฟล็อปปี้ดิสก์ที่ติดเชื้อดังกล่าวจะมีความล่าช้าที่สังเกตได้และมีเสียงผิดปกติขณะที่หัวอ่านไดรฟ์เคลื่อนไปยังท้ายดิสก์แล้วกลับมาเพื่อดำเนินการโหลดต่อ
+
+เทคนิคการแทนที่นี้อาศัยข้อเท็จจริงที่ว่าดิสก์ DOS ทั่วไปมี **สำเนาของ File Allocation Table (FAT)** สองชุด โดยชุดหนึ่งอยู่ถัดจากอีกชุดหนึ่งทันที และทั้งสองชุดอยู่ในแทร็กแรกของดิสก์ สำเนา FAT ชุดแรกจะถูกใช้เป็นเวอร์ชันหลัก ส่วนชุดที่สองเป็นสำรองที่ในบางกรณีสามารถใช้กู้คืนไฟล์ที่ถูกลบและการซ่อมแซมข้อผิดพลาดของดิสก์บางอย่างได้
+
+นักเขียนไวรัสตัดสินใจว่าสำเนาสำรองของ FAT จะไม่ถูกใช้งานบ่อยนัก และถือว่าสำเนานั้นเป็นพื้นที่ว่าง นั่นกลายเป็นที่สำหรับเก็บ boot sector ดั้งเดิม พร้อมกับโค้ดเพิ่มเติมที่ไวรัสต้องการเป็นขั้นตอนที่สอง การใช้ตำแหน่งนี้ช่วยหลีกเลี่ยงการเคลื่อนที่ของหัวอ่านไดรฟ์ระหว่างการบูต ทำให้การบูตดูคล้ายกันมากระหว่างดิสก์ที่ไม่ได้ติดเชื้อกับดิสก์ที่ติดเชื้อ
+
+เมื่อฮาร์ดดิสก์แพร่หลายมากขึ้นและมีความจุมากขึ้น มักจะถูก "พาร์ติชัน" ออกเป็นส่วน ๆ ตามวัตถุประสงค์เฉพาะ หรือเพื่อหลีกเลี่ยงข้อจำกัดของคำอธิบายความจุของดิสก์ใน BIOS พาร์ติชันสามารถช่วยให้มีระบบมัลติบูตได้ — หนึ่งสภาพแวดล้อมต่อหนึ่งพาร์ติชัน แต่ละพาร์ติชันมี boot sector ของตัวเองที่รู้วิธีการแยกวิเคราะห์รูปแบบของข้อมูลในพาร์ติชันนั้น
+
+นักเขียนไวรัสมักจะเล็งเป้าไปที่ **Master Boot Record (MBR)** ของฮาร์ดดิสก์ แทนที่จะเป็น boot sector ของแต่ละพาร์ติชัน MBR ใช้เพื่อเลือกพาร์ติชันที่สนใจและส่งการควบคุมไปยัง boot sector ของพาร์ติชันนั้นเพื่อบูตเนื้อหาของพาร์ติชันนั้น ดังนั้นจึงเป็นโค้ดแรกที่ทำงานและถูกเรียกใช้งานเสมอ ในทางตรงกันข้าม boot sector ของพาร์ติชันอาจถูกเรียกใช้งานไม่บ่อยนัก หรืออาจไม่ถูกเรียกเลยหากพาร์ติชันนั้นใช้รูปแบบดิสก์เดียวกันกับพาร์ติชันอื่นที่ถูกบูตแทน ไวรัสใน MBR ยังคงสามารถแพร่เชื้อไปยังฟล็อปปี้ดิสก์ได้เมื่อใส่เข้าไปในไดรฟ์ฟล็อปปี้
+
+ไวรัสบูตเซกเตอร์แพร่กระจายอย่างอิสระและกว้างขวางในหมู่ดิสก์ละเมิดลิขสิทธิ์ เนื่องจากดิสก์ที่คัดลอกมามักจะไม่ได้ถูกป้องกันการเขียน พวกมันคงอยู่จนกระทั่งฟล็อปปี้ไดรฟ์เลิกผลิตพร้อมกับพีซีเครื่องใหม่ ถึงกระนั้น MBR ก็ยังคงมีอยู่ ในปี 2019 ที่ผู้เขียนเขียนบทความนี้ BIOS ในพีซีที่เข้ากันได้กับ IBM ยังคงมีโค้ดที่อนุญาตให้ระบบบูตจาก MBR ได้
+
+---
+
+### Boot Sector กับ Demo Maker
+
+นั่นทำให้เหลือกลุ่ม **ผู้สร้างเดโม (demo maker)** เกือบจะนานเท่าที่มีคอมพิวเตอร์มา ก็มีเดโม (โปรแกรมสาธิตสั้น ๆ) สำหรับคอมพิวเตอร์มาโดยตลอด เมื่อฮาร์ดแวร์ปรับปรุงความเร็วและความสามารถ ขนาดของเดโมก็เพิ่มขึ้นเนื่องจากสามารถจัดการเนื้อหาได้มากขึ้นและใช้ประโยชน์จากสิ่งที่นำเสนอได้ เดโมจำนวนมากเปลี่ยนจากการสร้างวัตถุแบบเรียลไทม์พร้อมเพลงที่ติดตาม ไปเป็นการสร้างวิดีโอที่มีพื้นผิวที่สร้างไว้ล่วงหน้าและเพลง MP3 ขนาดหลายเมกะไบต์ อย่างไรก็ตาม มีกลุ่มเล็ก ๆ ของผู้สร้างเดโมที่มักจะมุ่งเป้าไปที่เครื่องจักรเก่าหรือสภาพแวดล้อมเก่า ๆ
+
+ความสนใจในการเขียนโค้ดขนาดเล็ก (size-coding) ได้รับการกระตุ้นจากการแข่งขันเดโม การแข่งขัน PC 64kb เริ่มขึ้นในปี 1991 ตามมาด้วยการแข่งขัน Amiga 40kb ในปี 1992 และ PC 4kb ในปี 1994 จนกระทั่งปี 2012 การแข่งขัน PC 1kb ก็ปรากฏขึ้น ไฟล์ขนาด 1kb ยังคงเหมาะสำหรับสภาพแวดล้อม Windows หรือ Amiga boot-block การแข่งขันย่อย 1kb จำกัดอยู่แค่ไฟล์ .COM ในสภาพแวดล้อม DOS ซึ่งนำเสนอความยากลำบากในการทำให้รันบนฮาร์ดแวร์สมัยใหม่ อย่างไรก็ตาม สภาพแวดล้อม DOS มีความใกล้เคียงกับสภาพแวดล้อม MBR อย่างมาก ความแตกต่างหลักคือค่าเริ่มต้นของ segment registers และ general-purpose registers ดังนั้น MBR จึงเป็นสถานที่ที่สมบูรณ์แบบสำหรับเดโมขนาดเล็กที่ไม่จำเป็นต้องบูต DOS
+
+---
+
+### ความท้าทายในการสร้างเดโมขนาดเล็ก
+
+การตั้งเป้าหมายขนาดไฟล์ที่เล็กลงอาจฟังดูง่าย เพราะมีโค้ดที่ต้องเขียนน้อยลง แต่ในความเป็นจริงแล้วอาจเป็นเรื่องที่ท้าทายอย่างยิ่ง ความยากลำบากมาจากการที่โปรแกรมขนาดเล็กเช่นนี้ยังคงคาดหวังว่าจะแสดงผลงานที่น่าทึ่ง ดังนั้นแทนที่จะเลือกวิธีง่ายๆ และใช้เนื้อหาขนาดใหญ่ เดโมขนาดเล็กเหล่านี้ต้องอาศัยเทคนิคการเขียนโค้ดเพื่อสร้างองค์ประกอบภาพแบบเรียลไทม์ ยิ่งโปรแกรมเล็กลงเท่าไหร่ก็ยิ่งยากขึ้นเท่านั้น
+
+---
+
+### ศักยภาพของ MBR ในการสร้างเดโม
+
+แล้วเราจะทำอะไรได้บ้างใน MBR? ปรากฏว่ามันสามารถทำได้ทั้งเล็กน้อยและมาก เมื่อโค้ดใน MBR กำลังทำงาน จะไม่มีระบบปฏิบัติการอยู่เลย นั่นหมายความว่าไม่มีบริการใด ๆ ที่เกี่ยวข้องให้ใช้ ดังนั้นเราจึงไม่สามารถเข้าถึง GPU หรือการ์ดเสียง หรือโหมดวิดีโอความละเอียดสูงได้อย่างง่ายดาย
+
+แทนที่จะเป็นเช่นนั้น เรามีการรองรับฮาร์ดแวร์ขั้นพื้นฐานที่สุดเท่านั้น — มีฟังก์ชันในตัวสำหรับวางข้อความและพิกเซลบนหน้าจอในโหมดวิดีโอความละเอียดต่ำต่าง ๆ อ่านตัวจับเวลาความละเอียดต่ำ และอ่านข้อมูลเพิ่มเติมจากดิสก์ (แต่จะถือว่าเป็นการโกง) เราสามารถโต้ตอบโดยตรงกับฮาร์ดแวร์ได้ ดังนั้นเราจึงสามารถเข้าถึงตัวจับเวลาความละเอียดสูง และเราสามารถควบคุมลำโพงได้ จากตรงนั้น เราสามารถวาดภาพและเล่นเพลงได้ ดังนั้นเราจึงสามารถสร้างเดโมได้
+
+ในขนาดเพียง **510 ไบต์** เราสามารถแสดงลูกบอลเวกเตอร์แบบแบนที่หมุนได้, สำรวจภูมิทัศน์เวกเตอร์จุด, บินเหนือทิวทัศน์เมือง, ถูกสะกดจิตด้วย raster bars, ซูมเข้าไปในแฟรคทัล, หรือสัมผัสประสบการณ์ภาพลวงตาของการเคลื่อนไหวที่สร้างขึ้นจากการวนสี... แต่เดี๋ยวก่อน! ยังไม่หมดแค่นั้น เราสามารถโต้ตอบกับผู้ใช้ได้ กล่าวโดยย่อคือ เราสามารถสร้าง **เกม** ได้! ไม่ใช่แค่เกมธรรมดา แต่เป็น **เกมที่ดี** เราสามารถสร้าง Tetris, Space Invaders, Puck-Man, Robotron, Snake ในรูปแบบต่างๆ ได้... ทั้งหมดนี้ในขนาดเพียง 510 ไบต์
+
+---
+
+Peter Ferrie
+
+Distinguished Engineer.
+
+Symantec Corp.
+
+July 24, 2019
+</TabItem>
+<TabItem label="English">
+
+A boot-sector in an IBM-compatible environment is intended to hold 510
+bytes (the last two bytes being a signature for validation) of code and data
+sufficient to locate and load the next stage for the boot. For a standard
+DOS disk, the code would parse the FAT12 file-system in order to detect
+the presence of the files named IBMBIO.COM or IO.SYS, and
+IBMDOS.COM or MSDOS.SYS, and then to load IBMBIO.COM or
+IO.SYS file (which in turns loads the IBMDOS.COM or MSDOS.SYS
+file). There was very little spare space in the boot sector for a detailed error
+message if either file could not be located. Non-DOS systems were free to
+perform direct disk activity or parse their own file-systems, of course, but
+the size limit remained.
+
+Given such a constrained environment, it's often overlooked as a
+target for a function other than booting the system. However, over the
+years, two particular groups of people found alternative uses for it. One
+group was the virus writer. The other group is the demo maker.
+
+Virus writers created "boot-sector" viruses that activated when the
+infected disk was booted, resided in memory, and then infected other floppy
+disks as they were inserted into the floppy drive. It was common for bootsector viruses to copy the original boot-sector to another location on the
+disk, and then to replace the original code with the virus-specific code.
+Early boot-sector viruses would copy the original boot-sector to the end of
+the disk, hoping that it was not in use already. This technique was not used
+!vfor very long because booting such an infected floppy disk would have a
+noticeable delay and unusual sound while the drive arm moved to the end
+of the disk and then back again to resume loading.
+
+The replacement technique relied on the fact that regular DOS disks
+carry two copies of the File Allocation Table (FAT), one immediately after
+the other, and both within the first track of the disk. The first copy of the
+FAT is used as the master version. The second is a back-up which can in
+some cases enable undeletion of files and repair of certain disk errors.
+Virus writers decided that the back-up copy of the FAT would not be used
+very often, and claimed the copy as free space. That became the location
+for storing the original boot-sector, along with any additional code that the
+virus needed as its second stage. Using this location avoided the drive arm
+movement during the boot, making the boot seem very similar between an
+uninfected disk and an infected one.
+
+As hard disks became more common and larger capacity, they were
+often "partitioned" into sections with particular purposes, or to avoid a
+limitation of the BIOS disk-capacity description. The partitions could
+allow multi-boot systems – one environment per partition. Each of the
+partitions carried its own boot sector which knew how to parse the format
+of the data in its partition. Virus writers often targeted the hard disk's
+Master Boot Record (MBR) rather than the boot sector of individual
+partitions. The MBR is used to select the partition of interest and then to
+pass control to that partition's boot sector to boot the contents of that
+partition, so it is the first code that runs, and it is always executed. In
+contrast, a partition's boot-sector might be executed only rarely, or
+potentially not at all if the partition shares the same disk format as another
+partition which is booted instead. A virus in a MBR could still infect floppy
+disk as they were inserted to the floppy drive.
+
+Boot-sector viruses spread freely and widely among pirated disks,
+since it was not common for a copied disk to be write-protected. They
+survived until floppy drives ceased to be shipped with new PCs. Despite
+that, the MBR lives on. As I write this in 2019, the BIOS in IBM-
+!vicompatible PCs still carries the code to allow a system to boot from the
+MBR.
+
+That leaves the demo maker. For almost as long as there have been
+computers, there have been demos (short for demonstration programs) for
+computers. As hardware improved in speed and capability, the size of
+demos increased as more assets could be manipulated and take advantage
+of what was offered. Many demos moved from real-time generation of
+objects with tracked music, to essentially videos with pre-generated textures
+and MP3 music of multiple-megabytes in size. However, there has always
+been smaller groups of demo makers who target older machines or older
+environments.
+
+The interest in size-coding has been heightened by demo
+competitions. PC 64kb competitions appeared in 1991, followed by Amiga
+40kb competitions in 1992, and PC 4kb competitions in 1994. It wasn't
+until 2012 that PC 1kb competitions appeared. 1kb files are still suitable for
+Windows environments, or an Amiga boot-block. Sub-1kb competitions are
+effectively limited to a .COM file in the DOS environment, which presents
+some difficulties to get them to run on modern hardware. Conveniently,
+though, the DOS environment is a very close match to the MBR
+environment, the primary difference being the initial value of the segment
+registers and general-purpose registers. Thus, the MBR is the perfect place
+for a small demo which does not require booting DOS.
+
+It might sound easy to target smaller file sizes, since there's less code
+to write, but in fact it can be extremely challenging. The difficulty comes
+from the fact that such small programs are still expected to demonstrate
+amazing effects, so instead of taking the easy way and carrying huge assets,
+these small demos have to rely on coding tricks to generate visual elements
+on-the-fly. The smaller the program, the harder it gets.
+
+So what can we do in an MBR? It turns out that it's both a little and
+a lot. When the code in the MBR is executing, there is no operating system
+present. It means that there are no corresponding services offered, so we
+have no easy access to the GPU or the sound card or high-resolution video
+modes. Instead, we have only the most basic hardware support – there are
+!viibuilt-in functions to place text and pixels on the screen in various lower
+resolution video modes, read low-resolution timers, and read additional
+data from the disk (but that would be cheating). We can interact directly
+with the hardware, so we have access to high-resolution timers, and we can
+operate the speaker. From there, we can draw pictures and play music, so
+we can make demos.
+
+In 510 bytes, we can display rotating flat-shaded vector balls, explore
+dot-vector landscapes, fly over cityscapes, be hypnotized by raster bars,
+zoom into fractals, or experience the illusion of movement created by color
+cycling... but wait! That's not all. We can interact with the user. In short,
+we can make games! Not just any games, but *good* games. We can make
+variations of Tetris, Space Invaders, Puck-Man, Robotron, Snake...
+All in 510 bytes.
+
+Peter Ferrie
+Distinguished Engineer.
+Symantec Corp.
+July 24, 2019
+
+</TabItem>
+</Tabs>
+
+</Card>
+
 ## ติดตั้ง Bochs Emulator
 
 <Card>
@@ -53,7 +247,7 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 ![Environment Variables](/cos3105/images/lab1/environment_variables4.png)
 </Steps>
 
-**Example Boot Loader**
+## Example Boot Loader
 ```asm
 [org 7c00h]          	; BIOS will load us to this address
 mov ax, 0b800h       	; Console memory is at 0xb8000
@@ -108,6 +302,26 @@ dw 0aa55h            	; Add boot magic word to mark us
 ```
 :::
 
+
+:::note
+DOS (Disk Operating System), like MS-DOS, runs in **real mode**. This is because DOS was designed for early x86 processors, such as the Intel 8086 and 8088, which only supported real mode. Here's a quick breakdown:
+
+## Why DOS Runs in Real Mode:
+
+1. **16-Bit Architecture**:
+    
+    - DOS operates in real mode, limited to the 16-bit architecture of the early x86 processors.
+        
+    - It can address only the first 1 MB of memory (known as the "real mode memory limit").
+        
+2. **Direct Hardware Access**:
+    
+    - In real mode, programs and the operating system have direct access to hardware resources like disk drives, memory, and video output without any protection or abstraction.
+        
+3. **No Advanced Features**:
+    
+    - Real mode lacks features like memory protection, multitasking, and virtual memory, which are characteristics of protected mode.
+:::
 </Card>
 
 ## การทำ Boot image
@@ -200,6 +414,46 @@ dw 0aa55h            	; Add boot magic word to mark us
 - **Software Interrupts**: เกิดจากซอฟต์แวร์ เช่น การเรียกใช้ system call ผ่านคำสั่ง int ใน Assembly
 :::
 
+## System Call คืออะไร
+
+อ้างอิงจาก [Assembly เบื้องต้น มหาวิทยาลัยราชภัฏสุราษฎร์ธานี หน้า 24](https://freebsd.sru.ac.th/course/SCS0702-Computer-Systems-and-Architecture/Assembly%20Tutorial.pdf)
+
+<Card>
+### บริการของระบบปฏิบัติการ (System Calls)
+
+ การเขียนโปรแกรม จำเป็นต้องเรียกใช้บริการที่ระบบปฏิบัติการเตรียมไว้ให้โปรแกรมประยุกต์เรียกใช้ 
+บริการเช่นนี้เรียกว่า Application Programming Interface (API) หรือนิยมเรียกกันในกลุ่มผู้เขียนโปรแกรม
+ระบบ (System Programmer) ว่า System Call
+
+ บริการของระบบปฏิบัติการ  MS-DOS ให้บริการผ่าน Software Interrupt ผู้เขียนโปรแกรมสามารถ
+เรียกใช้ได้ผ่านคำสั่ง INT ของหน่วยประมวลผลกลาง แต่รายละเอียดของบริการแต่ละอย่างต้องศึกษาจากคู่มือ
+ของระบบปฏิบัติการ MS-DOS
+
+คำสั่ง INT – Generate Software Interrupt
+
+รูปแบบการใช้งาน : INT หมายเลขของ Software Interrupt
+
+**คำอธิบาย**
+ คำสั่ง  INT จะใช้หมายเลขของ Software Interrupt ที่ผู้เขียนโปรแกรมกำหนดให้เป็นดัชนีของตาราง
+ที่จัดเก็บตำแหน่งเริ่มต้น ( address) ของโปรแกรมย่อยที่ทำหน้าที่ตอบสนองต่อการ  Interrupt ซึ่งเก็บไว้ใน
+หน่วยความจำที่เรียกว่า  Interrupt Vector Table หรือ Interrupt Descriptor Table เมื่อได้ตำแหน่ง
+เริ่มต้นของโปรแกรมย่อยนั้นแล้วจะทำการส่งผ่านการทำงานโดยไม่มีเงื่อนไขไปยังตำแหน่งนั้น โปรแกรมย่อย
+ดังกล่าวนี้เรียกว่า  Interrupt Service Routine หรือ Interrupt Handler ซึ่งจะให้บริการตามหมายเลข 
+Interrupt ที่ร้องขอมาและเมื่อทำงานเสร็จแล้ว จะส่งผ่านการทำงานกลับคืนมายังจุดเดิม ทำให้สามารถทำงาน
+เดิมที่ค้างอยู่ต่อไปได้ เรื่องของ  Interrupt และเรื่องที่สัมพันธ์กันคือ  Trap และ Exception เป็นเรื่องที่มี
+รายละเอียดมาก ซึ่งจะได้กล่าวถึงในรายละเอียดต่อไป
+
+ ระบบปฏิบัติการ  MS-DOS ทำการสงวนหมายเลข  Interrupt ระหว่าง 20H – 3FH ไว้สำหรับใช้งาน 
+โดยกำหนดให้  Interrupt หมายเลข 20 H (INT 20) ให้บริการในการจบการทำงานของโพรเซส ซึ่งต้อง
+ดำเนินการหลายอย่างทั้งการกำหนดค่าที่จำเป็น การจัดการกับหน่วยความจำที่ใช้พักข้อมูลของแฟ้ม ( buffer)
+การปิดแฟ้มที่ยังเปิดค้างอยู่ สำหรับ Interrupt หมายเลข 21H (INT 21) แยกออกเป็นบริการย่อยอีกประมาณ
+100 บริการ แต่ละบริการเรียกว่า  MS-DOS function call โดยทำการกำหนดหมายเลขฟังก์ชันที่ต้องการใน
+รีจิสเตอร์ AH ก่อนเรียกใช้คำสั่ง  INT 21H ในที่นี้จะกล่าวถึงเฉพาะบริการรับแสดงผลตัวอักขระหนึ่งตัวทาง
+อุปกรณ์นำข้อมูลเข้าและแสดงผลมาตรฐานก่อน
+</Card>
+
+
+
 ## ตัวอย่างของ System Call
 
 
@@ -218,7 +472,8 @@ int main(void) {
 ```
 
 
-**ตัวอย่าง 1 - ใช้ได้เฉพาะ Linux **
+**ตัวอย่าง 1 - ใช้ได้เฉพาะ Linux อันนี้จะขึ้นอยู่กับระบบปฏิบัติการ unix เพียงอย่างเดียว**
+
 ```c
 #include <unistd.h>
 int main(void) {
@@ -226,7 +481,9 @@ int main(void) {
   return 0;
 }
 ```
-**ตัวอย่าง 2 - ใช้ได้เฉพาะ Linux **
+
+**ตัวอย่าง 2 - ใช้ได้เฉพาะ Linux อันนี้เป็นการเรียกใช้ system call โดยตรง แต่ข้อเสียคือ number ของ system call ที่เรียกใช้จะขึ้นอยู่กับ OS ที่เป็น unix** 
+
 ```c
 #include <unistd.h>
 #include <sys/syscall.h>

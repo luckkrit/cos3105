@@ -1,416 +1,457 @@
 ---
-title: Lab3 - Thread
-lastUpdated: 2024-12-20
-draft: false
+title: Lab3 - Process
+lastUpdated: 2024-12-19
 ---
+import { Image } from 'astro:assets';
+import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
+// import im1 from '/cos3105/images/lab3/new_vm.png';
 
-import {
-  Steps,
-  Card,
-  Tabs,
-  TabItem,
-  LinkButton,
-} from "@astrojs/starlight/components";
+<LinkButton href={"/cos3105/print/lab3"} icon="seti:pdf" target={"_blank"}>Print</LinkButton>
 
-<LinkButton href={"/cos3105/print/lab3"} icon="seti:pdf" target={"_blank"}>
-  Print
-</LinkButton>
+:::note
+เรียนรู้คำสั่งเกี่ยวกับ **Process** โดยใช้ **ภาษา C** และ **ระบบปฏิบัติการ Ubuntu**
+:::
+
+## ติดตั้ง VM 
+
+<Steps>
+1. Download VM: https://drive.google.com/file/d/1orBRMplTzVuRwuaUqhlXepndEIQiaEaJ/view?usp=sharing
+2. Import VM: ![Import VM](/cos3105/images/lab3/import_vm.png)
+3. Select OVA File: ![OVA File](/cos3105/images/lab3/ova_file.png)
+4. กด Finish: ![Finish OVA File](/cos3105/images/lab3/finish_import_ova.png)
+5. รอ Import: ![Wait import](/cos3105/images/lab3/wait_for_import.png)
+</Steps>
+
+:::note[ชื่อผู้ใช้งาน]
+username: c<br/>
+password: c
+:::
+
+## เปิด CODE-SERVER ใน browser
+
+<Steps>
+1. Start VM: ![Start VM](/cos3105/images/lab3/start_vm.png)
+2. Open browser พิมพ์ http://localhost:8080
+![CODE SERVER](/cos3105/images/lab3/code_server.png)
+3. ตอน shutdown VM ใช้คำสั่ง `poweroff`
+</Steps>
+
+
+
+## ตัวอย่าง Code
+
+สร้างไฟล์ใน VSCode แล้วลง Extension
 
 :::tip
-ใน Lab นี้จะเรียนรู้เกี่ยวกับการใช้งาน Thread ซึ่ง Library ที่ใช้จะชื่อ Pthreads ซึ่งจะพบในตระกูล Unix เช่น Linux และ Mac OS X
+ดู process ที่รันอยู่ปัจจุบัน
+```sh 
+ps aux 
+```
+
+จะต้องทำการ debug program เพื่อไม่ให้ process exit ดังรูปด้านล่าง
+![debug create_process](/cos3105/images/lab3/debug_create_process.png)
+
+ในกรณีที่ต้องการดูเฉพาะโปรแกรมที่รันอยู่ ในกรณีนี้ชื่อ create_process 
+
+```sh
+ps aux | grep 'create_process'
+```
 :::
 
-## Thread Creation
-
-:::note
-ตัวอย่างต่อไปนี้จะสร้าง Thread ขึ้นมา โดยใช้คำสั่ง pthread_create และใช้ pthread_join เพื่อรอคอย Thread ของ Process จบการทำงาน
-:::
-
+### Process : Create Process
 <Card>
 
-
-ตัวอย่างถัดไปแสดงการทำงานแยกกันของ Thread กับ main Process
-
-**Thread 1 ตัว**
-
 ```c
-#include<stdio.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<pthread.h>
-
-void * thread_function(void * arg);
-int i, j;
-int main() {
-  pthread_t a_thread; //thread declaration
-  pthread_create( & a_thread, NULL, thread_function, NULL);
-  //thread is created
-  pthread_join(a_thread, NULL); //process waits for thread to finish . //Comment this line to see the difference
-  printf("Inside Main Program\n");
-  for (j = 20; j < 25; j++) {
-    printf("%d\n", j);
-    sleep(1);
-  }
-}
-void * thread_function(void * arg) {
-  // the work to be done by the thread is defined in this function
-  printf("Inside Thread\n");
-  for (i = 0; i < 5; i++) {
-    printf("%d\n", i);
-    sleep(1);
-  }
+//create_process.c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+int main()
+{
+     pid_t p;
+     p=fork();
+     if(p==0) //child
+     {
+         printf("I am child having PID %d\n",getpid());
+         printf("My parent PID is %d\n",getppid());
+     }
+     else //parent
+     {
+         printf("I am parent having PID %d\n",getpid());
+         printf("My child PID is %d\n",p);
+     }
 }
 ```
 
 **OUTPUT**
 
 ```bash
+I am parent having PID 9445
+My child PID is 9446
+I am child having PID 9446
+My parent PID is 1835
+```
+</Card>
 
-0
-1
-2
-3
-4
-Inside Main Program
-20
-21
-22
-23
-24
+### Process : Create Orphan Process
+
+<Card>
+
+```c ins={11}
+//create_orphan_process.c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+int main()
+{
+    pid_t p;
+    p=fork();
+    if(p==0)
+    {
+        sleep(5); //child goes to sleep and in the mean time parent terminates
+        printf("I am child having PID %d\n",getpid());
+        printf("My parent PID is %d\n",getppid());
+    }
+    else
+    {
+        printf("I am parent having PID %d\n",getpid());
+        printf("My child PID is %d\n",p);
+    }
+}
 
 ```
 
-**ตัวอย่าง 2**
+ **OUTPUT**
+
+ :::caution
+ในกรณี orphan process ตัว parent process ได้จบการทำงานไปก่อน ทำให้ id จะเปลี่ยนไป ไม่ใช่ id เดิม
+ :::
+
+ <video src="/cos3105/videos/lab3/output_orphan_process.webm" autoplay loop>
+ </video>
+
+</Card>
+
+### Process : Create Zombie Process
+<Card>
+
+```c ins={16}
+//create_zombie_process.c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+int main()
+{
+    pid_t t;
+    t=fork();
+    if(t==0)
+    {
+   	    printf("Child having id %d\n",getpid());
+	}
+	else
+	{
+    	printf("Parent having id %d\n",getpid());
+    	sleep(15); // Parent sleeps. Run the ps command during this time
+	}
+}
+
+```
+ **OUTPUT**
+
+ :::caution
+ในกรณี zombie process ตัว child process ได้จบการทำงานไปก่อน แต่ยังต้องคาเอาไว้เพราะตัว parent process ยังถือว่าทำงานอยู่
+ :::
+
+ <video src="/cos3105/videos/lab3/output_zombie_process.webm" autoplay loop>
+ </video>
+
+
+
+</Card>
+
+### Process : Prevent Zombie process by wait()
+
+<Card>
+
+```c ins={18}
+//prevent_zombie_process.c
+#include <unistd.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <sys/wait.h>
+int main()
+{
+    pid_t p;
+    printf("before fork\n");
+    p=fork();
+    if(p==0)//child
+    {
+        printf("I am child having id %d\n",getpid());
+        printf("My parent's id is %d\n",getppid());
+    }
+    else//parent
+    {
+        wait(NULL); 
+        printf("My child's id is %d\n",p);
+        printf("I am parent having id %d\n",getpid());
+    }
+    printf("Common\n");
+}
+
+```
+
+ **OUTPUT**
+
+![Prevent Zombie Process](/cos3105/images/lab3/prevent_zombie_process.png)
+
+</Card>
+
+### IPC : Shared memory
+
+:::tip[ข้อควรรู้]
+**Shared memory** จะต้อง **create shared memory segment** ด้วย **key** และ **size** มีขนาดเป็น **byte**
+:::
+<Card>
+
+```c ins={30}
+// write_shared_memory.c
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<sys/shm.h>
+#include<string.h>
+int main()
+{
+    int i;
+    void *shared_memory;
+    char buff[100];
+    int shmid;
+
+    /* creates shared memory segment with key 2345, having size 1024 bytes.
+       IPC_CREAT is used to create the shared segment if it does not exist.
+       0666 are the permisions on the shared segment */
+    shmid=shmget((key_t)2345, 1024, 0666|IPC_CREAT);
+    printf("Key of shared memory is %d\n",shmid);
+
+    //process attached to shared memory segment
+    shared_memory=shmat(shmid,NULL,0);
+
+    //this prints the address where the segment is attached with this process
+    printf("Process attached at %p\n",shared_memory);
+
+    printf("Enter some data to write to shared memory\n");
+    //get some input from user
+    read(0,buff,100);
+    //data written to shared memory
+    strcpy(shared_memory,buff); 
+    printf("You wrote : %s\n",(char *)shared_memory);
+}
+
+```
+
+ **OUTPUT**
+
+  ![Write Shared Memory](/cos3105/images/lab3/write_shared_memory.png)
+
+
+
+```c ins={17}
+// read_shared_memory.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/shm.h>
+#include <string.h>
+int main()
+{
+    int i;
+    void *shared_memory;
+    char buff[100];
+    int shmid;
+    shmid=shmget((key_t)2345, 1024, 0666);
+    printf("Key of shared memory is %d\n",shmid);
+    shared_memory=shmat(shmid,NULL,0); //process attached to shared memory segment
+    printf("Process attached at %p\n",shared_memory);
+    printf("Data read from shared memory is : %s\n",(char *)shared_memory); 
+}
+
+```
+
+ **OUTPUT**
+
+  ![Read Shared Memory](/cos3105/images/lab3/read_shared_memory.png)
+
+</Card>
+
+
+
+### IPC : Message queue
+
 
 ```c 
-#include<stdio.h>
+//send_queue.c
 #include<stdlib.h>
-#include<unistd.h>
-#include<pthread.h>
-
-void * thread_function(void * arg);
-int i, j;
-int main() {
-  pthread_t a_thread; //thread declaration
-  pthread_create( & a_thread, NULL, thread_function, NULL);
-  //thread is created
-  printf("Inside Main Program\n");
-  for (j = 50; j < 60; j++) {
-    printf("Main %d\n", j);
-    sleep(1);
-  }
-  printf("Main thread end\n");
-  pthread_join(a_thread, NULL); //process waits for thread to finish . //Comment this line to see the difference
-  printf("Thread end\n");
-}
-void * thread_function(void * arg) {
-  // the work to be done by the thread is defined in this function
-  printf("Inside Thread\n");
-  for (i = 0; i < 50; i++) {
-    printf("Thread %d\n", i);
-    sleep(1);
-  }
-}
-```
-
-**ตัวอย่างถ้าไม่ join thread**
-
-```c
 #include<stdio.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<pthread.h>
-
-void * thread_function(void * arg);
-int i, j;
-int main() {
-  pthread_t a_thread; //thread declaration
-  pthread_create( & a_thread, NULL, thread_function, NULL);
-  //thread is created
-  printf("Inside Main Program\n");
-  for (j = 50; j < 60; j++) {
-    printf("Main %d\n", j);
-    sleep(1);
-  }
-  printf("Main thread end\n");
-  // pthread_join(a_thread, NULL); //process waits for thread to finish . //Comment this line to see the difference
-  printf("Thread end\n");
-}
-void * thread_function(void * arg) {
-  // the work to be done by the thread is defined in this function
-  printf("Inside Thread\n");
-  for (i = 0; i < 50; i++) {
-    printf("Thread %d\n", i);
-    sleep(1);
-  }
-}
-```
-
-**Thread 2 ตัว**
-
-```c
-#include <stdio.h>
-#include <stdlib.h>  // for srand(), rand()
-#include <unistd.h>  // for sleep(), usleep()
-#include <pthread.h> // the header file for the pthread library
-
-void *thread_entry_func( void *arg ) {
-long id = (long)arg;
-printf( "Thread '%ld' started\n", id );
-// sleep for some seconds (randomized between 1..10)
-sleep( 1 + (rand() % 10) );
-printf( "Thread '%ld' finished\n", id );
-return NULL;
-}
-
-int main( int argc, char *argv[] ) {
-int retval; // return value from a function call
-pthread_t thread1, thread2; // thread handles
-
-// initialize the pseudo-random generator with a seed
-srand( time(NULL) );
-
-// create Thread 1
-retval = pthread_create(
-&thread1 /* used to identify thread 1 */,
-NULL /* default attributes */,
-thread_entry_func /* start routine */,
-(void*) 1 /* thread argument \*/ );
-printf( "Thread creation (1): %s\n", retval ? "FAILED" : "OK" );
-
-// create Thread 2
-retval = pthread_create(
-&thread2 /* used to identify thread 2 */,
-NULL /* default attributes */,
-thread_entry_func /* start routine */,
-(void*) 2 /* thread argument */ );
-printf( "Thread creation (2): %s\n", retval ? "FAILED" : "OK" );
-// sleep for 10msec
-usleep( 10000 /*usec\*/ );
-// wait until both threads (thread 1 and 2) are finished.
-printf( "\nWaiting for threads to be finished...\n" );
-if ( thread1 ) {
-pthread_join( thread1, NULL ); // wait for thread 1
-}
-if ( thread2 ) {
-pthread_join( thread2, NULL ); // wait for thread 2
-}
-printf( "Done...\n\n" );
-return 0;
-}
-
-````
-
-**OUTPUT**
-
-```bash
-Thread creation (1): OK
-Thread '1' started
-Thread creation (2): OK
-Thread '2' started
-
-Waiting for threads to be finished...
-Thread '1' finished
-Thread '2' finished
-Done...
-````
-
-
-**จะใช้การสร้าง Thread เก็บไว้ใน Array**
-
-```c
-#include <stdio.h>
-#include <stdlib.h>  // for srand(), rand()
-#include <unistd.h>  // for sleep(), usleep()
-#include <pthread.h> // the header file for the pthread lib
-
-#define NUM_THREADS   (10)
-
-void *thread_entry_func( void *arg ) {
-  long id = (long)arg;
-  printf( "Thread '%ld' started (0x%08lX)\n", id, pthread_self() );
-  // sleep for some seconds (randomized between 1..10)
-  sleep( 1 + (rand() % 10) );
-  printf( "Thread '%ld' finished\n", id );
-  return NULL;
-}
-
-int main( int argc, char *argv[] ) {
-  int retval;
-  pthread_t threads[ NUM_THREADS ]; // array of thread handles
-
-  // initialize the pseudorandom generator with a seed
-  srand( time(NULL) );
-
-  // create a number of threads
-  for ( int i=0; i < NUM_THREADS; i++ ) {
-    long id = (i+1); // used as thread argument
-    retval = pthread_create(
-                &threads[i], NULL,
-                thread_entry_func,
-                (void*) id );
-    printf( "main> thread creation (%ld): %s\n", id,
-         retval ? "FAILED" : "OK" );
-    if ( retval ) { // thread creation error
-      printf( "Program terminated...\n" );
-      exit(1);
-    }
-  }
-  // sleep for 1msec before proceeding
-  usleep( 1000 /*usec*/ );
-  // wait until all threads are finished.
-  printf( "\nWaiting for all threads to be finished..\n" );
-  for ( int i=0; i < NUM_THREADS; i++ ) {
-    pthread_join( threads[i], NULL ); // wait for thread
-  }
-  printf( "Done...\n\n" );
-  return 0;
-}
-```
-
-**OUTPUT**
-
-```bash
-main> thread creation (1): OK
-Thread '1' started (0x7FE7F8F41700)
-main> thread creation (2): OK
-Thread '2' started (0x7FE7F8740700)
-main> thread creation (3): OK
-Thread '3' started (0x7FE7F7F3F700)
-main> thread creation (4): OK
-Thread '4' started (0x7FE7F773E700)
-main> thread creation (5): OK
-Thread '5' started (0x7FE7F6F3D700)
-main> thread creation (6): OK
-Thread '6' started (0x7FE7F673C700)
-main> thread creation (7): OK
-Thread '7' started (0x7FE7F5F3B700)
-main> thread creation (8): OK
-Thread '8' started (0x7FE7F573A700)
-main> thread creation (9): OK
-Thread '9' started (0x7FE7F4F39700)
-main> thread creation (10): OK
-Thread '10' started (0x7FE7F4738700)
-
-Waiting for all threads to be finished..
-Thread '10' finished
-Thread '3' finished
-Thread '4' finished
-Thread '6' finished
-Thread '2' finished
-Thread '5' finished
-Thread '7' finished
-Thread '9' finished
-Thread '8' finished
-Thread '1' finished
-Done...
-```
-
-
-
-</Card>
-
-
-## Thread คืนค่าไปให้ main Process
-
-:::note
-จะใช้ pthread_exit() คืนค่าไปให้ main Process
-:::
-
-<Card>
-```c
-#include<stdio.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<pthread.h>
 #include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/ipc.h>
+#include<sys/msg.h>
 
-void * thread_function(void * arg);
-int i, n, j;
-int main() {
-  char * m = "5";
-  pthread_t a_thread; //thread declaration
-  void * result;
-  pthread_create( & a_thread, NULL, thread_function, m); //thread is created
-  pthread_join(a_thread, & result);
-  printf("Thread joined\n");
-  for (j = 20; j < 25; j++) {
-    printf("%d\n", j);
-    sleep(1);
-  }
-  printf("thread returned %s\n", (char * ) result);
+#define MAX_TEXT 512   //maximum length of the message that can be sent allowed
+
+struct my_msg{
+    long int msg_type;
+    char some_text[MAX_TEXT];
+};
+
+int main()
+{
+    int running=1;
+    int msgid;
+    struct my_msg some_data;
+    char buffer[50]; //array to store user input
+    msgid=msgget((key_t)14534,0666|IPC_CREAT);
+
+    if (msgid == -1) // -1 means the message queue is not created
+    {
+            printf("Error in creating queue\n");
+            exit(0);
+    }
+
+    while(running)
+    {
+            printf("Enter some text:\n");
+            fgets(buffer,50,stdin);
+            some_data.msg_type=1;
+            strcpy(some_data.some_text,buffer);
+            if(msgsnd(msgid,(void *)&some_data, MAX_TEXT,0)==-1) // msgsnd returns -1 if the message is not sent
+            {
+                    printf("Msg not sent\n");
+            }
+            if(strncmp(buffer,"end",3)==0)
+            {
+                    running=0;
+            }
+    }
 }
-void * thread_function(void * arg) {
-  int sum = 0;
-  n = atoi(arg);
-  for (i = 0; i < n; i++) {
-    printf("%d\n", i);
-    sleep(1);
-  }
-  pthread_exit("Done"); // Thread returns "Done"
-}
+
 ```
 
 **OUTPUT**
 
-```bash
-0
-1
-2
-3
-4
-Thread joined
-20
-21
-22
-23
-24
-thread returned Done
+![Send Message Queue](/cos3105/images/lab3/send_message_queue.png)
+
+
+```c 
+//read_queue.c
+#include<stdlib.h>
+#include<stdio.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/ipc.h>
+#include<sys/msg.h>
+
+struct my_msg{
+    long int msg_type;
+    char some_text[BUFSIZ];
+};
+
+int main()
+{
+    int running=1;
+    int msgid;
+    struct my_msg some_data;
+    long int msg_to_rec=0;
+    msgid=msgget((key_t)14534,0666|IPC_CREAT);
+    while(running)
+    {
+        msgrcv(msgid,(void *)&some_data,BUFSIZ,msg_to_rec,0);
+        printf("Data received: %s\n",some_data.some_text);
+        if(strncmp(some_data.some_text,"end",3)==0)
+        {
+                running=0;
+        }
+    }
+     msgctl(msgid,IPC_RMID,0);
+}
+
+
 ```
 
+**OUTPUT**
 
-</Card>
+![Read Message Queue](/cos3105/images/lab3/read_message_queue.png)
 
-## Parameter Passing ไปยัง Thread 
 
-:::note
-การส่งค่าทำได้หลายวิธี แต่ในตัวอย่างนี้จะใช้ Structure เพราะสามารถประยุกต์ในการส่งหลายๆค่าได้ โดยส่งผ่าน pthread_create
-:::
+### IPC : Producer, Consumer
 
 <Card>
 
+
 ```c
-#include<stdio.h>
+//producer.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <sys/types.h>
 
-#include<pthread.h>
+int main(){
+    const int SIZE = 4096;
+    const char *name = "OS";
+    const char *message_0 = "Hello";
+    const char *message_1 = "World!";
+    int fd;
+    char *ptr;
+    fd = shm_open(name, O_CREAT|O_RDWR,0666);
+    ftruncate(fd, SIZE);
+    ptr = (char*)mmap(0, SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    sprintf(ptr, "%s", message_0);
+    ptr += strlen(message_0);
+    sprintf(ptr, "%s", message_1);
+    ptr += strlen(message_1);
+    getchar();
+    return 0;
+}
 
-struct arg_struct { //structure which contains multiple variables that are to passed as input to the thread
-  int arg1;
-  int arg2;
-};
-void * arguments(void * arguments) {
-  struct arg_struct * args = arguments;
-  printf("%d\n", args -> arg1);
-  printf("%d\n", args -> arg2);
-  pthread_exit(NULL);
+```
+
+```c 
+//consumer.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/shm.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+int main(){
+    const int SIZE = 4096;
+    const char *name = "OS";
+    int fd;
+    char *ptr;
+    fd = shm_open(name, O_RDWR,0666);
+    ptr = (char*)mmap(0, SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    printf("%s\n", (char *)ptr);
+    shm_unlink(name);
+    return 0;
 }
-int main() {
-  pthread_t t;
-  struct arg_struct args;
-  args.arg1 = 5;
-  args.arg2 = 7;
-  pthread_create( & t, NULL, arguments, & args);
-  //structure passed as 4th argument
-  pthread_join(t, NULL); /* Wait until thread is finished */
-}
+
 ```
 
 **OUTPUT**
 
-```bash
-5
-7
+```sh
+HelloWorld!
 ```
-</Card>
 
+</Card>
 

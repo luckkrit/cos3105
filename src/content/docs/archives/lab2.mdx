@@ -1,12 +1,12 @@
 ---
-title: Lab2 - Process
+title: lab3 - Process
 lastUpdated: 2024-12-19
 ---
 import { Image } from 'astro:assets';
 import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
-// import im1 from '/cos3105/images/lab2/new_vm.png';
+// import im1 from '/cos3105/images/lab3/new_vm.png';
 
-<LinkButton href={"/cos3105/print/lab2"} icon="seti:pdf" target={"_blank"}>Print</LinkButton>
+<LinkButton href={"/cos3105/print/lab3"} icon="seti:pdf" target={"_blank"}>Print</LinkButton>
 
 :::note
 เรียนรู้คำสั่งเกี่ยวกับ **Process** โดยใช้ **ภาษา C** และ **ระบบปฏิบัติการ Ubuntu**
@@ -31,54 +31,54 @@ Get-FileHash C:\Users\xxxx\Downloads\ubuntu-24.04.1-desktop-amd64.iso -Algorithm
 ## ติดตั้ง Ubuntu
 <Steps>
 
-  3. ติดตั้ง Ubuntu 24.04.1 LTS บท VirtualBox ![New VM](/cos3105/images/lab2/new_vm.png) 
-  4. ตรง Name ใส่ Ubuntu 24.04.1 ![New VM Ubuntu](/cos3105/images/lab2/new_vm_ubuntu.png) 
+  3. ติดตั้ง Ubuntu 24.04.1 LTS บท VirtualBox ![New VM](/cos3105/images/lab3/new_vm.png) 
+  4. ตรง Name ใส่ Ubuntu 24.04.1 ![New VM Ubuntu](/cos3105/images/lab3/new_vm_ubuntu.png) 
   5. ตรง Folder ก็ตามค่าเริ่มต้นไป 
-  6. ตรง ISO Image กดปุ่ม Other ![SelectISO](/cos3105/images/lab2/select_iso.png) 
-  7. หาไฟล์ ISO ที่ Download มา ![Open ISO](/cos3105/images/lab2/open_iso.png) 
+  6. ตรง ISO Image กดปุ่ม Other ![SelectISO](/cos3105/images/lab3/select_iso.png) 
+  7. หาไฟล์ ISO ที่ Download มา ![Open ISO](/cos3105/images/lab3/open_iso.png) 
   8. แล้วกด Open 
-  9. ติ๊กถูก Skip Unattended Installation ![Skip Unattended](/cos3105/images/lab2/setup_ubuntu_skip_unattended.png)
-  10. ตรง Hardware เปลี่ยน Base memory เป็น 4096 mb ![Ram 4096mb](/cos3105/images/lab2/memory_4gb.png)
+  9. ติ๊กถูก Skip Unattended Installation ![Skip Unattended](/cos3105/images/lab3/setup_ubuntu_skip_unattended.png)
+  10. ตรง Hardware เปลี่ยน Base memory เป็น 4096 mb ![Ram 4096mb](/cos3105/images/lab3/memory_4gb.png)
       :::danger[ระวัง]
       minimum requirements ของ Ubuntu 24.04.1 คือ 4GB ถ้าตั้งน้อยกว่านั้นตอนติดตั้งจะค้างได้
       :::
   11. กดปุ่ม Finish แล้ว Virtual Box จะรันหน้าต่างขึ้นมา
-  12. กด Enter เลือก \*Try or Install Ubuntu ![BootVM](/cos3105/images/lab2/boot_vm.png) 
-  13. จะโหลด Ubuntu ขึ้นมาดังรูป ![Setup Ubuntu](/cos3105/images/lab2/setup_ubuntu.png) 
-  14. ระบบจะติดตั้ง Ubuntu กด Next ![Setup Ubuntu2](/cos3105/images/lab2/setup_ubuntu2.png) 
-  15. กด Next ![Setup Ubuntu3](/cos3105/images/lab2/setup_ubuntu3.png) 
-  16. กด Next ![Setup Ubuntu4](/cos3105/images/lab2/setup_ubuntu4.png) 
-  17. กด Next ![Setup Ubuntu5](/cos3105/images/lab2/setup_ubuntu5.png) 
-  18. กด Next ![Setup Ubuntu6](/cos3105/images/lab2/setup_ubuntu6.png) 
-  19. กด Next ![Setup Ubuntu7](/cos3105/images/lab2/setup_ubuntu7.png) 
-  20. กด Next ![Setup Ubuntu8](/cos3105/images/lab2/setup_ubuntu8.png) 
-  21. กด Next ![Setup Ubuntu9](/cos3105/images/lab2/setup_ubuntu9.png) 
-  22. ตรง Your name ใสชื่อตัวเรา และตรง Password ให้ตั้งค่าตามที่เราต้องการ แล้วกด Next ![Setup Ubuntu10](/cos3105/images/lab2/setup_ubuntu10.png) 
-  23. กด Next ![Setup Ubuntu11](/cos3105/images/lab2/setup_ubuntu11.png) 
-  24. กด Install ![Setup Ubuntu12](/cos3105/images/lab2/setup_ubuntu12.png) 
-  25. ระบบจะติดตั้ง Ubuntu ![Setup Ubuntu13](/cos3105/images/lab2/setup_ubuntu13.png) 
+  12. กด Enter เลือก \*Try or Install Ubuntu ![BootVM](/cos3105/images/lab3/boot_vm.png) 
+  13. จะโหลด Ubuntu ขึ้นมาดังรูป ![Setup Ubuntu](/cos3105/images/lab3/setup_ubuntu.png) 
+  14. ระบบจะติดตั้ง Ubuntu กด Next ![Setup Ubuntu2](/cos3105/images/lab3/setup_ubuntu2.png) 
+  15. กด Next ![Setup Ubuntu3](/cos3105/images/lab3/setup_ubuntu3.png) 
+  16. กด Next ![Setup Ubuntu4](/cos3105/images/lab3/setup_ubuntu4.png) 
+  17. กด Next ![Setup Ubuntu5](/cos3105/images/lab3/setup_ubuntu5.png) 
+  18. กด Next ![Setup Ubuntu6](/cos3105/images/lab3/setup_ubuntu6.png) 
+  19. กด Next ![Setup Ubuntu7](/cos3105/images/lab3/setup_ubuntu7.png) 
+  20. กด Next ![Setup Ubuntu8](/cos3105/images/lab3/setup_ubuntu8.png) 
+  21. กด Next ![Setup Ubuntu9](/cos3105/images/lab3/setup_ubuntu9.png) 
+  22. ตรง Your name ใสชื่อตัวเรา และตรง Password ให้ตั้งค่าตามที่เราต้องการ แล้วกด Next ![Setup Ubuntu10](/cos3105/images/lab3/setup_ubuntu10.png) 
+  23. กด Next ![Setup Ubuntu11](/cos3105/images/lab3/setup_ubuntu11.png) 
+  24. กด Install ![Setup Ubuntu12](/cos3105/images/lab3/setup_ubuntu12.png) 
+  25. ระบบจะติดตั้ง Ubuntu ![Setup Ubuntu13](/cos3105/images/lab3/setup_ubuntu13.png) 
   26. ระบบจะให้เรา Reboot
-  27. Login เข้ามาจะเจอหน้า Welcome ให้กด Next ไปเรื่อยๆ ![Welcome Ubuntu](/cos3105/images/lab2/welcome_ubuntu.png)
-  28. ให้กด Next ![Welcome Ubuntu](/cos3105/images/lab2/welcome_ubuntu2.png)
-  29. ให้กด Next ![Welcome Ubuntu](/cos3105/images/lab2/welcome_ubuntu3.png)
-  30. ให้กด Finish ![Welcome Ubuntu](/cos3105/images/lab2/welcome_ubuntu4.png)
+  27. Login เข้ามาจะเจอหน้า Welcome ให้กด Next ไปเรื่อยๆ ![Welcome Ubuntu](/cos3105/images/lab3/welcome_ubuntu.png)
+  28. ให้กด Next ![Welcome Ubuntu](/cos3105/images/lab3/welcome_ubuntu2.png)
+  29. ให้กด Next ![Welcome Ubuntu](/cos3105/images/lab3/welcome_ubuntu3.png)
+  30. ให้กด Finish ![Welcome Ubuntu](/cos3105/images/lab3/welcome_ubuntu4.png)
 
 </Steps>
 
 ## ติดตั้ง C Compiler
 <Steps>
 1. ไปที่ Terminal
-![Find Terminal](/cos3105/images/lab2/find_terminal.png)
+![Find Terminal](/cos3105/images/lab3/find_terminal.png)
 
 2. เปิด Terminal
-![Open Terminal](/cos3105/images/lab2/open_terminal.png)
+![Open Terminal](/cos3105/images/lab3/open_terminal.png)
 
 3. ติดตั้ง C/C++ Compiler
    ```sh title="Bash - Terminal"
    sudo apt install build-essential
    ```
 
-4. พิมพ์ <kbd>y</kbd> แล้ว <kbd>Enter</kbd> ![Install c/c++](/cos3105/images/lab2/install_c_cpp.png)
+4. พิมพ์ <kbd>y</kbd> แล้ว <kbd>Enter</kbd> ![Install c/c++](/cos3105/images/lab3/install_c_cpp.png)
 5. ทำการ Check ว่า C/C++ Compiler ติดตั้งสมบูรณ์มั๊ยด้วย 
     <Tabs>
     <TabItem label="C">
@@ -94,7 +94,7 @@ Get-FileHash C:\Users\xxxx\Downloads\ubuntu-24.04.1-desktop-amd64.iso -Algorithm
     </Tabs>
 
     ดูได้จากรูป
-    ![Check c/c++](/cos3105/images/lab2/check_gcc_gpp.png)
+    ![Check c/c++](/cos3105/images/lab3/check_gcc_gpp.png)
 
 </Steps>
 
@@ -102,11 +102,11 @@ Get-FileHash C:\Users\xxxx\Downloads\ubuntu-24.04.1-desktop-amd64.iso -Algorithm
 
 <Steps>
 1. ไปที่ [VSCode Website](https://code.visualstudio.com)
-2. กด Download VSCode เลือก .deb ![VSCode DEB](/cos3105/images/lab2/vscode_website.png)
-3. รอโหลด VSCode ![Download VSCode](/cos3105/images/lab2/download_vscode.png)
-4. Open File และ Install ![Install VSCode](/cos3105/images/lab2/install_vscode.png)
-5. Open VSCode ![Open VSCode](/cos3105/images/lab2/open_vscode.png)
-6. Install C/C++ Extension Pack ![Install C/C++ Extension Pack](/cos3105/images/lab2/install_c_cpp_extension_pack.png)
+2. กด Download VSCode เลือก .deb ![VSCode DEB](/cos3105/images/lab3/vscode_website.png)
+3. รอโหลด VSCode ![Download VSCode](/cos3105/images/lab3/download_vscode.png)
+4. Open File และ Install ![Install VSCode](/cos3105/images/lab3/install_vscode.png)
+5. Open VSCode ![Open VSCode](/cos3105/images/lab3/open_vscode.png)
+6. Install C/C++ Extension Pack ![Install C/C++ Extension Pack](/cos3105/images/lab3/install_c_cpp_extension_pack.png)
 </Steps>
 
 ## ตัวอย่าง Code
@@ -120,7 +120,7 @@ ps aux
 ```
 
 จะต้องทำการ debug program เพื่อไม่ให้ process exit ดังรูปด้านล่าง
-![debug create_process](/cos3105/images/lab2/debug_create_process.png)
+![debug create_process](/cos3105/images/lab3/debug_create_process.png)
 
 ในกรณีที่ต้องการดูเฉพาะโปรแกรมที่รันอยู่ ในกรณีนี้ชื่อ create_process 
 
@@ -198,7 +198,7 @@ int main()
 ในกรณี orphan process ตัว parent process ได้จบการทำงานไปก่อน ทำให้ id จะเปลี่ยนไป ไม่ใช่ id เดิม
  :::
 
- <video src="/cos3105/videos/lab2/output_orphan_process.webm" autoplay loop>
+ <video src="/cos3105/videos/lab3/output_orphan_process.webm" autoplay loop>
  </video>
 
 </Card>
@@ -233,7 +233,7 @@ int main()
 ในกรณี zombie process ตัว child process ได้จบการทำงานไปก่อน แต่ยังต้องคาเอาไว้เพราะตัว parent process ยังถือว่าทำงานอยู่
  :::
 
- <video src="/cos3105/videos/lab2/output_zombie_process.webm" autoplay loop>
+ <video src="/cos3105/videos/lab3/output_zombie_process.webm" autoplay loop>
  </video>
 
 
@@ -273,7 +273,7 @@ int main()
 
  **OUTPUT**
 
-![Prevent Zombie Process](/cos3105/images/lab2/prevent_zombie_process.png)
+![Prevent Zombie Process](/cos3105/images/lab3/prevent_zombie_process.png)
 
 </Card>
 
@@ -322,7 +322,7 @@ int main()
 
  **OUTPUT**
 
-  ![Write Shared Memory](/cos3105/images/lab2/write_shared_memory.png)
+  ![Write Shared Memory](/cos3105/images/lab3/write_shared_memory.png)
 
 
 
@@ -350,7 +350,7 @@ int main()
 
  **OUTPUT**
 
-  ![Read Shared Memory](/cos3105/images/lab2/read_shared_memory.png)
+  ![Read Shared Memory](/cos3105/images/lab3/read_shared_memory.png)
 
 </Card>
 
@@ -411,7 +411,7 @@ int main()
 
 **OUTPUT**
 
-![Send Message Queue](/cos3105/images/lab2/send_message_queue.png)
+![Send Message Queue](/cos3105/images/lab3/send_message_queue.png)
 
 
 ```c 
@@ -453,7 +453,7 @@ int main()
 
 **OUTPUT**
 
-![Read Message Queue](/cos3105/images/lab2/read_message_queue.png)
+![Read Message Queue](/cos3105/images/lab3/read_message_queue.png)
 
 
 ### IPC : Producer, Consumer

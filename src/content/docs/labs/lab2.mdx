@@ -1,25 +1,39 @@
 ---
-title: Lab2 - Process
-lastUpdated: 2024-12-19
+title: Lab2 - Bash Script
+lastUpdated: 2025-07-24
 ---
-import { Image } from 'astro:assets';
 import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
-// import im1 from '/cos3105/images/lab2/new_vm.png';
 
-<LinkButton href={"/cos3105/print/lab2"} icon="seti:pdf" target={"_blank"}>Print</LinkButton>
+
+
 
 :::note
-เรียนรู้คำสั่งเกี่ยวกับ **Process** โดยใช้ **ภาษา C** และ **ระบบปฏิบัติการ Ubuntu**
+Shell Script คือโปรแกรมที่คอยรับคำสั่งเพื่อส่งผ่านไปยัง Kernel เวลาเราต้องการใช้ทรัพยากร
 :::
+
+![Shell Script](/cos3105/images/lab2/shell_script.png)
+
+[อ้างอิงจาก https://saixiii.com/basic-shell-script/](https://saixiii.com/basic-shell-script/)
+
+## ตัวอย่าง Shell มี่นิยมใช้เขียน Shell script
+
+<Card>
+
+- Bournr shell (/bin/sh) เป็น shell ในยุคแรกๆ ที่มีใช้กันอย่างแพร่หลาย มีการกำหนดโครงสร้างภาษาคล้ายๆ กับภาษาอัลกอ (Algo) สามารถเขียน shell script ได้ และยังเป็น starndard shell ที่มีใน UNIX ทุกตัว และยังสามารถย้าย shell script ไปยัง UNIX ระบบอื่นโดยไม่ต้องแก้ไขอะไรได้อีกด้วย จะมี default prompt เป็นเครื่องหมาย “ $ ”
+- C shell (/bin/csh) เป็น shell ที่พัฒนาขึ้นมาหลังจาก Bourne shell มีรูปแบบคำสั่งและไวยากรณ์เหมือนกับภาษา C มี function การทำงานหลายที่ดีและอย่างสะดวก อีกทั้งยังสามารถควบคุมการไหลของข้อมูลได้ดีกว่า Bourne shell และยังมีความสามารถในการเรียกใช้คำสั่งที่ใช้ไปแล้ว จะมี default prompt เป็นเครื่องหมาย “ % ”
+- Korn shell (/bin/ksh) เป็น shell ที่พัฒนามาจาดต้นแบบของ Bourne shell และ C shell สามารถทำงานใน function ของ Bourne shell ได้ทุกอย่าง การเขียน shell script ทำได้ง่ายและรัดกุมขึ้น  สามารถนำคำสั่งที่ใช้ไปแล้วกลับมา execute ไปใหม่ได้  ถือได้ว่า Korn shell เป็นการรวมเอาข้อดีของ Bourne shell  และ C shell มาไว้ด้วยกัน แต่ไม่ได้มีใน UNIX ทุกตัว จะมี default prompt เป็นเครื่องหมาย “ $ ”
+- Bournr again shell (/bin/bash หรือ /usr/local/bin/bash) เป็นการเอา Bournr shell นำกลับมาพัฒนาใหม่ สามารถทำงานแบบ line editing ได้ และยังได้เพิ่มประสิทธิภาพในการทำงานอีกหลายอย่าง bash shell นี้ไม่ใช่ standard UNIX shell แต่เป็น default shell ของ linux ในปัจจุบัน จะมี default prompt เป็นเครื่องหมาย “ $ ”
+
+</Card>
 
 ## ติดตั้ง VM 
 
 <Steps>
 1. Download VM: https://drive.google.com/file/d/1orBRMplTzVuRwuaUqhlXepndEIQiaEaJ/view?usp=sharing
-2. Import VM: ![Import VM](/cos3105/images/lab2/import_vm.png)
-3. Select OVA File: ![OVA File](/cos3105/images/lab2/ova_file.png)
-4. กด Finish: ![Finish OVA File](/cos3105/images/lab2/finish_import_ova.png)
-5. รอ Import: ![Wait import](/cos3105/images/lab2/wait_for_import.png)
+2. Import VM: ![Import VM](/cos3105/images/lab3/import_vm.png)
+3. Select OVA File: ![OVA File](/cos3105/images/lab3/ova_file.png)
+4. กด Finish: ![Finish OVA File](/cos3105/images/lab3/finish_import_ova.png)
+5. รอ Import: ![Wait import](/cos3105/images/lab3/wait_for_import.png)
 </Steps>
 
 :::note[ชื่อผู้ใช้งาน]
@@ -30,427 +44,268 @@ password: c
 ## เปิด CODE-SERVER ใน browser
 
 <Steps>
-1. Start VM: ![Start VM](/cos3105/images/lab2/start_vm.png)
+1. Start VM: ![Start VM](/cos3105/images/lab3/start_vm.png)
 2. Open browser พิมพ์ http://localhost:8080
-![CODE SERVER](/cos3105/images/lab2/code_server.png)
+![CODE SERVER](/cos3105/images/lab3/code_server.png)
+3. ตอน shutdown VM ใช้คำสั่ง `poweroff`
 </Steps>
 
+## ทบทวน Command Line
 
+|คำสั่ง|Linux|
+|:--|:--|
+|display/output text|echo "hello world"|
+|create file|touch a.txt|
+|get content|cat a.txt|
+|clear console|clear|
+|copy file|cp a.txt b.txt|
+|move file|mv a.txt ../b.txt|
+|**delete file**|rm -i a.txt|
+|list directory|ls .|
+|create directory|mkdir my_folder|
+|**remove directory**|rm -ri my_folder|
+|change directory|cd my_folder|
 
-## ตัวอย่าง Code
+## คำสั่ง Shell Script ต่างๆ
 
-สร้างไฟล์ใน VSCode แล้วลง Extension
-
-:::tip
-ดู process ที่รันอยู่ปัจจุบัน
-```sh 
-ps aux 
-```
-
-จะต้องทำการ debug program เพื่อไม่ให้ process exit ดังรูปด้านล่าง
-![debug create_process](/cos3105/images/lab2/debug_create_process.png)
-
-ในกรณีที่ต้องการดูเฉพาะโปรแกรมที่รันอยู่ ในกรณีนี้ชื่อ create_process 
-
-```sh
-ps aux | grep 'create_process'
-```
-:::
-
-### Process : Create Process
 <Card>
 
-```c
-//create_process.c
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-int main()
-{
-     pid_t p;
-     p=fork();
-     if(p==0) //child
-     {
-         printf("I am child having PID %d\n",getpid());
-         printf("My parent PID is %d\n",getppid());
-     }
-     else //parent
-     {
-         printf("I am parent having PID %d\n",getpid());
-         printf("My child PID is %d\n",p);
-     }
-}
-```
+### Shell Script File
+Shell script เป็น file text ธรรมดาสามารถสร้างด้วย editor ชนิดไหนก็ได้ เช่น nano หรือ vim
 
-**OUTPUT**
+    ```bash
+        nano ex1.sh
+    ```
+
+### shebang
+กำหนด interpreter หรือ shebang บรรทัดแรกของ shell script เราต้องกำหนด shebang เพื่อให้ program รู้ว่าควรใช้ interpreter ใดในการ load ข้อมูล file ซึ่งสัญลักษณ์ที่ใช้คือ `#!<shell program>`
+
+    - #!/bin/sh
+    - #!/bin/csh
+    - #!/bin/bash
+    - #!/bin/ksh
+    - #!/usr/bin/perl
+    - #!/usr/bin/env python
+
+### คำสั่ง command line
+ใส่ชุดคำสั่ง command line
+    ส่วนนี้คือ code program ที่เราต้องการให้ shell script ทำงาน ซึ่งสามารถศึกษาชุดคำสั่ง Shell ของ Unix และ Linux ได้ ลองให้ shell script แสดงคำว่า “Hello World” ด้วยคำสั่ง echo  และลอง save file
+
+    ```bash
+    #!/bin/bash
+
+    echo "Hello COS3105"
+    ```
+
+### permission
+กำหนดสิทธิ์ execute ให้กับ shell script
+    หลักจากเราสร้าง Shell script ขึ้นมาได้แล้ว ลองสังเกตุจะเห็นว่า file ที่ได้มีสิทธิ์ หรือ permission ของ `user owner  (-rw-rw-r–)` เพียงแค่ write กับ read เท่านั้น ไม่สามารถ execute ได้ ซึ่งก็ไม่ต่างกับ text file ธรรมดา
+    ```bash
+    c@c:~/cos3105$ ls -ltr test.sh
+    -rw-r--r-- 1 c c 20 Jul 24 14:03 test.sh
+    ```
+
+### execute shell script
+ตอนจะรัน shell script ใช้คำสั่งดังนี้ แต่จากที่ผลลัพธ์คือรันไม่ได้
+    ```bash
+    c@c:~/cos3105$ ./test.sh
+    bash: ./test.sh: Permission denied
+    ```
+
+### chmod
+ต้องเปลี่ยน permission ของไฟล์ให้สามารถรันได้ก่อนนั่นก็คือ
+    ```bash
+    c@c:~/cos3105$ chmod 700 test.sh
+    c@c:~/cos3105$ ls -ltr test.sh
+    -rwx------ 1 c c 20 Jul 24 14:03 test.sh
+    ```
+
+ซึ่งเมื่อมีเครื่อง x แล้วนั้นหมายถึงเราสามารถ execute file นี้ได้แล้ว
+
+    ```bash
+    c@c:~/cos3105$ ./test.sh
+    Hello COS3105
+    ```
+
+### Variable
+การสร้างตัวแปรใน shell script (variable)
+    เชลล์สคริปต์เหมือนกับโปรแกรมทั่วๆไปที่มีตัวแปรไว้เก็บค่าต่างๆ สำหรับใช้งาน ตัวแปรที่ใช้ในเชลล์นั้นไม่จำเป็นต้องประกาศชนิดตัวแปรเหมือนกับภาษา C  สามารถตั้งค่าแล้วนำไปใช้ได้ทันที
+
+    variable=value
+
+    :::note
+    ระวังเรื่อง space เพราะสำหรับ shell script แล้ว space คือการแบ่ง argument เพราะฉะนั้นห้ามมี space หน้าและหลัง “=” ซึ่งถ้าหากต้องการให้ค่าในตัวแปรมี space ให้ใช้ single quote (‘) หรือ double quote (“) ประกาศไว้หน้าและหลังคำที่ต้องการ
+    :::
+
+    ```bash
+    #!/bin/bash
+
+    var1=Hello
+    var2=COS3105
+    var3='Hello COS3105'
+    var4="Hello COS3105"
+
+    ```
+
+การเรียกใช้งานตัวแปรใน shell script (variable)
+    การเรียกใช้งานตัวแปรใน shell script (variable)
+
+    ```bash
+    #!/bin/bash
+
+    var1=Hello
+    var2=COS3105
+    var3='Hello COS3105'
+    var4="Hello COS3105"
+    var5='$var1 $var2'
+    var6="$var1 $var2"
+
+    echo $var1
+    echo $var2
+    echo $var3
+    echo $var4
+    echo $var5
+    echo $var6
+
+    ```
+
+    ซึ่งผลลัพธ์ที่ได้คือ เครื่องหมาย Quote ( ‘ )  จะมีค่าตามสิ่งที่พิมพ์ ส่วนในเครื่องหมาย Double quote ( “ ) จะเป็นการอ้างอิงนำผลลัพธ์ที่ตัวแปรเก็บไว้หรือค่าที่ตัวแปรเก็บไว้มาใช้
+
+    ```bash
+    c@c:~/cos3105$ ./test.sh
+    Hello
+    COS3105
+    Hello COS3105
+    Hello COS3105
+    $var1 $var2
+    Hello COS3105
+    ```
+
+### Environment variable
+
+การใช้งานตัวแปร environment (environment variable)
+    ตัวแปรที่ใช้ในเชลล์จะมีสองชนิดด้วยกัน คือ
+
+    - ตัวแปรธรรมดา (variable)
+    - ตัวแปรสภาพแวดล้อม (environment variable)
+
+    ```bash
+    #!/bin/bash
+
+    echo $PWD
+    echo $USER
+    ```
+
+    ซึ่งผลลัพธ์ที่ได้คือ `$PWD` คือ `Print Working Directory`
+
+    ```bash
+    c@c:~/cos3105$ ./test.sh
+    /home/c/cos3105
+    c
+    ```
+
+    ถ้าเราเรียกใช้ตัวแปรที่ไม่ได้อยู่ใน environment ผลลัพธ์ที่ได้จะมีค่าเป็น `null`
+
+    ```bash
+    #!/bin/bash
+
+    echo $NAME
+
+    ```
+
+    วิธีแก้คือ 
+
+    ```bash
+    c@c:~/cos3105$ export NAME="Krit Chomaitong"
+    ```
+
+    หลังจากนั้น
+
+    ```bash
+    c@c:~/cos3105$ ./test.sh
+    Krit Chomaitong
+    ```
+
+### Special Variable
+    ตัวแปรแบบพิเศษ
+  |ตัวแปร|ความหมาย|
+  |:--|:--|
+  |$0  $1  $2 ….|ใช้สำหรับอ้างอิงชื่อ shell script และ Argument ของ shell script  เรียกว่า position parameter|
+  |$#|ใช้บอกจำนวน Argument ที่อยู่ใน shell script นั้นๆ|
+  |$*|แทน Argument ของ script เรียงกันทั้งหมด|
+  |$@|คล้ายกับ $* แต่จะใช้ช่องว่างคั่นระหว่าง position parameter|
+  |$?|ใช้แสดงสถานการณ์จบการทำงานครั้งสุดท้าย ถ้าสั่งได้ถูกต้องไม่มี error จะแสดงค่า 0 ออกมา  แต่ถ้าผิดพลาดจะแสดงค่าที่ไม่ใช่ 0 ออกมา|
+  |$!|ใช้แสดง process ID ของ shell ที่ทำงานอยู่|
+
+### ตัวอย่าง
+
+  ```bash
+    #!/bin/bash
+
+    echo $0 $1
+  ```
 
 ```bash
-I am parent having PID 9445
-My child PID is 9446
-I am child having PID 9446
-My parent PID is 1835
+c@c:~/cos3105$ ./test.sh hello world
+./test.sh hello
 ```
-</Card>
+---
 
-### Process : Create Orphan Process
+  ```bash
+    #!/bin/bash
 
-<Card>
+    echo $#
+  ```
 
-```c ins={11}
-//create_orphan_process.c
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-int main()
-{
-    pid_t p;
-    p=fork();
-    if(p==0)
-    {
-        sleep(5); //child goes to sleep and in the mean time parent terminates
-        printf("I am child having PID %d\n",getpid());
-        printf("My parent PID is %d\n",getppid());
-    }
-    else
-    {
-        printf("I am parent having PID %d\n",getpid());
-        printf("My child PID is %d\n",p);
-    }
-}
+```bash
+c@c:~/cos3105$ ./test.sh hello world
+2
+```
+---
+  ```bash
+    #!/bin/bash
 
+    echo $*
+  ```
+
+```bash
+c@c:~/cos3105$ ./test.sh hello world aaa
+hello world aaa
 ```
 
- **OUTPUT**
+---
 
- :::caution
-ในกรณี orphan process ตัว parent process ได้จบการทำงานไปก่อน ทำให้ id จะเปลี่ยนไป ไม่ใช่ id เดิม
- :::
+  ```bash
+    #!/bin/bash
 
- <video src="/cos3105/videos/lab2/output_orphan_process.webm" autoplay loop>
- </video>
+    echo $@
+  ```
 
-</Card>
-
-### Process : Create Zombie Process
-<Card>
-
-```c ins={16}
-//create_zombie_process.c
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-int main()
-{
-    pid_t t;
-    t=fork();
-    if(t==0)
-    {
-   	    printf("Child having id %d\n",getpid());
-	}
-	else
-	{
-    	printf("Parent having id %d\n",getpid());
-    	sleep(15); // Parent sleeps. Run the ps command during this time
-	}
-}
-
-```
- **OUTPUT**
-
- :::caution
-ในกรณี zombie process ตัว child process ได้จบการทำงานไปก่อน แต่ยังต้องคาเอาไว้เพราะตัว parent process ยังถือว่าทำงานอยู่
- :::
-
- <video src="/cos3105/videos/lab2/output_zombie_process.webm" autoplay loop>
- </video>
-
-
-
-</Card>
-
-### Process : Prevent Zombie process by wait()
-
-<Card>
-
-```c ins={18}
-//prevent_zombie_process.c
-#include <unistd.h>
-#include <sys/types.h>
-#include <stdio.h>
-#include <sys/wait.h>
-int main()
-{
-    pid_t p;
-    printf("before fork\n");
-    p=fork();
-    if(p==0)//child
-    {
-        printf("I am child having id %d\n",getpid());
-        printf("My parent's id is %d\n",getppid());
-    }
-    else//parent
-    {
-        wait(NULL); 
-        printf("My child's id is %d\n",p);
-        printf("I am parent having id %d\n",getpid());
-    }
-    printf("Common\n");
-}
-
+```bash
+c@c:~/cos3105$ ./test.sh hello world aaa
+hello world aaa
 ```
 
- **OUTPUT**
+---
 
-![Prevent Zombie Process](/cos3105/images/lab2/prevent_zombie_process.png)
+  ```bash
+    #!/bin/bash
 
-</Card>
+    echo $?
+  ```
 
-### IPC : Shared memory
+---
 
-:::tip[ข้อควรรู้]
-**Shared memory** จะต้อง **create shared memory segment** ด้วย **key** และ **size** มีขนาดเป็น **byte**
-:::
-<Card>
+  ```bash
+    #!/bin/bash
 
-```c ins={30}
-// write_shared_memory.c
-#include<stdio.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<sys/shm.h>
-#include<string.h>
-int main()
-{
-    int i;
-    void *shared_memory;
-    char buff[100];
-    int shmid;
+    # ต้องใช้ long process อย่าง sleep ถึงจะบอกได้ว่า process ID คืออะไร
+    sleep 30 & echo $!
+  ```
 
-    /* creates shared memory segment with key 2345, having size 1024 bytes.
-       IPC_CREAT is used to create the shared segment if it does not exist.
-       0666 are the permisions on the shared segment */
-    shmid=shmget((key_t)2345, 1024, 0666|IPC_CREAT);
-    printf("Key of shared memory is %d\n",shmid);
-
-    //process attached to shared memory segment
-    shared_memory=shmat(shmid,NULL,0);
-
-    //this prints the address where the segment is attached with this process
-    printf("Process attached at %p\n",shared_memory);
-
-    printf("Enter some data to write to shared memory\n");
-    //get some input from user
-    read(0,buff,100);
-    //data written to shared memory
-    strcpy(shared_memory,buff); 
-    printf("You wrote : %s\n",(char *)shared_memory);
-}
-
-```
-
- **OUTPUT**
-
-  ![Write Shared Memory](/cos3105/images/lab2/write_shared_memory.png)
-
-
-
-```c ins={17}
-// read_shared_memory.c
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/shm.h>
-#include <string.h>
-int main()
-{
-    int i;
-    void *shared_memory;
-    char buff[100];
-    int shmid;
-    shmid=shmget((key_t)2345, 1024, 0666);
-    printf("Key of shared memory is %d\n",shmid);
-    shared_memory=shmat(shmid,NULL,0); //process attached to shared memory segment
-    printf("Process attached at %p\n",shared_memory);
-    printf("Data read from shared memory is : %s\n",(char *)shared_memory); 
-}
-
-```
-
- **OUTPUT**
-
-  ![Read Shared Memory](/cos3105/images/lab2/read_shared_memory.png)
-
-</Card>
-
-
-
-### IPC : Message queue
-
-
-```c 
-//send_queue.c
-#include<stdlib.h>
-#include<stdio.h>
-#include<string.h>
-#include<unistd.h>
-#include<sys/types.h>
-#include<sys/ipc.h>
-#include<sys/msg.h>
-
-#define MAX_TEXT 512   //maximum length of the message that can be sent allowed
-
-struct my_msg{
-    long int msg_type;
-    char some_text[MAX_TEXT];
-};
-
-int main()
-{
-    int running=1;
-    int msgid;
-    struct my_msg some_data;
-    char buffer[50]; //array to store user input
-    msgid=msgget((key_t)14534,0666|IPC_CREAT);
-
-    if (msgid == -1) // -1 means the message queue is not created
-    {
-            printf("Error in creating queue\n");
-            exit(0);
-    }
-
-    while(running)
-    {
-            printf("Enter some text:\n");
-            fgets(buffer,50,stdin);
-            some_data.msg_type=1;
-            strcpy(some_data.some_text,buffer);
-            if(msgsnd(msgid,(void *)&some_data, MAX_TEXT,0)==-1) // msgsnd returns -1 if the message is not sent
-            {
-                    printf("Msg not sent\n");
-            }
-            if(strncmp(buffer,"end",3)==0)
-            {
-                    running=0;
-            }
-    }
-}
-
-```
-
-**OUTPUT**
-
-![Send Message Queue](/cos3105/images/lab2/send_message_queue.png)
-
-
-```c 
-//read_queue.c
-#include<stdlib.h>
-#include<stdio.h>
-#include<string.h>
-#include<unistd.h>
-#include<sys/types.h>
-#include<sys/ipc.h>
-#include<sys/msg.h>
-
-struct my_msg{
-    long int msg_type;
-    char some_text[BUFSIZ];
-};
-
-int main()
-{
-    int running=1;
-    int msgid;
-    struct my_msg some_data;
-    long int msg_to_rec=0;
-    msgid=msgget((key_t)14534,0666|IPC_CREAT);
-    while(running)
-    {
-        msgrcv(msgid,(void *)&some_data,BUFSIZ,msg_to_rec,0);
-        printf("Data received: %s\n",some_data.some_text);
-        if(strncmp(some_data.some_text,"end",3)==0)
-        {
-                running=0;
-        }
-    }
-     msgctl(msgid,IPC_RMID,0);
-}
-
-
-```
-
-**OUTPUT**
-
-![Read Message Queue](/cos3105/images/lab2/read_message_queue.png)
-
-
-### IPC : Producer, Consumer
-
-<Card>
-
-
-```c
-//producer.c
-#include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <sys/shm.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <sys/types.h>
-
-int main(){
-    const int SIZE = 4096;
-    const char *name = "OS";
-    const char *message_0 = "Hello";
-    const char *message_1 = "World!";
-    int fd;
-    char *ptr;
-    fd = shm_open(name, O_CREAT|O_RDWR,0666);
-    ftruncate(fd, SIZE);
-    ptr = (char*)mmap(0, SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-    sprintf(ptr, "%s", message_0);
-    ptr += strlen(message_0);
-    sprintf(ptr, "%s", message_1);
-    ptr += strlen(message_1);
-    getchar();
-    return 0;
-}
-
-```
-
-```c 
-//consumer.c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-#include <sys/shm.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <sys/types.h>
-
-int main(){
-    const int SIZE = 4096;
-    const char *name = "OS";
-    int fd;
-    char *ptr;
-    fd = shm_open(name, O_RDWR,0666);
-    ptr = (char*)mmap(0, SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-    printf("%s\n", (char *)ptr);
-    shm_unlink(name);
-    return 0;
-}
-
-```
-
-**OUTPUT**
-
-```sh
-HelloWorld!
+```bash
+c@c:~/cos3105$ ./test.sh
+14213
 ```
 
 </Card>
-
