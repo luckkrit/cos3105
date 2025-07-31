@@ -357,6 +357,31 @@ DOS (Disk Operating System), like MS-DOS, runs in **real mode**. This is because
 
 </Card>
 
+## การทำ Boot image และรันโปรแกรม Boot loader โดยไม่ใช้ Bochs
+
+<Card>
+
+<Steps>
+
+1. นำโค๊ดด้านบนไปใส่ในไฟล์ boot.asm
+
+2. compile ไปเป็น .img ไฟล์ 
+   ```ps
+   nasm -f bin boot.asm -o boot.img
+   ```
+3. สร้าง Virtual Machine ด้วย VirtualBox ตามรูป โดยเลือก Type เป็น Other และ Version เป็น unknown
+    ![New VM](/cos3105/images/lab1/new_unknown_vm.png)
+
+4. เพิ่ม boot.img ลงใน floppy 
+    ![Floppy](/cos3105/images/lab1/img_floppy_disk.png)
+
+5. เลือกไฟล์ boot.img
+    ![Boot Image](/cos3105/images/lab1/insert_boot_img.png)
+6. กด Run
+</Steps>
+
+</Card>
+
 ## ติดตั้ง Virtual Box
 
 <Card>
@@ -507,13 +532,13 @@ int main(void) {
 
 1. พิมพ์คำสั่ง `bc` ตามด้วยชื่อไฟล์ `lab1.c` 
 
-   ```dos
+   ```bat
    C:\PRJ\bc lab1.c
    ```
 
 2. พิมพ์โค๊ดภาษา C ลงไป
 
-    ```C
+    ```c
     #include <stdio.h>
     int main(){
       printf("Hello World!");

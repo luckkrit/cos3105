@@ -455,3 +455,26 @@ HelloWorld!
 
 </Card>
 
+
+### IPC : Socket File
+
+<Card>
+**What is a socket file?**
+
+A Unix domain socket is a special file used for local IPC between processes on the same system. Unlike network sockets (IP-based), these are file-based and live in the file system.
+
+**How to find them?**
+
+```bash
+find /var/run /tmp -type s
+```
+
+**OUTPUT**
+
+```bash
+srw-rw---- 1 root docker 0 Jul 31 10:00 /var/run/docker.sock
+```
+
+</Card>
+
+
