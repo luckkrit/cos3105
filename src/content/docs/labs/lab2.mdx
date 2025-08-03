@@ -1,6 +1,6 @@
 ---
 title: Lab2 - Bash Script
-lastUpdated: 2025-07-24
+lastUpdated: 2025-08-03
 ---
 import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
 
@@ -89,36 +89,17 @@ c@c:~$ poweroff
 3. ตอน shutdown VM ใช้คำสั่ง `poweroff`
 </Steps>
 
-## ทบทวน Command Line
-
-|คำสั่ง|Linux|
-|:--|:--|
-|display/output text|echo "hello world"|
-|create file|touch a.txt|
-|get content|cat a.txt <br/> more a.txt <br/> less a.txt|
-|clear console|clear|
-|copy file|cp a.txt b.txt|
-|move file|mv a.txt ../b.txt|
-|**delete file**|rm -i a.txt|
-|list directory|ls .|
-|list all files (include hidden)|ls -a|
-|create directory|mkdir my_folder|
-|**remove directory**|rm -ri my_folder|
-|change directory|cd my_folder|
-|ดู manual/help ของคำสั่ง|man ls|
-
-## คำสั่ง Shell Script ต่างๆ
 
 <Card>
 
-### Shell Script File
+## Shell Script File
 Shell script เป็น file text ธรรมดาสามารถสร้างด้วย editor ชนิดไหนก็ได้ เช่น nano หรือ vim
 
     ```bash
     nano ex1.sh
     ```
 
-### shebang
+## shebang
 กำหนด interpreter หรือ shebang บรรทัดแรกของ shell script เราต้องกำหนด shebang เพื่อให้ program รู้ว่าควรใช้ interpreter ใดในการ load ข้อมูล file ซึ่งสัญลักษณ์ที่ใช้คือ `#!<shell program>`
 
     - `#!/bin/sh`
@@ -128,17 +109,71 @@ Shell script เป็น file text ธรรมดาสามารถสร�
     - `#!/usr/bin/perl`
     - `#!/usr/bin/env python`
 
-### คำสั่ง command line
+## คำสั่ง command line
 ใส่ชุดคำสั่ง command line
-    ส่วนนี้คือ code program ที่เราต้องการให้ shell script ทำงาน ซึ่งสามารถศึกษาชุดคำสั่ง Shell ของ Unix และ Linux ได้ ลองให้ shell script แสดงคำว่า “Hello World” ด้วยคำสั่ง echo  และลอง save file
+    ส่วนนี้คือ code program ที่เราต้องการให้ shell script ทำงาน ซึ่งสามารถศึกษาชุดคำสั่ง Shell ของ Unix และ Linux ได้ 
 
-    ```bash
-    #!/bin/bash
+|คำสั่ง|Linux|
+|:--|:--|
+|[display/output text](/cos3105/labs/lab2#echo)|echo "hello world"|
+|[create file](/cos3105/labs/lab2#touch)|touch a.txt|
+|[get content](/cos3105/labs/lab2#cat)|cat a.txt <br/> more a.txt <br/> less a.txt|
+|[clear console](/cos3105/labs/lab2#clear)|clear|
+|[copy file](/cos3105/labs/lab2#cp)|cp a.txt b.txt|
+|[move file](/cos3105/labs/lab2#mv)|mv a.txt ../b.txt|
+|[**delete file**](/cos3105/labs/lab2#rm)|rm -i a.txt|
+|[list directory](/cos3105/labs/lab2#ls)|ls .|
+|[list all files (include hidden)](/cos3105/labs/lab2#ls)|ls -a|
+|[create directory](/cos3105/labs/lab2#mkdir)|mkdir my_folder|
+|[**remove directory**](/cos3105/labs/lab2#rm--ri)|rm -ri my_folder|
+|[change directory](/cos3105/labs/lab2#cd)|cd my_folder|
+|[ดู manual/help ของคำสั่ง](/cos3105/labs/lab2#man)|man ls|
 
-    echo "Hello COS3105"
-    ```
+#### echo
 
-### permission
+![echo](/cos3105/images/lab2/echo.gif)
+
+#### touch
+
+![touch](/cos3105/images/lab2/touch.gif)
+
+#### cat
+
+![cat](/cos3105/images/lab2/cat.gif)
+
+#### clear
+
+![clear](/cos3105/images/lab2/clear.gif)
+
+#### mkdir
+
+![mkdir](/cos3105/images/lab2/mkdir.gif)
+
+#### cp
+
+![cp](/cos3105/images/lab2/cp.gif)
+
+#### mv
+![mv](/cos3105/images/lab2/mv.gif)
+
+#### rm
+![rm](/cos3105/images/lab2/rm.gif)
+
+#### ls
+![ls](/cos3105/images/lab2/ls.gif)
+
+#### rm -ri
+![rm](/cos3105/images/lab2/rm_r.gif)
+
+#### cd
+![cd](/cos3105/images/lab2/cd.gif)
+
+#### man
+![man](/cos3105/images/lab2/man.gif)
+
+
+
+## permission
 กำหนดสิทธิ์ execute ให้กับ shell script
     หลักจากเราสร้าง Shell script ขึ้นมาได้แล้ว ลองสังเกตุจะเห็นว่า file ที่ได้มีสิทธิ์ หรือ permission ของ `user owner  (-rw-rw-r–)` เพียงแค่ write กับ read เท่านั้น ไม่สามารถ execute ได้ ซึ่งก็ไม่ต่างกับ text file ธรรมดา
 
@@ -199,7 +234,7 @@ Shell script เป็น file text ธรรมดาสามารถสร�
 
 :::
 
-### execute shell script
+## execute shell script
 ตอนจะรัน shell script ใช้คำสั่งดังนี้ แต่จากที่ผลลัพธ์คือรันไม่ได้
 
     ```bash
@@ -207,7 +242,7 @@ Shell script เป็น file text ธรรมดาสามารถสร�
     bash: ./test.sh: Permission denied
     ```
 
-### chmod
+## chmod
 ต้องเปลี่ยน permission ของไฟล์ให้สามารถรันได้ก่อนนั่นก็คือ
 
     ```bash
@@ -240,7 +275,7 @@ Shell script เป็น file text ธรรมดาสามารถสร�
 
 :::
 
-### Variable
+## Variable
 การสร้างตัวแปรใน shell script (variable)
     เชลล์สคริปต์เหมือนกับโปรแกรมทั่วๆไปที่มีตัวแปรไว้เก็บค่าต่างๆ สำหรับใช้งาน ตัวแปรที่ใช้ในเชลล์นั้นไม่จำเป็นต้องประกาศชนิดตัวแปรเหมือนกับภาษา C  สามารถตั้งค่าแล้วนำไปใช้ได้ทันที
 
@@ -294,7 +329,7 @@ Shell script เป็น file text ธรรมดาสามารถสร�
     Hello COS3105
     ```
 
-### Environment variable
+## Environment variable
 
 การใช้งานตัวแปร environment (environment variable)
     ตัวแปรที่ใช้ในเชลล์จะมีสองชนิดด้วยกัน คือ
@@ -339,18 +374,18 @@ Shell script เป็น file text ธรรมดาสามารถสร�
     Krit Chomaitong
     ```
 
-### Special Variable
+## Special Variable
     ตัวแปรแบบพิเศษ
   |ตัวแปร|ความหมาย|
   |:--|:--|
-  |$0  $1  $2 ….|ใช้สำหรับอ้างอิงชื่อ shell script และ Argument ของ shell script  เรียกว่า position parameter|
-  |$#|ใช้บอกจำนวน Argument ที่อยู่ใน shell script นั้นๆ|
-  |$*|แทน Argument ของ script เรียงกันทั้งหมด|
-  |$@|คล้ายกับ $* แต่จะใช้ช่องว่างคั่นระหว่าง position parameter|
-  |$?|ใช้แสดงสถานการณ์จบการทำงานครั้งสุดท้าย ถ้าสั่งได้ถูกต้องไม่มี error จะแสดงค่า 0 ออกมา  แต่ถ้าผิดพลาดจะแสดงค่าที่ไม่ใช่ 0 ออกมา|
-  |$!|ใช้แสดง process ID ของ shell ที่ทำงานอยู่|
+  |`$0 $1 $2` ...|ใช้สำหรับอ้างอิงชื่อ shell script และ Argument ของ shell script  เรียกว่า position parameter|
+  |`$#`|ใช้บอกจำนวน Argument ที่อยู่ใน shell script นั้นๆ|
+  |`$*`|แทน Argument ของ script เรียงกันทั้งหมด|
+  |`$@`|คล้ายกับ $* แต่จะใช้ช่องว่างคั่นระหว่าง position parameter|
+  |`$?`|ใช้แสดงสถานการณ์จบการทำงานครั้งสุดท้าย ถ้าสั่งได้ถูกต้องไม่มี error จะแสดงค่า 0 ออกมา  แต่ถ้าผิดพลาดจะแสดงค่าที่ไม่ใช่ 0 ออกมา|
+  |`$!`|ใช้แสดง process ID ของ shell ที่ทำงานอยู่|
 
-**ตัวอย่าง**
+#### `$0 $1 $2`
 
   ```bash
   #!/bin/bash
@@ -362,7 +397,8 @@ Shell script เป็น file text ธรรมดาสามารถสร�
 c@c:~/cos3105$ ./test.sh hello world
 ./test.sh hello
 ```
----
+
+#### `$#`
 
   ```bash
   #!/bin/bash
@@ -374,7 +410,9 @@ c@c:~/cos3105$ ./test.sh hello world
 c@c:~/cos3105$ ./test.sh hello world
 2
 ```
----
+
+#### `$*`
+
   ```bash
   #!/bin/bash
 
@@ -386,7 +424,7 @@ c@c:~/cos3105$ ./test.sh hello world aaa
 hello world aaa
 ```
 
----
+#### `$@`
 
   ```bash
   #!/bin/bash
@@ -399,15 +437,21 @@ c@c:~/cos3105$ ./test.sh hello world aaa
 hello world aaa
 ```
 
----
+#### `$?`
 
   ```bash
   #!/bin/bash
-
+  echo "hello"
   echo $?
   ```
 
----
+```bash
+c@c:~/cos3105$ ./test.sh
+hello
+0
+```
+
+#### `$!`
 
   ```bash
   #!/bin/bash
@@ -421,7 +465,7 @@ c@c:~/cos3105$ ./test.sh
 14213
 ```
 
-### การ Comment
+## การ Comment
 
 ใช้เครื่องหมาย `#` สำหรับการ comment (ยกเว้นบรรทัดแรกเพราะเป็น shebang)
 
@@ -440,7 +484,7 @@ c@c:~/cos3105$ ./test.sh
 hello
 ```
 
-### ตัวแปร Array
+## ตัวแปร Array
 
 ```bash
 #!/bin/bash
@@ -461,9 +505,565 @@ a[0] a[1] a[2]
 a b c
 ```
 
-### ยังไม่เสร็จดี เดี๋ยวมีอัพเดต
+## Expression
 
-{/* https://panupong-simto.medium.com/linux-daily-commands-%E0%B8%A3%E0%B8%A7%E0%B8%A1%E0%B8%84%E0%B8%B3%E0%B8%AA%E0%B8%B1%E0%B9%88%E0%B8%87%E0%B8%A5%E0%B8%B4%E0%B8%99%E0%B8%B8%E0%B8%81%E0%B8%8B%E0%B9%8C%E0%B9%81%E0%B8%99%E0%B8%B0%E0%B8%99%E0%B8%B3%E0%B9%84%E0%B8%94%E0%B9%89%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B8%97%E0%B8%B8%E0%B8%81%E0%B8%A7%E0%B8%B1%E0%B8%99-675d40615524 */}
-{/* https://sysadmin.psu.ac.th/shellscript-example-01/ */}
+
+- [integer](/cos3105/labs/lab2#integer)
+
+- [string](/cos3105/labs/lab2#string)
+
+- [file](/cos3105/labs/lab2#file)
+
+- [other](/cos3105/labs/lab2#other)
+
+#### integer
+
+```bash
+#!/bin/bash
+
+int1=1
+int2=2
+int3=1
+
+if [ "$int1" -eq "$int3" ]
+then
+    echo "$int1 equal $int3"
+fi
+
+if [ "$int1" -ne "$int2" ]
+then
+    echo "$int1 not equal $int2"
+fi
+
+if [ "$int2" -gt "$int1" ]
+then
+    echo "$int2 greater than $int1"
+fi
+
+if [ "$int2" -ge "$int1" ]
+then
+    echo "$int2 greater than or equal $int1"
+fi
+
+if [ "$int1" -lt "$int2" ]
+then
+    echo "$int1 less than $int2"
+fi
+
+if [ "$int1" -le "$int2" ]
+then
+    echo "$int1 less than or equal $int2"
+fi
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+1 equal 1
+1 not equal 2
+2 greater than 1
+2 greater than or equal 1
+1 less than 2
+1 less than or equal 2
+```
+
+#### string
+
+```bash
+#!/bin/bash
+
+str1="Hello"
+str2="Hello"
+str3="World"
+str4=" "
+str5=""
+
+if [ "$str1" = "$str2" ]
+then
+    echo "$str1 equal $str2"
+fi
+
+if [ "$str2" != "$str3" ]
+then
+    echo "$str1 not equal $str3"
+fi
+
+if [ -n "$str4" ]
+then
+    echo "$str4 is not empty"
+fi
+
+if [ "$str4" ]
+then
+    echo "$str4 contains space"
+fi
+
+if [ !"$str5" ]
+then
+    echo "$str5 is empty"
+fi
+
+if [ -z "$str5" ]
+then
+    echo "$str5 is also empty"
+fi
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Hello equal Hello
+Hello not equal World
+  is not empty
+  contains space
+ is empty
+ is also empty
+```
+
+#### file 
+
+```bash
+#!/bin/bash
+
+folderName="folder2"
+fileName="bio.txt"
+
+if [ -d "$folderName" ]
+then
+    echo "$folderName is a folder"
+fi
+
+if [ -f "$fileName" ]
+then
+    echo "$fileName is a file"
+fi
+
+if [ -r "$fileName" ]
+then
+    echo "$fileName is readable"
+fi
+
+if [ -w "$fileName" ]
+then
+    echo "$fileName is writable"
+fi
+
+if [ -x "$fileName" ]
+then
+    echo "$fileName is executable"
+fi
+
+if [ -s "$fileName" ]
+then
+    echo "$fileName is not empty"
+fi
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+folder2 is a folder
+bio.txt is a file
+bio.txt is readable
+bio.txt is writable
+bio.txt is not empty
+```
+
+#### other
+
+- && คือ and ต้องใช้ภายใต้ [[...]]
+- || คือ or ต้องใช้ภายใต้ [[...]]
+
+```bash
+#!/bin/bash
+
+a=5
+b=10
+
+if [[ $a -lt 10 && $b -gt 5 ]]; then
+    echo "Both conditions are true"
+fi
+
+if [[ $a -lt 5 || $b -gt 5 ]]; then
+    echo "At least one condition is true"
+fi
+
+```
+
+:::note
+
+- แบบเก่า -a คือ and ใช้ภายใต้ [...]
+- แบบเก่า -o คือ or ใช้ภายใต้ [...]
+
+```bash
+
+#!/bin/bash
+a=5
+b=10
+
+if [ "$a" -lt 10 -a "$b" -gt 5 ]; then
+    echo "Both conditions are true"
+fi
+
+if [ "$a" -lt 5 -o "$b" -gt 5 ]; then
+    echo "At least one condition is true"
+fi
+
+```
+:::
+
+## if elif else
+
+```bash
+#!/bin/bash
+
+a=5
+b=10
+
+if [ "$a" -eq "$b" ]; then
+   echo "$a equals $b"
+elif [ $((a * 2)) -eq "$b" ]; then
+   echo "$a * 2 equals $b"
+fi
+
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+5 * 2 equals 10
+```
+
+## switch case
+
+- รูปแบบคำสั่ง
+
+```bash
+case string in
+   str1)
+         commands;;
+   str2)
+         commands;;
+   str3)
+         commands;;
+   *)
+         commands;;
+esac
+```
+
+**ตัวอย่าง**
+
+```bash
+#!/bin/bash
+
+var1="cat"
+
+case $var1 in
+ "ant")
+ echo "It is an ant";;
+ "bee")
+ echo "It is an bee";;
+ "cat")
+ echo "It is an cat";;
+ *)
+ echo "I don't know";;
+esac
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+It is an cat
+```
+
+## while loop
+
+- รูปแบบคำสั่ง
+
+```bash
+while [ expression ]
+do
+         commands
+          ………….
+done
+```
+
+**ตัวอย่าง**
+
+```bash
+#!/bin/bash
+
+num=1
+
+while [ $num -le 5 ]
+do
+ echo "Loop $num"
+ ((num = $num+1))
+done
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Loop 1
+Loop 2
+Loop 3
+Loop 4
+Loop 5
+```
+
+## for loop
+
+- รูปแบบคำสั่ง
+
+```bash
+for  var  in  list
+do
+         commands
+          ………….
+done
+```
+
+**ตัวอย่าง1**
+
+```bash
+#!/bin/bash
+
+for i in 1 2 3 4 5
+do
+ echo "Loop $i"
+done
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Loop 1
+Loop 2
+Loop 3
+Loop 4
+Loop 5
+```
+
+**ตัวอย่าง2**
+
+```bash
+#!/bin/bash
+
+for ((i=1;i<5;i++))
+do
+ echo "Loop $i"
+done
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Loop 1
+Loop 2
+Loop 3
+Loop 4
+```
+
+## การรับค่า input จาก script
+
+```bash
+#!/bin/bash
+
+var0=$0
+var1=$1
+var2=$2
+
+echo "$0, $1 , $2"
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh 1 2
+./test.sh , 1 , 2
+```
+
+## redirection
+
+- output redirection
+
+|คำสั่ง|ความหมาย|
+|:--|:--|
+|`echo "Hello" > file.txt`|Write output to file.txt (overwrite)|
+|`echo "Hello" >> file.txt`|Append output to file.txt|
+
+- input redirection
+
+|คำสั่ง|ความหมาย|
+|:--|:--|
+|`cat < file.txt`|Read from `file.txt`|
+
+## การรับค่าจาก Keyboard
+
+```bash
+#!/bin/bash
+echo "Enter your name:"
+read name
+echo "Hello, $name!"
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Enter your name:
+Krit
+Hello, Krit!
+```
+
+## การใช้ grep
+
+- grep = "global regular expression print"
+- ดึงค่า name: 
+
+```txt
+// bio.txt
+name: Krit Chomaitong
+birth date: 22/10/1999
+address: 123 Maplewood Lane, Fairview, CA 90210, USA
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ grep "name: " bio.txt 
+name: Krit Chomaitong
+```
+
+## การใช้ cut ร่วมกับ grep
+
+```bash
+#!/bin/bash
+
+cut -d':' -f2- bio.txt # -d for single character
+
+grep "^name:" bio.txt | cut -d':' -f2- # grep with cut
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+ Krit Chomaitong
+ 22/10/1999
+ 123 Maplewood Lane, Fairview, CA 90210, USA
+ Krit Chomaitong
+```
+
+
+## การใช้ history ร่วมกับ grep
+
+```bash
+history
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ history
+    1  curl -fsSL https://code-server.dev/install.sh | sh
+    2  sudo apt install neovim build-essential gcc g++ gdb
+    3  python
+```
+
+- การใช้ร่วมกับ grep โดยใช้ pipe
+
+```bash
+history | grep cat
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ history | grep cat
+   63  cat output.txt 
+   67  cat cron.log
+   71  cat cron.log 
+   76  cat output.txt
+   79  cat cron.log
+```
+
+## การแสดงวันที่ 
+
+```bash
+#!/bin/bash
+
+d=$(date)
+echo $d
+echo "$(date)"
+echo $(date)
+echo "`date`"
+date
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Sun Aug 3 01:39:36 PM UTC 2025
+Sun Aug  3 01:39:36 PM UTC 2025
+Sun Aug 3 01:39:36 PM UTC 2025
+Sun Aug  3 01:39:36 PM UTC 2025
+Sun Aug  3 01:39:36 PM UTC 2025
+```
+
+- format date
+
+| Format | ความหมาย         | ตัวอย่าง |
+| ------ | ---------------- | -------- |
+| `%Y`   | ปี (4 หลัก)      | 2025     |
+| `%y`   | ปี (2 หลัก)      | 25       |
+| `%m`   | เดือน (01-12)    | 08       |
+| `%d`   | วัน (01-31)      | 03       |
+| `%H`   | ชั่วโมง (00–23)  | 19       |
+| `%M`   | นาที (00–59)     | 50       |
+| `%S`   | วินาที (00–59)   | 00       |
+| `%A`   | ชื่อวัน (เต็ม)   | Sunday   |
+| `%a`   | ชื่อวัน (ย่อ)    | Sun      |
+| `%B`   | ชื่อเดือน (เต็ม) | August   |
+| `%b`   | ชื่อเดือน (ย่อ)  | Aug      |
+
+**ตัวอย่าง**
+
+```bash
+#!/bin/bash
+date +"%Y-%m-%d"
+date +"%Y-%m-%d %H:%M:%S"
+date -d "tomorrow" +"%Y-%m-%d" # tomorrow
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+2025-08-03
+2025-08-03 13:43:25
+2025-08-04
+```
 
 </Card>
+
+**แหล่งอ้างอิง**
+
+- https://saixiii.com/basic-shell-script/
+- https://panupong-simto.medium.com/linux-daily-commands-%E0%B8%A3%E0%B8%A7%E0%B8%A1%E0%B8%84%E0%B8%B3%E0%B8%AA%E0%B8%B1%E0%B9%88%E0%B8%87%E0%B8%A5%E0%B8%B4%E0%B8%99%E0%B8%B8%E0%B8%81%E0%B8%8B%E0%B9%8C%E0%B9%81%E0%B8%99%E0%B8%B0%E0%B8%99%E0%B8%B3%E0%B9%84%E0%B8%94%E0%B9%89%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B8%97%E0%B8%B8%E0%B8%81%E0%B8%A7%E0%B8%B1%E0%B8%99-675d40615524
+- https://sysadmin.psu.ac.th/shellscript-example-01/
+- https://nopnithi.medium.com/%E0%B8%AA%E0%B8%A3%E0%B8%B8%E0%B8%9B%E0%B8%84%E0%B8%AD%E0%B8%A3%E0%B9%8C%E0%B8%AA-introduction-to-bash-shell-scripting-%E0%B8%82%E0%B8%AD%E0%B8%87-coursera-75193563ca0a
+- https://kb.hostatom.com/content/2226/
+- https://www.baeldung.com/linux/echo-date-quotes-backticks
+- https://pongpitta.medium.com/%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B8%87%E0%B8%B2%E0%B8%99-crontab-%E0%B8%9A%E0%B8%99-linux-server-6272d376ecdb
+- https://crontab.guru/examples.html

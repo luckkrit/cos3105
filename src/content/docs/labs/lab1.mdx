@@ -23,6 +23,10 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 โปรแกรม boot loader จะมีขนาดไม่เกิน 512 Byte เพราะใน 1 sector ของ HDD มีขนาด 512 Byte
 :::
 
+:::note
+55AAh จริงๆ คือ 55AA ตัว h ต่อท้ายแสดงถึง Hexadecimal เลข 55AA เป็น signature ของไฟล์ bootloader
+:::
+
 </Card>
 
 ## 510 Bytes สำคัญยังไง
@@ -369,8 +373,8 @@ DOS (Disk Operating System), like MS-DOS, runs in **real mode**. This is because
    ```ps
    nasm -f bin boot.asm -o boot.img
    ```
-3. สร้าง Virtual Machine ด้วย VirtualBox ตามรูป โดยเลือก Type เป็น Other และ Version เป็น unknown
-    ![New VM](/cos3105/images/lab1/new_unknown_vm.png)
+3. สร้าง Virtual Machine ด้วย VirtualBox ตามรูป โดยเลือก Type เป็น Other และ Version เป็น DOS
+    ![New VM](/cos3105/images/lab1/new_unknown_dos.png)
 
 4. เพิ่ม boot.img ลงใน floppy 
     ![Floppy](/cos3105/images/lab1/img_floppy_disk.png)
@@ -552,7 +556,7 @@ int main(void) {
 
 4. กด `F9` เพื่อ Make
 
-      ![Make](/cos3105/images/lab1_make.png)
+      ![Make](/cos3105/images/lab1/make.png)
 
 5. กด `ALT-F` แล้วไปที่ Dos Shell
 
