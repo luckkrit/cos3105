@@ -964,6 +964,37 @@ c@c:~/cos3105$ ./test.sh
  Krit Chomaitong
 ```
 
+## การใช้ sed 
+
+- ค้นหา `name:`
+
+```bash
+
+#!/bin/bash
+sed -n 's/^name:\(.*\)/\1/p' bio.txt
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+ Krit Chomaitong
+```
+
+- การอัพเดต `name: `
+
+```bash
+#!/bin/bash
+sed -i 's/^name:.*/name:Krit Chomaitong2/' bio.txt # update
+sed -n 's/^name:\(.*\)/\1/p' bio.txt # print match name:
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+ Krit Chomaitong2
+```
 
 ## การใช้ history ร่วมกับ grep
 
