@@ -27,5 +27,21 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 ## ดูสถานะ firewall / iptables
 ## ดู arp เครื่องที่อยู่ใน subnet เดียวกัน
 ## ทดสอบ ping gateway / ออก Internet แบบ Advance
+## ส่ง Email
+
+- ส่งผ่าน mailtrap.io
+
+```bash
+#!/bin/bash
+
+echo 'Looking to send emails in production? Check out our Email API/SMTP product!'
+curl --location --request POST \
+'https://sandbox.api.mailtrap.io/api/send/yourId' \
+--header 'Authorization: Bearer TOKEN' \
+--header 'Content-Type: application/json' \
+--data-raw '{"from":{"email":"sender@example.com","name":"Mailtrap Test"},"to":[{"email":"receiver@example.com"}],"subject":"You are awesome!","text":"Congrats for sending test email with Mailtrap!","category":"Integration Test"}'
+```
+
 ## การทำ cron job
+
 </Card>
