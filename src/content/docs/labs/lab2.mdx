@@ -724,6 +724,12 @@ a=5
 b=10
 
 if [ "$a" -eq "$b" ]; then
+    echo "$a equals $b"
+else
+    echo "$a not equals $b"
+fi
+
+if [ "$a" -eq "$b" ]; then
    echo "$a equals $b"
 elif [ $((a * 2)) -eq "$b" ]; then
    echo "$a * 2 equals $b"
@@ -735,6 +741,7 @@ fi
 
 ```bash
 c@c:~/cos3105$ ./test.sh
+5 not equals 10
 5 * 2 equals 10
 ```
 
