@@ -505,6 +505,48 @@ a[0] a[1] a[2]
 a b c
 ```
 
+## Command Substitution
+
+```bash
+#!/bin/bash
+
+result=$(ls)
+
+echo $result
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+bio.db bio.txt cron.log email.sh lab2-2.sh lab2.sh test.bak test.sh
+```
+
+## Arithmetic Expression
+
+- ใช้ `$(())` หรือ `let` ก็ได้
+
+```bash
+#!/bin/bash
+
+a=1
+b=0
+c=$((a/b))
+echo $c
+
+b=2
+let c=a*b
+echo $c
+```
+
+**OUTPUT**
+
+```bash
+./test.sh: line 3: a/b: division by 0 (error token is "b")
+
+2
+```
+
 ## Expression
 
 
