@@ -1,0 +1,402 @@
+---
+title: 3 - Most used commands
+lastUpdated: 2025-08-18
+---
+
+import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
+
+## Most used commands
+
+
+### Check active users
+
+```bash
+#!/bin/bash
+w
+```
+
+**OUTPUT**
+
+- No user login
+
+```bash
+c@c:~/cos3105$ ./test.sh
+ 02:30:47 up  1:13,  0 user,  load average: 0.02, 0.06, 0.03
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU  WHAT
+```
+
+- After login
+
+![Check user online](/cos3105/images/lab2/check_active_user.gif)
+
+
+### Check server uptime
+
+```bash
+#!/bin/bash
+uptime
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+ 04:00:56 up  2:43,  1 user,  load average: 0.03, 0.02, 0.00
+```
+
+:::note
+**Shows:**
+
+- Current time (04:00:56)
+- How long system has been running (2:43)
+- Number of logged-in users (1 users)
+- System load averages (0.03, 0.02, 0.00)
+
+**The three numbers represent:**
+
+- 0.03 = Average load over the last 1 minute
+- 0.02 = Average load over the last 5 minutes
+- 0.00 = Average load over the last 15 minutes
+
+**What the numbers mean:**
+
+- 0.00 = No load (idle)
+- 1.00 = Fully loaded (100% busy)
+- 2.00 = Overloaded (200% - more work than CPU can handle)
+:::
+
+### Check date and time that server was started
+
+```bash
+#!/bin/bash
+uptime -s
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ uptime -s
+2025-08-19 01:17:20
+```
+
+### Check log for SSH login
+
+```bash
+#!/bin/bash
+tail -f /var/log/auth.log
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+2025-08-19T04:14:43.959171+00:00 c sshd[35431]: Server listening on :: port 22.
+2025-08-19T04:14:46.716069+00:00 c sshd[35433]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=10.0.2.2  user=c
+2025-08-19T04:14:48.523852+00:00 c sshd[35433]: Failed password for c from 10.0.2.2 port 60368 ssh2
+2025-08-19T04:15:01.698376+00:00 c CRON[35535]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-08-19T04:15:01.701073+00:00 c CRON[35535]: pam_unix(cron:session): session closed for user root
+2025-08-19T04:15:07.549510+00:00 c sshd[35433]: Connection reset by authenticating user c 10.0.2.2 port 60368 [preauth]
+2025-08-19T04:15:46.103685+00:00 c sshd[35659]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=10.0.2.2  user=c
+2025-08-19T04:15:47.817427+00:00 c sshd[35659]: Failed password for c from 10.0.2.2 port 60375 ssh2
+2025-08-19T04:17:01.707376+00:00 c CRON[35910]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+2025-08-19T04:17:01.710963+00:00 c CRON[35910]: pam_unix(cron:session): session closed for user root
+```
+
+### Check log for SSH login failure
+
+```bash
+#!/bin/bash
+tail -f /var/log/auth.log | grep 'authentication failure'
+```
+
+**OUTPUT**
+
+![Invalid login](/cos3105/images/lab2/invalid_login.gif)
+
+### Check server information
+
+```bash
+#!/bin/bash
+uname -a
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Linux c 6.8.0-71-generic #71-Ubuntu SMP PREEMPT_DYNAMIC Tue Jul 22 16:52:38 UTC 2025 x86_64 x86_64 x86_64 GNU/Linux
+```
+
+### Check status CPU, I/O, Disks
+
+```bash
+#!/bin/bash
+top
+```
+
+**OUTPUT**
+
+![Server Status](/cos3105/images/lab2/server_status.gif)
+
+- htop: A top alternative
+
+```bash
+#!/bin/bash
+htop
+```
+
+**OUTPUT**
+
+
+![Server Status](/cos3105/images/lab2/htop.gif)
+
+### Check RAM status
+
+```bash
+#!/bin/bash
+free
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ free
+               total        used        free      shared  buff/cache   available
+Mem:         4010056      634572     3116696        1080      489724     3375484
+Swap:        4009980           0     4009980
+```
+
+:::note
+total = used + available
+
+4010056 KB = 634572 KB + 3375484 KB
+
+4010056 = 40 GB
+:::
+
+### Check process that use more RAM
+
+```bash
+#!/bin/bash
+top
+```
+
+**OUTPUT**
+
+- after open program press <kbd>m</kbd> , top will sort process that uses high memory to the top
+
+![top sort high memory usage](/cos3105/images/lab2/top_high_memory.gif)
+
+
+### Check service that load on BOOT
+
+```bash
+#!/bin/bash
+systemctl list-unit-files --state=enabled
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+UNIT FILE                              STATE   PRESET 
+run-qemu.mount                         enabled enabled
+apport-autoreport.path                 enabled enabled
+tpm-udev.path                          enabled enabled
+apparmor.service                       enabled enabled
+apport.service                         enabled enabled
+blk-availability.service               enabled enabled
+cloud-config.service                   enabled enabled
+cloud-final.service                    enabled enabled
+cloud-init-local.service               enabled enabled
+cloud-init.service                     enabled enabled
+console-setup.service                  enabled enabled
+```
+
+### Check service that running
+
+```bash
+#!/bin/bash
+systemctl list-units --type=service --state=active
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+  UNIT                                                                                      LOAD   ACTIVE SUB     DESCRIPTION                                                                  
+  apparmor.service                                                                          loaded active exited  Load AppArmor profiles
+  apport.service                                                                            loaded active exited  automatic crash report generation
+  blk-availability.service                                                                  loaded active exited  Availability of block devices
+  code-server@c.service                                                                     loaded active running code-server
+  console-setup.service                                                                     loaded active exited  Set console font and keymap
+  cron.service                                                                              loaded active running Regular background program processing daemon
+  dbus.service                                                                              loaded active running D-Bus System Message Bus
+  finalrd.service                                                                           loaded active exited  Create final runtime dir for shutdown pivot root
+  fwupd.service                                                                             loaded active running Firmware update daemon
+  getty@tty1.service                                                                        loaded active running Getty on tty1
+  keyboard-setup.service                                                                    loaded active exited  Set the console keyboard layout
+```
+
+### Check service that Failed
+
+```bash
+#!/bin/bash
+systemctl list-units --type=service --state=failed
+```
+
+
+### Check service that Active/Failed
+
+```bash
+#!/bin/bash
+# All services (active, inactive, failed)
+systemctl list-units --type=service --all
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+  UNIT                                                                                      LOAD      ACTIVE   SUB     DESCRIPTION                                                                  
+  apparmor.service                                                                          loaded    active   exited  Load AppArmor profiles
+  apport-autoreport.service                                                                 loaded    inactive dead    Process error reports when automatic reporting is enabled
+  apport.service                                                                            loaded    active   exited  automatic crash report generation
+  apt-daily-upgrade.service                                                                 loaded    inactive dead    Daily apt upgrade and clean activities
+  apt-daily.service                                                                         loaded    inactive dead    Daily apt download activities
+● auditd.service                                                                            not-found inactive dead    auditd.service
+  blk-availability.service                                                                  loaded    active   exited  Availability of block devices
+  cloud-init-local.service                                                                  loaded    inactive dead    Cloud-init: Local Stage (pre-network)
+  code-server@c.service                                                                     loaded    active   running code-server
+● connman.service                                                                           not-found inactive dead    connman.service
+● console-screen.service                                                                    not-found inactive dead    console-screen.service
+```
+
+### Check service log 
+
+- Since 6 hours ago
+
+```bash
+#!/bin/bash
+journalctl --since '6 hour ago'
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Aug 18 23:05:01 c CRON[105112]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+Aug 18 23:05:01 c CRON[105113]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+Aug 18 23:05:01 c CRON[105112]: pam_unix(cron:session): session closed for user root
+Aug 18 23:10:31 c systemd[1]: Starting sysstat-collect.service - system activity accounting tool...
+Aug 18 23:10:31 c systemd[1]: sysstat-collect.service: Deactivated successfully.
+Aug 18 23:10:31 c systemd[1]: Finished sysstat-collect.service - system activity accounting tool.
+Aug 18 23:15:01 c CRON[106860]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+Aug 18 23:15:01 c CRON[106861]: (root) CMD (command -v debian-sa1 > /dev/null && debian-sa1 1 1)
+Aug 18 23:15:01 c CRON[106860]: pam_unix(cron:session): session closed for user root
+Aug 18 23:17:01 c CRON[107213]: pam_unix(cron:session): session opened for user root(uid=0) by root(uid=0)
+Aug 18 23:17:01 c CRON[107214]: (root) CMD (cd / && run-parts --report /etc/cron.hourly)
+Aug 18 23:17:01 c CRON[107213]: pam_unix(cron:session): session closed for user root
+```
+
+### Check Network PORT status
+
+```bash
+#!/bin/bash
+ss -4aut 
+```
+
+:::note
+**Flags**
+
+-4 = IPv4 only (exclude IPv6)
+
+-a = Show all sockets (listening + established)
+
+-u = Show UDP sockets
+
+-t = Show TCP sockets
+:::
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Netid                State                    Recv-Q                Send-Q                                  Local Address:Port                                    Peer Address:Port                 Process                
+udp                  UNCONN                   0                     0                                          127.0.0.54:domain                                       0.0.0.0:*                                           
+udp                  UNCONN                   0                     0                                       127.0.0.53%lo:domain                                       0.0.0.0:*                                           
+udp                  UNCONN                   0                     0                                    10.0.2.15%enp0s3:bootpc                                       0.0.0.0:*                                           
+tcp                  LISTEN                   0                     4096                                       127.0.0.54:domain                                       0.0.0.0:*                                           
+tcp                  LISTEN                   0                     511                                           0.0.0.0:http-alt                                     0.0.0.0:*                                           
+tcp                  LISTEN                   0                     4096                                    127.0.0.53%lo:domain                                       0.0.0.0:*                                           
+tcp                  ESTAB                    0                     0                                           10.0.2.15:http-alt                                    10.0.2.2:58644                                       
+tcp                  TIME-WAIT                0                     0                                           10.0.2.15:54010                                  74.125.68.121:https                                       
+tcp                  ESTAB                    0                     0                                           10.0.2.15:52650                                  74.125.68.121:https                                       
+tcp                  ESTAB                    0                     0                                           10.0.2.15:http-alt                                    10.0.2.2:58664                                       
+tcp                  TIME-WAIT                0                     0                                           10.0.2.15:58828                                  74.125.68.121:https                                       
+tcp                  TIME-WAIT                0                     0                                           10.0.2.15:58818                                  74.125.68.121:https                                       
+tcp                  TIME-WAIT                0                     0                                           10.0.2.15:54024                                  74.125.68.121:https                                       
+tcp                  ESTAB                    0                     0                                           10.0.2.15:52644                                  74.125.68.121:https    
+```
+
+:::note
+
+**State:** LISTEN, ESTAB (established), TIME-WAIT, etc.
+
+**Local Address:Port:** Your machine's IP and port
+
+**Peer Address:Port:** Remote machine's IP and port
+
+:::
+
+### Check Network Card Interface
+
+```bash
+#!/bin/bash
+ip a
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host noprefixroute 
+       valid_lft forever preferred_lft forever
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:89:c0:c4 brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 metric 100 brd 10.0.2.255 scope global dynamic enp0s3
+       valid_lft 72149sec preferred_lft 72149sec
+    inet6 fd17:625c:f037:2:a00:27ff:fe89:c0c4/64 scope global dynamic mngtmpaddr noprefixroute 
+       valid_lft 85886sec preferred_lft 13886sec
+    inet6 fe80::a00:27ff:fe89:c0c4/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+
+- advanced
+
+```bash
+#!/bin/bash
+ip -4 -brief address show
+```
+
+:::note
+**ip** = Network configuration tool
+
+**-4** = IPv4 only (exclude IPv6)
+
+**-brief** = Condensed, one-line format
+
+**address show** = Display IP addresses
+:::
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+lo               UNKNOWN        127.0.0.1/8 
+enp0s3           UP             10.0.2.15/24 metric 100 
+```

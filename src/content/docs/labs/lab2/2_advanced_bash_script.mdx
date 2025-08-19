@@ -1,0 +1,630 @@
+---
+title: 2 - Advanced Bash Script
+lastUpdated: 2025-08-18
+---
+
+import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
+
+## Linux Directory Structure
+
+```mermaid
+graph TD
+    A["/"] --> B["/bin"]
+    A --> C["/etc"]
+    A --> D["/home"]
+    A --> E["/opt"]
+    A --> F["/tmp"]
+    A --> G["/usr"]
+    A --> H["/var"]
+```
+
+|Directories|Description|
+|:--|:--|
+|/bin|binary or executable programs.|
+|/etc	    |system configuration files.|
+|/home  |	home directory. It is the default current directory.|
+|/opt	    |optional or third-party software.|
+|/tmp	    |temporary space, typically cleared on reboot.|
+|/usr	    | User related programs.|
+|/var   |	log files.|
+
+## File descriptors
+
+File descriptors (FDs) are numeric identifiers that represent open files or streams in Unix/Linux systems. In bash, every process automatically gets three standard file descriptors:
+
+**Standard File Descriptors**
+
+**0 - stdin (Standard Input)**
+
+- **Purpose:** Where a program reads input from
+
+- **Default:** Connected to keyboard/terminal
+
+- **Example:** When you type commands or data
+
+**1 - stdout (Standard Output)**
+
+- **Purpose:** Where a program sends normal output
+
+- **Default:** Connected to terminal screen
+
+- **Example:** Regular command output, echo results
+
+**2 - stderr (Standard Error)**
+
+- **Purpose:** Where a program sends error messages
+
+- **Default:** Connected to terminal screen (same as stdout)
+
+- **Example:** Error messages, warnings
+
+```bash
+#!/bin/bash
+
+echo "=== File Descriptor Redirection Demo ==="
+
+# Setup: Create some test files
+echo -e "banana\napple\ncherry" > fruits.txt
+echo "Setting up demo files..."
+
+echo -e "\n1. REDIRECT STDOUT TO FILE"
+echo "This goes to a file" > message.txt
+echo "✓ Check message.txt - you won't see the output on screen"
+
+echo -e "\n2. REDIRECT STDERR TO FILE"
+ls thisfiledoesnotexist 2> error_log.txt
+echo "✓ Error message went to error_log.txt instead of screen"
+
+echo -e "\n3. REDIRECT BOTH STDOUT AND STDERR"
+# This command will produce both output and an error
+{ echo "Success message"; ls fakefile; } > all_output.txt 2>&1
+echo "✓ Both success and error messages went to all_output.txt"
+
+echo -e "\n4. SHORTHAND FOR BOTH"
+{ echo "Another success"; ls anotherfakefile; } &> shorthand_output.txt
+echo "✓ Same result using &> shorthand"
+
+echo -e "\n5. REDIRECT STDIN FROM FILE" 
+echo "Sorting fruits from fruits.txt:"
+sort < fruits.txt
+
+echo -e "\n6. DISCARD OUTPUT (send to /dev/null)"
+echo "Running ls on fake file - you won't see any error:"
+ls nonexistent 2> /dev/null
+echo "✓ Error was discarded"
+
+echo -e "\n7. DISCARD EVERYTHING"
+{ echo "This output disappears"; ls fakefile; } &> /dev/null
+echo "✓ Both output and errors were discarded"
+
+echo -e "\n=== Demo complete! Check these files: ==="
+echo "- message.txt"
+echo "- error_log.txt" 
+echo "- all_output.txt"
+echo "- shorthand_output.txt"
+
+# Cleanup option
+echo -e "\nTo clean up demo files, run:"
+echo "rm -f message.txt error_log.txt all_output.txt shorthand_output.txt fruits.txt"
+```
+
+## local vs global variable
+
+- Global variable
+
+```bash
+#!/bin/bash
+# Global variable
+username="Alice"
+
+function display_user() {
+    echo "User: $username"  # Can access global variable
+}
+
+function change_user() {
+    username="Bob"          # Modifies the global variable!
+}
+
+echo "Initial: $username"  # Alice
+display_user               # User: Alice
+change_user
+echo "After change: $username"  # Bob (global was modified)
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Initial: Alice
+User: Alice
+After change: Bob
+```
+
+- local variable
+
+```bash
+#!/bin/bash
+username="Alice"  # Global
+
+function test_local() {
+    local username="Bob"    # Local variable, shadows global
+    echo "Inside function: $username"  # Bob
+}
+
+echo "Before: $username"   # Alice
+test_local                 # Inside function: Bob  
+echo "After: $username"    # Alice (global unchanged)
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Before: Alice
+Inside function: Bob
+After: Alice
+```
+
+## echo vs printf
+
+- echo for simple output
+- printf for formatted output
+
+```bash
+#!/bin/bash
+name="John"
+age=25
+score=87.5
+
+# echo - basic concatenation
+echo "Name: $name, Age: $age, Score: $score"
+
+# printf - formatted output
+printf "Name: %-10s Age: %3d Score: %6.2f\n" "$name" "$age" "$score"
+# Output: Name: John       Age:  25 Score:  87.50
+
+# Without formatting
+printf "%s\n" "hello"
+# Output: hello
+
+# With %-10s (left-aligned, 10 characters wide)
+printf "%-10s|\n" "hello"
+# Output: hello     |
+#         ^^^^^     ^ (5 spaces added to make it 10 chars total)
+
+# Compare with right-aligned (no minus sign)
+printf "%10s|\n" "hello"  
+# Output:      hello|
+#         ^^^^^     ^ (5 spaces before the text)
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Name: John, Age: 25, Score: 87.5
+Name: John       Age:  25 Score:  87.50
+hello
+hello     |
+     hello|
+```
+
+## Function with parameters and return value
+
+### Example 1
+
+```bash
+
+#!/bin/bash
+var1=$1
+var2=$2
+var3=$3
+var4=$4
+
+add(){
+  #Note the $1 and $2 variables here are not the same of the
+  #main script... 
+  echo "The first argument to this function is $1"
+  echo "The second argument to this function is $2"
+  result=$(($1+$2))
+  echo $result
+
+}
+
+add $var1 $var2
+add $var3 $var4
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh 1 2 3 4
+The first argument to this function is 1
+The second argument to this function is 2
+3
+The first argument to this function is 3
+The second argument to this function is 4
+7
+```
+
+### Example 2
+
+```bash
+#!/bin/bash
+var1=$1
+var2=$2
+var3=$3
+var4=$4
+
+add(){
+  result=$(($1+$2))
+  echo $result
+}
+minus(){
+    result=$(($1-$2))
+    echo $result
+}
+result1=$(add $var1 $var2)
+result2=$(add $var3 $var4)
+result3=$(minus $result2 $result1)
+echo "$result2 - $result1 = $result3"
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh 1 2 3 4
+7 - 3 = 4
+```
+
+### Example 3
+
+- read string into array
+
+```bash
+#!/bin/bash
+
+read first second third <<< "a b c"
+echo $first   # a
+echo $second  # b
+echo $third   # c
+
+# With -a (reads into array)
+read -a array <<< "a b c"
+echo ${array[0]}  # a
+echo ${array[1]}  # b
+echo ${array[2]}  # c
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+a
+b
+c
+a
+b
+c
+```
+
+### Example 4
+
+- return string of array and read array
+
+```bash
+#!/bin/bash
+
+get_user_info() {
+    echo "john" "doe" "30"
+}
+
+read -a user_info <<< "$(get_user_info)"
+printf "Name = %s, Last name = %s, Age = %s\n" "${user_info[0]}" "${user_info[1]}" "${user_info[2]}"
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Name = john, Last name = doe, Age = 30
+```
+
+### Example 5
+
+- return string of array with comma separate and read array
+- `IFS=", "` for tells read to split string with `", "`
+
+```bash
+#!/bin/bash
+
+get_user_info() {
+    echo "john, doe, 30"
+}
+
+IFS=", " read -a user_info <<< "$(get_user_info)"
+printf "Name = %s, Last name = %s, Age = %s\n" "${user_info[0]}" "${user_info[1]}" "${user_info[2]}"
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Name = john, Last name = doe, Age = 30
+```
+
+## Terminal User Interface (TUI)
+
+- **dialog**: Original tool, developed first (1990s)
+- **whiptail**: Fork/reimplementation of dialog, designed to be more lightweight
+- **dialog vs whiptail**
+    - **dialog** more widgets and features
+    - **whiptail** less widgets
+
+### Example 1: Message Box
+
+```bash
+message="Whiptail: Tool Basics"
+whiptail --msgbox --title "Intro to Whiptail" "$message" 0 0
+```
+
+:::note
+
+The number `0 0` is for auto size
+
+- Another example
+
+```bash
+message="Whiptail: Tool Basics"
+whiptail --msgbox --title "Intro to Whiptail" "$message" 25 80
+```
+
+The number `25 80` is height and width.
+
+- `25` is the height (number of rows/lines)
+- `80` is the width (number of columns/characters)
+
+:::
+
+**OUTPUT**
+
+![Whiptail Message Box](/cos3105/images/lab2/whiptail_msgbox.png)
+
+
+### Example 2: Yes/No dialog
+
+```bash
+#!/bin/bash
+
+if whiptail --title "Example Dialog" --yesno "This is an example of a yes/no box." 0 0; then
+    echo "User selected Yes, exit status was $?."
+else
+    echo "User selected No, exit status was $?."
+fi
+```
+
+![Whiptail Yes/No Dialog](/cos3105/images/lab2/whiptail_yes_no_dialog.gif)
+
+### Example 3: Input dialog
+
+
+```bash
+#!/bin/bash
+username="$(whiptail --inputbox "What is your username?" 10 30 "$USER" 3>&1 1>&2 2>&3)"
+printf "Your username is : %s\n" "${username}"
+```
+
+**OUTPUT**
+
+![Whiptail Input dialog](/cos3105/images/lab2/whiptail_input_dialog.gif)
+
+:::note
+
+This is a file descriptor swap - it switches stdout and stderr!
+
+`3>&1 1>&2 2>&3` 
+
+<Card>
+Step by step:
+
+<Steps>
+1. 3>&1 - Save stdout (1) into temp descriptor (3)
+2. 1>&2 - Point stdout (1) to stderr (2)
+3. 2>&3 - Point stderr (2) to temp descriptor (3)
+</Steps>
+</Card>
+
+<Card>
+```
+Before:  1 → screen    2 → screen
+         3 → (unused)
+
+Step 1:  1 → screen    2 → screen    3 → screen (copy of 1)
+Step 2:  1 → screen    2 → screen    3 → screen
+         ↳─────────────────↗
+Step 3:  1 → screen    2 → screen    3 → screen
+         ↳─────────────────↗   ↳--────────↗
+```
+
+**Result:**
+
+- stdout now goes where stderr used to go
+- stderr now goes where stdout used to go
+- 3 is like temporary variable
+
+**Why use 3?**
+
+File descriptors 0, 1, 2 are already taken (stdin, stdout, stderr)
+Descriptor 3 is the first available "free" descriptor
+It's temporary - we only need it for the swap operation
+</Card>
+
+:::
+
+### Example 4: Password dialog
+
+```bash
+#!/bin/bash
+password="$(whiptail --passwordbox "Please enter your password:" 0 0 3>&1 1>&2 2>&3)"
+printf "Your password is : %s\n" "$password"
+```
+
+**OUTPUT**
+
+![Whiptail Password dialog](/cos3105/images/lab2/whiptail_password_dialog.gif)
+
+
+### Example 5: Menu dialog
+
+```bash
+#!/bin/bash
+result=$(whiptail \
+  --menu "What is your favorite shell?" 0 0 2 \
+  "Bash" "(Bourne Again shell)" \
+  "Zsh"  "(Z-Shell)" \
+  3>&1 1>&2 2>&3)
+
+echo "You selected: $result"
+```
+
+**OUTPUT**
+
+![Whiptail Menu dialog](/cos3105/images/lab2/whiptail_menu_dialog.gif)
+
+:::note
+
+`0 0 2` 
+
+2 is for show only 2 choices of menu to the screen
+
+:::
+
+### Example 6: Multiple selected dialog
+
+```bash
+#!/bin/bash
+result=$(whiptail \
+  --checklist "What is your favorite shell?" 0 0 3 \
+  "Bash" "(Bourne Again shell)" 1 \
+  "Zsh"  "(Z-Shell)" 0 \
+  "Dash" "(Dash shell)" 0 \
+  3>&1 1>&2 2>&3)
+
+echo "You selected: $result"
+```
+
+**OUTPUT**
+
+
+![Whiptail multiple selected dialog](/cos3105/images/lab2/whiptail_multiple_selected_dialog.gif)
+
+:::note
+```
+  "Bash" "(Bourne Again shell)" 1 \
+  "Zsh"  "(Z-Shell)" 0 \
+  "Dash" "(Dash shell)" 0 \
+```
+
+`1` and `0` at the end means: `1` is for selected, `0` is unselected
+:::
+
+
+### Example 7: Textbox with scroll text
+
+```bash
+#!/bin/bash
+cat > temp.txt << 'EOF'
+This is a very long text that will demonstrate
+the scrollable text box feature in whiptail.
+You can scroll up and down through this content
+using the arrow keys.
+
+This is a very long text that will demonstrate
+the scrollable text box feature in whiptail.
+You can scroll up and down through this content
+using the arrow keys.
+
+
+This is a very long text that will demonstrate
+the scrollable text box feature in whiptail.
+You can scroll up and down through this content
+using the arrow keys.
+EOF
+
+whiptail --textbox temp.txt 0 0 --scrolltext
+rm temp.txt
+```
+
+**OUTPUT**
+
+![Whiptail Textbox dialog](/cos3105/images/lab2/whiptail_textbox_dialog.gif)
+
+### Example 8: Radio lists
+
+```bash
+#!/bin/bash
+result=$(whiptail \
+  --radiolist "What is your favorite shell?" 0 0 3 \
+  "Bash" "(Bourne Again shell)" 1 \
+  "Zsh"  "(Z-Shell)" 0 \
+  "Dash" "(Dash shell)" 0 \
+  3>&1 1>&2 2>&3)
+
+echo "You selected: $result"
+```
+
+**OUTPUT**
+
+
+![Whiptail radio lists dialog](/cos3105/images/lab2/whiptail_radio_lists_dialog.gif)
+
+### Example 9: Progress bar
+
+```bash
+#!/bin/bash
+
+# Simple file processing progress bar
+{
+    for i in {0..100..20}; do
+        echo "XXX"
+        echo $i
+        echo "Processing file $((i/20 + 1)) of 6..."
+        echo "XXX"
+        sleep 1
+    done
+} | whiptail --gauge "File Processing" 6 50 0
+
+echo "Done!"
+```
+
+**OUTPUT**
+
+![Whiptail progress bar](/cos3105/images/lab2/whiptail_progress_bar.gif)
+
+
+{/* ## DuckDB
+
+### Installation Linux
+
+```bash
+curl https://install.duckdb.org | sh
+```
+
+<Card>
+<Steps>
+1. After install open `/home/c/.bashrc` file
+2. Add this line to the end of file `export PATH='/home/c/.duckdb/cli/latest':$PATH` 
+3. Reboot `sudo reboot`
+</Steps>
+</Card>
+
+### Check DuckDB status
+
+```bash
+duckdb --version
+```
+
+
+## References
+
+- https://duckdb.org/2024/06/20/cli-data-processing-using-duckdb-as-a-unix-tool.html */}
