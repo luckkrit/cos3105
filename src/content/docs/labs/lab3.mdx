@@ -58,6 +58,25 @@ ps aux | grep 'create_process'
 ```
 :::
 
+
+## Example 1: Create a CSV file with your current running processes:
+
+- Install csvkit
+
+```bash
+pip3 install csvkit
+```
+
+- Create csv file from `ps`
+
+```bash
+ps aux | head -10 | tr -s ' ' | cut -d' ' -f1,2,3,4,11 > processes.csv
+# Add header manually or use:
+echo "user,pid,cpu,mem,command" > processes_with_header.csv
+ps aux | tail -n +2 | head -9 | tr -s ' ' | cut -d' ' -f1,2,3,4,11 >> processes_with_header.csv
+csvlook processes_with_header.csv
+```
+
 ### Memory Layout
 
 <Card>

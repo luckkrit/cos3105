@@ -400,3 +400,179 @@ c@c:~/cos3105$ ./test.sh
 lo               UNKNOWN        127.0.0.1/8 
 enp0s3           UP             10.0.2.15/24 metric 100 
 ```
+
+
+## CURL
+
+- curl (Client URL) is a command-line tool that allows you to send and receive data from servers using various protocols like HTTP, HTTPS, FTP, and more. It's widely used for testing APIs, downloading files, and debugging web services.
+
+```bash
+curl [options] [URL]
+```
+
+### Basic GET Request
+
+- Fetch webpages
+
+```bash
+curl https://httpbin.org/get
+```
+
+### Save Output to a File
+
+- Use -o to save the response to a specific file:
+
+```bash
+curl -o output.html https://example.com
+```
+
+- Or use -O to save with the original filename:
+
+```bash
+curl -O https://httpbin.org/image/webp
+```
+
+### POST Requests with Data
+
+- Send data to a server using POST:
+
+```bash
+curl -X POST -d "name=John&age=25" https://httpbin.org/post
+```
+
+- Send JSON data:
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"name":"John","age":25}' https://httpbin.org/post
+```
+
+### Adding Headers
+
+- Include custom headers in your request:
+
+```bash
+curl -X GET "https://httpbin.org/bearer" -H "accept: application/json" -H "Authorization: Bearer ghp_1234567890abcdef"
+```
+
+### Following Redirects
+
+- Use -L to follow redirects automatically:
+
+```bash
+curl -L https://bit.ly/shortened-url
+```
+
+### Verbose Output for Learning
+
+- Use -v to see detailed information about the request and response:
+
+```bash
+curl -v https://httpbin.org/get
+```
+
+### HTTP Methods
+
+- Specify different HTTP methods:
+
+```bash
+curl -X PUT -d "data" https://httpbin.org/put
+curl -X DELETE https://httpbin.org/delete
+curl -X PATCH -d "data" https://httpbin.org/patch
+```
+
+### Test send Email
+
+- Via mailtrap.io
+
+```bash
+#!/bin/bash
+
+echo 'Looking to send emails in production? Check out our Email API/SMTP product!'
+curl --location --request POST \
+'https://sandbox.api.mailtrap.io/api/send/yourId' \
+--header 'Authorization: Bearer TOKEN' \
+--header 'Content-Type: application/json' \
+--data-raw '{"from":{"email":"sender@example.com","name":"Mailtrap Test"},"to":[{"email":"receiver@example.com"}],"subject":"You are awesome!","text":"Congrats for sending test email with Mailtrap!","category":"Integration Test"}'
+```
+
+## CRON
+
+**What is Cron?**
+- Cron is a time-based job scheduler in Unix-like operating systems. It allows you to run scripts, commands, or programs automatically at specified times and intervals.
+
+**Basic Concepts**
+
+- **Cron daemon:** The background service that runs scheduled jobs
+- **Cron job:** A scheduled task
+- **Crontab:** The configuration file that lists cron jobs for a user
+
+**Cron Syntax**
+Each cron job follows this format:
+
+```
+* * * * * command-to-execute
+│ │ │ │ │
+│ │ │ │ └── Day of week (0-7, where 0 and 7 are Sunday)
+│ │ │ └──── Month (1-12)
+│ │ └────── Day of month (1-31)
+│ └──────── Hour (0-23)
+└────────── Minute (0-59)
+```
+
+:::note
+**Special Characters**
+
+- `*` - Any value (wildcard)
+
+- `,` - List separator (e.g., 1,3,5)
+
+- `-` - Range (e.g., 1-5)
+
+- `/` - Step values (e.g., */5 means every 5 minutes)
+
+:::
+
+### Example
+
+- For more examples: https://crontab.guru/examples.html
+
+```bash
+# Run every minute
+* * * * * /path/to/script.sh
+
+# Run at 2:30 AM daily
+30 2 * * * /path/to/backup.sh
+
+# Run every 5 minutes
+*/5 * * * * /path/to/monitor.sh
+
+# Run at 9 AM on weekdays (Mon-Fri)
+0 9 * * 1-5 /path/to/workday-task.sh
+
+# Run on the first day of every month at midnight
+0 0 1 * * /path/to/monthly-report.sh
+
+# Run every Sunday at 3 AM
+0 3 * * 0 /path/to/weekly-cleanup.sh
+```
+
+### Managing Crontab
+
+- View current crontab
+
+```bash
+crontab -l
+```
+
+- Edit crontab
+
+```bash
+crontab -e
+```
+
+- Remove all cron jobs
+
+```bash
+crontab -r
+```
+
