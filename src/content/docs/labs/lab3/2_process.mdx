@@ -1,0 +1,672 @@
+---
+title: 2 - Process
+lastUpdated: 2025-08-24
+---
+
+
+import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
+
+
+## Process
+
+### Stack frame of Process
+
+<Steps>
+1. Create file `memory_layout.c`
+    ```c
+    # memory_layout.c
+    #include <stdio.h>
+    int global_a;
+    int global_b;
+    void function1(){
+        global_a = 2;
+        global_b = 3;
+        int local_a = 4;
+        int local_b = 5;
+    }
+    int main(){
+        function1();
+        return 0;
+    }
+    ```
+2. Compile file `gcc -g -o memory_layout memory_layout.c`
+3. Debug file `gdb ./memory_layout`
+    ```bash
+    GNU gdb (Ubuntu 15.0.50.20240403-0ubuntu1) 15.0.50.20240403-git
+    Copyright (C) 2024 Free Software Foundation, Inc.
+    License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+    This is free software: you are free to change and redistribute it.
+    There is NO WARRANTY, to the extent permitted by law.
+    Type "show copying" and "show warranty" for details.
+    This GDB was configured as "x86_64-linux-gnu".
+    Type "show configuration" for configuration details.
+    For bug reporting instructions, please see:
+    <https://www.gnu.org/software/gdb/bugs/>.
+    Find the GDB manual and other documentation resources online at:
+        <http://www.gnu.org/software/gdb/documentation/>.
+
+    For help, type "help".
+    Type "apropos word" to search for commands related to "word"...
+    --Type <RET> for more, q to quit, c to continue without paging--c
+    Reading symbols from ./memory_layout...
+    (gdb) break function1
+    Breakpoint 1 at 0x1131: file memory_layout.c, line 5.
+    (gdb) run
+    Starting program: /home/c/cos3105/memory_layout 
+    
+    This GDB supports auto-downloading debuginfo from the following URLs:
+      <https://debuginfod.ubuntu.com>
+    Enable debuginfod for this session? (y or [n]) y
+    Debuginfod has been enabled.
+    To make this setting permanent, add 'set debuginfod enabled on' to .gdbinit.
+    [Thread debugging using libthread_db enabled]
+    Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+    
+    Breakpoint 1, function1 () at memory_layout.c:5
+    5           global_a = 2;
+
+    # Step through to see variables appear
+    (gdb) next  # global_a = 2
+    (gdb) next  # global_b = 3  
+    (gdb) next  # int local_a = 4
+    (gdb) next  # int local_b = 5
+
+    # Now see all variables in current frame
+    (gdb) info locals
+    local_a = 4
+    local_b = 5
+
+    # Print individual variables
+    (gdb) print local_a
+    $1 = 4
+    (gdb) print local_b  
+    $2 = 5
+
+    # See the stack frames
+    (gdb) bt
+    #0  function1 () at program.c:8
+    #1  0x... in main () at program.c:11
+
+    # Check what's in the main frame
+    (gdb) frame 1
+    (gdb) info locals
+    # (no local variables in main)
+
+    # Go back to function1 frame
+    (gdb) frame 0
+    (gdb) info locals
+    local_a = 4
+    local_b = 5
+    (gdb) exit
+    A debugging session is active.
+
+            Inferior 1 [process 22869] will be killed.
+
+    Quit anyway? (y or n) y
+    ```
+</Steps>
+
+
+### Process Control Block (PCB)
+
+```c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+// Simplified PCB structure (what OS actually maintains)
+struct PCB {
+    // PROCESS IDENTIFICATION
+    pid_t process_id;           // Unique process ID
+    pid_t parent_id;            // Parent process ID
+    char process_name[256];     // Program name
+    
+    // PROCESS STATE
+    enum process_state {
+        NEW,
+        READY,
+        RUNNING,
+        WAITING,
+        TERMINATED
+    } state;
+    
+    // CPU REGISTERS (saved during context switch)
+    struct cpu_registers {
+        unsigned long pc;       // Program Counter
+        unsigned long sp;       // Stack Pointer
+        unsigned long registers[16]; // General purpose registers
+        unsigned long flags;    // Status flags
+    } cpu_context;
+    
+    // MEMORY MANAGEMENT
+    struct memory_info {
+        void* code_segment;     // Where program code is loaded
+        void* data_segment;     // Where global variables are
+        void* heap_start;       // Dynamic memory start
+        void* stack_start;      // Stack memory start
+        size_t memory_size;     // Total memory used
+    } memory;
+    
+    // SCHEDULING INFORMATION
+    int priority;               // Process priority
+    int cpu_time_used;         // How much CPU time consumed
+    int time_slice_remaining;  // Time left in current slice
+    
+    // I/O AND FILES
+    struct file_descriptor_table {
+        int stdin_fd;           // Standard input
+        int stdout_fd;          // Standard output  
+        int stderr_fd;          // Standard error
+        int open_files[64];     // Other open files
+    } files;
+    
+    // PROCESS RELATIONSHIPS
+    struct PCB* parent;         // Pointer to parent PCB
+    struct PCB* children[32];   // Pointers to children PCBs
+    int num_children;
+    
+    // SYNCHRONIZATION
+    int waiting_for_resource;   // What resource process waits for
+    struct PCB* next_in_queue;  // For ready queue, wait queue, etc.
+};
+
+// Function to display PCB information
+void display_pcb_info(struct PCB* pcb) {
+    printf("=== PROCESS CONTROL BLOCK INFO ===\n\n");
+    
+    printf("IDENTIFICATION:\n");
+    printf("  Process ID (PID): %d\n", pcb->process_id);
+    printf("  Parent ID (PPID): %d\n", pcb->parent_id);
+    printf("  Process Name: %s\n", pcb->process_name);
+    
+    printf("\nSTATE:\n");
+    char* state_names[] = {"NEW", "READY", "RUNNING", "WAITING", "TERMINATED"};
+    printf("  Current State: %s\n", state_names[pcb->state]);
+    
+    printf("\nCPU CONTEXT:\n");
+    printf("  Program Counter: 0x%lx\n", pcb->cpu_context.pc);
+    printf("  Stack Pointer: 0x%lx\n", pcb->cpu_context.sp);
+    printf("  Registers: [saved during context switch]\n");
+    
+    printf("\nMEMORY:\n");
+    printf("  Code Segment: %p\n", pcb->memory.code_segment);
+    printf("  Data Segment: %p\n", pcb->memory.data_segment);
+    printf("  Heap Start: %p\n", pcb->memory.heap_start);
+    printf("  Stack Start: %p\n", pcb->memory.stack_start);
+    printf("  Memory Size: %zu bytes\n", pcb->memory.memory_size);
+    
+    printf("\nSCHEDULING:\n");
+    printf("  Priority: %d\n", pcb->priority);
+    printf("  CPU Time Used: %d ms\n", pcb->cpu_time_used);
+    printf("  Time Slice Remaining: %d ms\n", pcb->time_slice_remaining);
+    
+    printf("\nFILES:\n");
+    printf("  stdin: %d, stdout: %d, stderr: %d\n", 
+           pcb->files.stdin_fd, pcb->files.stdout_fd, pcb->files.stderr_fd);
+    
+    printf("\nRELATIONSHIPS:\n");
+    printf("  Number of Children: %d\n", pcb->num_children);
+}
+
+// Simulate creating a PCB for current process
+struct PCB* create_current_process_pcb() {
+    struct PCB* pcb = malloc(sizeof(struct PCB));
+    
+    // Fill in real information about current process
+    pcb->process_id = getpid();
+    pcb->parent_id = getppid();
+    snprintf(pcb->process_name, sizeof(pcb->process_name), "demo_process");
+    
+    pcb->state = RUNNING;  // Currently running since we're executing
+    
+    // Simulate some values (real OS gets these from hardware)
+    pcb->cpu_context.pc = 0x400000;  // Typical code start address
+    pcb->cpu_context.sp = 0x7fff0000; // Typical stack address
+    
+    pcb->memory.code_segment = (void*)0x400000;
+    pcb->memory.data_segment = (void*)0x600000;
+    pcb->memory.heap_start = (void*)0x800000;
+    pcb->memory.stack_start = (void*)0x7fff0000;
+    pcb->memory.memory_size = 1024 * 1024; // 1MB
+    
+    pcb->priority = 20;  // Normal priority
+    pcb->cpu_time_used = 150;
+    pcb->time_slice_remaining = 50;
+    
+    pcb->files.stdin_fd = 0;
+    pcb->files.stdout_fd = 1;
+    pcb->files.stderr_fd = 2;
+    
+    pcb->num_children = 0;
+    pcb->waiting_for_resource = 0;
+    
+    return pcb;
+}
+
+// Show how PCB is used during context switching
+void demonstrate_context_switch() {
+    printf("\n=== HOW PCB IS USED IN CONTEXT SWITCHING ===\n\n");
+    
+    printf("When OS switches from Process A to Process B:\n\n");
+    
+    printf("1. SAVE Process A's context:\n");
+    printf("   - Save CPU registers to PCB_A\n");
+    printf("   - Save program counter to PCB_A\n");
+    printf("   - Save stack pointer to PCB_A\n");
+    printf("   - Update PCB_A state to READY\n");
+    printf("   - Add PCB_A to ready queue\n\n");
+    
+    printf("2. LOAD Process B's context:\n");
+    printf("   - Load CPU registers from PCB_B\n");
+    printf("   - Load program counter from PCB_B\n");
+    printf("   - Load stack pointer from PCB_B\n");
+    printf("   - Update PCB_B state to RUNNING\n");
+    printf("   - Continue execution where B left off\n\n");
+    
+    printf("The PCB is what makes this possible!\n");
+    printf("Without PCB, the OS wouldn't know where to resume each process.\n");
+}
+
+// Show process states using PCB
+void demonstrate_process_states() {
+    printf("\n=== PROCESS STATES IN PCB ===\n\n");
+    
+    printf("NEW:        Process created, PCB allocated, not yet loaded\n");
+    printf("READY:      Process loaded, waiting for CPU assignment\n");
+    printf("RUNNING:    Process currently executing on CPU\n");
+    printf("WAITING:    Process blocked, waiting for I/O or resource\n");
+    printf("TERMINATED: Process finished, PCB being cleaned up\n\n");
+    
+    printf("State transitions:\n");
+    printf("NEW → READY:       OS loads process into memory\n");
+    printf("READY → RUNNING:   Scheduler assigns CPU\n");
+    printf("RUNNING → READY:   Time slice expires\n");
+    printf("RUNNING → WAITING: Process requests I/O\n");
+    printf("WAITING → READY:   I/O completes\n");
+    printf("RUNNING → TERMINATED: Process exits\n");
+}
+
+int main() {
+    printf("=== PROCESS CONTROL BLOCK (PCB) DEMONSTRATION ===\n\n");
+    
+    printf("WHAT IS PCB?\n");
+    printf("• PCB = Process Control Block\n");
+    printf("• OS data structure that REPRESENTS a process\n");
+    printf("• Contains ALL information needed to manage the process\n");
+    printf("• One PCB per process in the system\n\n");
+    
+    // Create and display a sample PCB
+    struct PCB* current_pcb = create_current_process_pcb();
+    display_pcb_info(current_pcb);
+    
+    demonstrate_context_switch();
+    demonstrate_process_states();
+    
+    printf("\n=== KEY POINTS ABOUT PCB ===\n");
+    printf("✓ PCB REPRESENTS the process to the OS\n");
+    printf("✓ Process = running program, PCB = OS's record of it\n");
+    printf("✓ OS uses PCB for scheduling, memory management, I/O\n");
+    printf("✓ Context switching = saving/loading PCB information\n");
+    printf("✓ Each process has exactly one PCB\n");
+    printf("✓ PCB exists even when process is not running\n");
+    
+    free(current_pcb);
+    return 0;
+}
+```
+
+### Process : Create Process
+
+```c
+//create_process.c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+int main()
+{
+     pid_t p;
+     p=fork();
+     if(p==0) //child
+     {
+         printf("I am child having PID %d\n",getpid());
+         printf("My parent PID is %d\n",getppid());
+     }
+     else //parent
+     {
+         printf("I am parent having PID %d\n",getpid());
+         printf("My child PID is %d\n",p);
+     }
+     char read[2];
+     fgets(read,sizeof(read),stdin);
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./create_process 
+I am parent having PID 30752
+My child PID is 30753
+I am child having PID 30753
+My parent PID is 30752
+```
+
+- Open another terminal
+
+```bash
+ps aux | grep "create_process"
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ps aux | grep "create_process"
+c          30752  0.0  0.0   2680  1536 pts/1    S+   15:06   0:00 ./create_process
+c          30753  0.0  0.0   2680   896 pts/1    S+   15:06   0:00 ./create_process
+c          30837  0.0  0.0   6676  2304 pts/0    S+   15:06   0:00 grep --color=auto create_process
+```
+
+### Show process tree
+
+1. pstree
+
+```bash
+pstree
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ pstree
+systemd─┬─ModemManager───3*[{ModemManager}]
+        ├─agetty
+        ├─cron
+        ├─dbus-daemon
+        ├─multipathd───6*[{multipathd}]
+        ├─node─┬─node─┬─node─┬─bash───pstree
+        │      │      │      ├─bash───create_process───create_process
+        │      │      │      └─12*[{node}]
+        │      │      ├─2*[node───12*[{node}]]
+        │      │      └─10*[{node}]
+        │      └─10*[{node}]
+        ├─polkitd───3*[{polkitd}]
+        ├─rsyslogd───3*[{rsyslogd}]
+        ├─systemd-journal
+        ├─systemd-logind
+        ├─systemd-network
+        ├─systemd-resolve
+        ├─systemd-timesyn───{systemd-timesyn}
+        ├─systemd-udevd
+        ├─udisksd───5*[{udisksd}]
+        ├─unattended-upgr───{unattended-upgr}
+        └─upowerd───3*[{upowerd}]
+```
+
+2. pstree with PIDs:
+
+```bash
+pstree -p
+```
+
+**OUTPUT**
+c@c:~/cos3105$ pstree -p
+systemd(1)─┬─ModemManager(816)─┬─{ModemManager}(833)
+           │                   ├─{ModemManager}(838)
+           │                   └─{ModemManager}(841)
+           ├─agetty(882)
+           ├─cron(873)
+           ├─dbus-daemon(729)
+           ├─multipathd(365)─┬─{multipathd}(381)
+           │                 ├─{multipathd}(382)
+           │                 ├─{multipathd}(383)
+           │                 ├─{multipathd}(384)
+           │                 ├─{multipathd}(385)
+           │                 └─{multipathd}(386)
+           ├─node(728)─┬─node(911)─┬─node(1110)─┬─bash(1121)───pstree(242065)
+           │           │           │            ├─bash(11587)───create_process(32019)───create_process(32020)
+           │           │           │            ├─{node}(1111)
+           │           │           │            ├─{node}(1112)
+           │           │           │            ├─{node}(1113)
+           │           │           │            ├─{node}(1114)
+           │           │           │            ├─{node}(1115)
+           │           │           │            ├─{node}(1116)
+           │           │           │            ├─{node}(1117)
+           │           │           │            ├─{node}(1118)
+           │           │           │            ├─{node}(1119)
+           │           │           │            ├─{node}(1120)
+           │           │           │            ├─{node}(1122)
+           │           │           │            └─{node}(11588)
+           │           │           ├─node(241465)─┬─{node}(241466)
+           │           │           │              ├─{node}(241467)
+           │           │           │              ├─{node}(241468)
+           │           │           │              ├─{node}(241469)
+           │           │           │              ├─{node}(241470)
+           │           │           │              ├─{node}(241471)
+           │           │           │              ├─{node}(241472)
+           │           │           │              ├─{node}(241473)
+           │           │           │              ├─{node}(241474)
+           │           │           │              ├─{node}(241475)
+           │           │           │              ├─{node}(241476)
+           │           │           │              └─{node}(241483)
+           │           │           ├─node(241484)─┬─{node}(241485)
+           │           │           │              ├─{node}(241486)
+           │           │           │              ├─{node}(241487)
+           │           │           │              ├─{node}(241488)
+           │           │           │              ├─{node}(241489)
+           │           │           │              ├─{node}(241490)
+           │           │           │              ├─{node}(241491)
+           │           │           │              ├─{node}(241492)
+           │           │           │              ├─{node}(241493)
+           │           │           │              ├─{node}(241494)
+           │           │           │              ├─{node}(241496)
+           │           │           │              └─{node}(241497)
+           │           │           ├─{node}(913)
+           │           │           ├─{node}(914)
+           │           │           ├─{node}(915)
+           │           │           ├─{node}(916)
+           │           │           ├─{node}(917)
+           │           │           ├─{node}(918)
+           │           │           ├─{node}(919)
+           │           │           ├─{node}(920)
+           │           │           ├─{node}(921)
+           │           │           └─{node}(922)
+           │           ├─{node}(826)
+           │           ├─{node}(827)
+           │           ├─{node}(828)
+           │           ├─{node}(829)
+           │           ├─{node}(830)
+           │           ├─{node}(857)
+           │           ├─{node}(901)
+           │           ├─{node}(902)
+           │           ├─{node}(903)
+           │           └─{node}(904)
+           ├─polkitd(734)─┬─{polkitd}(790)
+           │              ├─{polkitd}(791)
+           │              └─{polkitd}(793)
+           ├─rsyslogd(823)─┬─{rsyslogd}(853)
+           │               ├─{rsyslogd}(854)
+           │               └─{rsyslogd}(855)
+           ├─systemd-journal(314)
+           ├─systemd-logind(741)
+           ├─systemd-network(560)
+           ├─systemd-resolve(577)
+           ├─systemd-timesyn(588)───{systemd-timesyn}(699)
+           ├─systemd-udevd(380)
+           ├─udisksd(743)─┬─{udisksd}(759)
+           │              ├─{udisksd}(760)
+           │              ├─{udisksd}(762)
+           │              ├─{udisksd}(819)
+           │              └─{udisksd}(847)
+           ├─unattended-upgr(780)───{unattended-upgr}(859)
+           └─upowerd(4275)─┬─{upowerd}(4277)
+                           ├─{upowerd}(4278)
+                           └─{upowerd}(4279)
+```bash
+
+```
+
+3. ps command with tree format:
+
+```bash
+ps axf
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ps axf
+    PID TTY      STAT   TIME COMMAND
+      2 ?        S      0:00 [kthreadd]
+      3 ?        S      0:00  \_ [pool_workqueue_release]
+      4 ?        I<     0:00  \_ [kworker/R-rcu_g]
+      5 ?        I<     0:00  \_ [kworker/R-rcu_p]
+      6 ?        I<     0:00  \_ [kworker/R-slub_]
+      7 ?        I<     0:00  \_ [kworker/R-netns]
+     10 ?        I<     0:00  \_ [kworker/0:0H-events_highpri]
+     11 ?        I      0:00  \_ [kworker/u4:0-ext4-rsv-conversion]
+     12 ?        I<     0:00  \_ [kworker/R-mm_pe]
+     13 ?        I      0:00  \_ [rcu_tasks_kthread]
+     14 ?        I      0:00  \_ [rcu_tasks_rude_kthread]
+     15 ?        I      0:00  \_ [rcu_tasks_trace_kthread]
+     16 ?        S      0:01  \_ [ksoftirqd/0]
+     17 ?        I      0:17  \_ [rcu_preempt]
+     18 ?        S      0:01  \_ [migration/0]
+     19 ?        S      0:00  \_ [idle_inject/0]
+     20 ?        S      0:00  \_ [cpuhp/0]
+     21 ?        S      0:00  \_ [cpuhp/1]
+     22 ?        S      0:00  \_ [idle_inject/1]
+     23 ?        S      0:01  \_ [migration/1]
+     24 ?        S      0:03  \_ [ksoftirqd/1]
+     26 ?        I<     0:02  \_ [kworker/1:0H-kblockd]
+     29 ?        S      0:00  \_ [kdevtmpfs]
+     30 ?        I<     0:00  \_ [kworker/R-inet_]
+     32 ?        S      0:00  \_ [kauditd]
+     33 ?        S      0:00  \_ [khungtaskd]
+     34 ?        S      0:00  \_ [oom_reaper]
+     36 ?        I<     0:00  \_ [kworker/R-write]
+     37 ?        S      0:06  \_ [kcompactd0]
+     38 ?        SN     0:00  \_ [ksmd]
+     40 ?        SN     0:00  \_ [khugepaged]
+     41 ?        I<     0:00  \_ [kworker/R-kinte]
+     42 ?        I<     0:00  \_ [kworker/R-kbloc]
+     43 ?        I<     0:00  \_ [kworker/R-blkcg]
+     44 ?        S      0:00  \_ [irq/9-acpi]
+     45 ?        I<     0:00  \_ [kworker/R-tpm_d]
+     46 ?        I<     0:00  \_ [kworker/R-ata_s]
+     47 ?        I<     0:00  \_ [kworker/R-md]
+     48 ?        I<     0:00  \_ [kworker/R-md_bi]
+     49 ?        I<     0:00  \_ [kworker/R-edac-]
+     50 ?        I<     0:00  \_ [kworker/R-devfr]
+     51 ?        S      0:00  \_ [watchdogd]
+     54 ?        S      0:00  \_ [kswapd0]
+     55 ?        S      0:00  \_ [ecryptfs-kthread]
+     56 ?        I<     0:00  \_ [kworker/R-kthro]
+     57 ?        I<     0:00  \_ [kworker/R-acpi_]
+     59 ?        S      0:00  \_ [scsi_eh_0]
+     60 ?        I<     0:00  \_ [kworker/R-scsi_]
+     61 ?        S      0:00  \_ [scsi_eh_1]
+     62 ?        I<     0:00  \_ [kworker/R-scsi_]
+     65 ?        I<     0:00  \_ [kworker/R-mld]
+     66 ?        I<     0:00  \_ [kworker/R-ipv6_]
+     73 ?        I<     0:00  \_ [kworker/R-kstrp]
+     75 ?        I<     0:00  \_ [kworker/u7:0]
+     76 ?        I<     0:00  \_ [kworker/u8:0]
+     77 ?        I<     0:00  \_ [kworker/u9:0]
+     82 ?        I<     0:00  \_ [kworker/R-crypt]
+     93 ?        I<     0:00  \_ [kworker/R-charg]
+    120 ?        I<     0:02  \_ [kworker/0:1H-kblockd]
+    161 ?        S      0:00  \_ [scsi_eh_2]
+    162 ?        I<     0:00  \_ [kworker/R-scsi_]
+    176 ?        I<     0:00  \_ [kworker/R-kdmfl]
+    206 ?        I<     0:00  \_ [kworker/R-raid5]
+    229 ?        I<     0:00  \_ [kworker/1:2H-kblockd]
+    246 ?        S      0:04  \_ [jbd2/dm-0-8]
+    247 ?        I<     0:00  \_ [kworker/R-ext4-]
+    309 ?        S      0:00  \_ [psimon]
+    342 ?        I<     0:00  \_ [kworker/R-kmpat]
+    344 ?        I<     0:00  \_ [kworker/R-kmpat]
+    367 ?        I      0:00  \_ [kworker/u4:1-ext4-rsv-conversion]
+    394 ?        S      0:00  \_ [psimon]
+    474 ?        S      0:00  \_ [irq/18-vmwgfx]
+    476 ?        I<     0:00  \_ [kworker/R-ttm]
+    479 ?        S      0:00  \_ [jbd2/sda2-8]
+    480 ?        I<     0:00  \_ [kworker/R-ext4-]
+    707 ?        I<     0:00  \_ [kworker/R-cfg80]
+ 103557 ?        I<     0:00  \_ [kworker/R-tls-s]
+ 179147 ?        I      1:35  \_ [kworker/1:0-events]
+ 204808 ?        I      0:00  \_ [kworker/u5:3-flush-252:0]
+ 221214 ?        I      0:30  \_ [kworker/1:2-events]
+ 235923 ?        I      0:00  \_ [kworker/u5:1-events_unbound]
+ 238601 ?        I      0:00  \_ [kworker/u6:1-events_power_efficient]
+ 238672 ?        I      0:00  \_ [kworker/u5:0-events_unbound]
+ 240464 ?        I      0:02  \_ [kworker/0:0-events]
+ 241453 ?        I      0:00  \_ [kworker/u6:2-events_unbound]
+ 241458 ?        I      0:00  \_ [kworker/0:2-cgroup_destroy]
+ 241459 ?        I      0:00  \_ [kworker/u6:4-flush-252:0]
+ 241706 ?        I      0:00  \_ [kworker/1:1]
+      1 ?        Ss     0:05 /sbin/init
+    314 ?        S<s    0:01 /usr/lib/systemd/systemd-journald
+    365 ?        SLsl   0:13 /sbin/multipathd -d -s
+    380 ?        Ss     0:00 /usr/lib/systemd/systemd-udevd
+    560 ?        Ss     0:00 /usr/lib/systemd/systemd-networkd
+    577 ?        Ss     0:00 /usr/lib/systemd/systemd-resolved
+    588 ?        Ssl    0:00 /usr/lib/systemd/systemd-timesyncd
+    728 ?        Ssl    0:00 /usr/lib/code-server/lib/node /usr/lib/code-server
+    911 ?        Sl     1:38  \_ /usr/lib/code-server/lib/node /usr/lib/code-server/out/node/entry
+   1110 ?        Sl     2:27      \_ /usr/lib/code-server/lib/node /usr/lib/code-server/lib/vscode/out/bootstrap-fork --type=ptyHost --logsPath /home/c/.local/share/code-server/logs/20250824T125250
+   1121 pts/0    Ss     0:00      |   \_ /bin/bash --init-file /usr/lib/code-server/lib/vscode/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh
+ 242203 pts/0    R+     0:00      |   |   \_ ps axf
+  11587 pts/1    Ss     0:00      |   \_ /bin/bash
+  32019 pts/1    S+     0:00      |       \_ ./create_process
+  32020 pts/1    S+     0:00      |           \_ ./create_process
+ 241465 ?        Sl     0:08      \_ /usr/lib/code-server/lib/node --dns-result-order=ipv4first /usr/lib/code-server/lib/vscode/out/bootstrap-fork --type=extensionHost --transformURIs --useHostProxy=false
+ 241484 ?        Sl     0:00      \_ /usr/lib/code-server/lib/node /usr/lib/code-server/lib/vscode/out/bootstrap-fork --type=fileWatcher
+    729 ?        Ss     0:01 @dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+    734 ?        Ssl    0:02 /usr/lib/polkit-1/polkitd --no-debug
+    741 ?        Ss     0:00 /usr/lib/systemd/systemd-logind
+    743 ?        Ssl    0:02 /usr/libexec/udisks2/udisksd
+    780 ?        Ssl    0:00 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+    816 ?        Ssl    0:00 /usr/sbin/ModemManager
+    823 ?        Ssl    0:00 /usr/sbin/rsyslogd -n -iNONE
+    873 ?        Ss     0:00 /usr/sbin/cron -f -P
+    882 tty1     Ss+    0:00 /sbin/agetty -o -p -- \u --noclear - linux
+   4275 ?        Ssl    0:05 /usr/libexec/upowerd
+```
+
+4. Show specific process tree:
+
+- pstree PID
+
+```bash
+pstree 1
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ pstree 1
+systemd─┬─ModemManager───3*[{ModemManager}]
+        ├─agetty
+        ├─cron
+        ├─dbus-daemon
+        ├─multipathd───6*[{multipathd}]
+        ├─node─┬─node─┬─node─┬─bash───pstree
+        │      │      │      ├─bash───create_process───create_process
+        │      │      │      └─12*[{node}]
+        │      │      ├─2*[node───12*[{node}]]
+        │      │      └─10*[{node}]
+        │      └─10*[{node}]
+        ├─polkitd───3*[{polkitd}]
+        ├─rsyslogd───3*[{rsyslogd}]
+        ├─systemd-journal
+        ├─systemd-logind
+        ├─systemd-network
+        ├─systemd-resolve
+        ├─systemd-timesyn───{systemd-timesyn}
+        ├─systemd-udevd
+        ├─udisksd───5*[{udisksd}]
+        ├─unattended-upgr───{unattended-upgr}
+        └─upowerd───3*[{upowerd}]
+```

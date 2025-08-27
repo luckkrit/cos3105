@@ -401,6 +401,94 @@ lo               UNKNOWN        127.0.0.1/8
 enp0s3           UP             10.0.2.15/24 metric 100 
 ```
 
+## TAR GZIP
+
+- Extract gzip
+
+```bash
+tar -xvzf images.tar.gz
+```
+
+:::note
+
+To explain a little further, tar collected all the files into one package, community_images.tar. The gzip program applied compression, hence the gz extension. So the command does a couple things:
+
+f: this must be the last flag of the command, and the tar file must be immediately after. It tells tar the name and path of the compressed file.
+z: tells tar to decompress the archive using gzip
+x: tar can collect files or extract them. x does the latter.
+v: makes tar talk a lot. Verbose output shows you all the files being extracted.
+
+To extract into a custom folder, add the -C option with a folder name of your choice:
+
+```bash
+tar -xvzf images.tar.gz -C some_custom_folder_name
+```
+:::
+
+- Compress gzip
+
+```bash
+tar -cvzf linuximage.tar.gz linuximage
+```
+
+## ZIP/UNZIP
+
+- Install zip/unzip
+
+```bash
+sudo apt install zip unzip
+```
+
+- To zip a file
+- Suppose that we have email.sh and want to zip file
+
+```bash
+zip email.zip email.sh
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ zip email.zip email.sh
+  adding: email.sh (deflated 36%)
+```
+
+- To zip a folder name `cjson`
+
+```bash
+zip cjson.zip -r cjson
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ zip cjson.zip -r cjson
+  adding: cjson/ (stored 0%)
+  adding: cjson/cJSON-1.7.18/ (stored 0%)
+  adding: cjson/cJSON-1.7.18/library_config/ (stored 0%)
+  adding: cjson/cJSON-1.7.18/library_config/libcjson_utils.pc.in (deflated 32%)
+  adding: cjson/cJSON-1.7.18/library_config/cJSONConfig.cmake.in (deflated 57%)
+  adding: cjson/cJSON-1.7.18/library_config/cJSONConfigVersion.cmake.in (deflated 53%)
+```
+
+- To unzip file
+
+```bash
+c@c:~/cos3105$ unzip cjson.zip -d cjson
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ unzip cjson.zip -d cjson
+Archive:  cjson.zip
+   creating: cjson/cjson/
+   creating: cjson/cjson/cJSON-1.7.18/
+   creating: cjson/cjson/cJSON-1.7.18/library_config/
+  inflating: cjson/cjson/cJSON-1.7.18/library_config/libcjson_utils.pc.in  
+  inflating: cjson/cjson/cJSON-1.7.18/library_config/cJSONConfig.cmake.in  
+  inflating: cjson/cjson/cJSON-1.7.18/library_config/cJSONConfigVersion.cmake.in  
+```
 
 ## CURL
 
@@ -482,7 +570,7 @@ curl -X PATCH -d "data" https://httpbin.org/patch
 
 ### Test send Email
 
-- Via mailtrap.io
+- Via mailtrap.io for testing
 
 ```bash
 #!/bin/bash
