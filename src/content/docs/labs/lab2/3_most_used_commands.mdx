@@ -591,7 +591,7 @@ if curl -f -s --location --request POST \
 'https://sandbox.api.mailtrap.io/api/send/394' \
 --header 'Authorization: Bearer d9ace522be' \
 --header 'Content-Type: application/json' \
---data-raw '{"from":{"email":"luckkrit@gmail.com","name":"Mailtrap Test"},"to":[{"email":"luckkrit@gmail.com"}],"subject":"You are awesome!","text":"Congrats for sending test email with Mailtrap!","category":"Integration Test"}' > /dev/null; then
+--data-raw '{"from":{"email":"sender@example.com","name":"Mailtrap Test"},"to":[{"email":"receiver@example.com"}],"subject":"You are awesome!","text":"Congrats for sending test email with Mailtrap!","category":"Integration Test"}' > /dev/null; then
     echo "Success 200 response"
 else
     echo "Failed (non-2xx response or network error)"
