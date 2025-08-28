@@ -716,7 +716,14 @@ touch "/home/c/cos3105/logs/log_$(date +"%Y_%m_%d_%H_%M_%S.txt")"
 - Cron script
 
 ```bash
-# If you not use crontab, you can comment this line 
+# ===========================================
+# CRON JOB CONFIGURATION
+# ===========================================
+# This runs ex_cron.sh every minute and logs output
+# 
+# To ENABLE: Remove the # from the line below
+# To DISABLE: Add # at the beginning of the line below
+#
 * * * * * /home/c/cos3105/ex_cron.sh >> /home/c/cos3105/cron_output.log 2>&1
 ```
 
