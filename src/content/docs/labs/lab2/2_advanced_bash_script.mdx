@@ -640,7 +640,7 @@ int main(int argc, char *argv[]) {
 #!/bin/bash
 
 # Capture stdout and stderr separately
-result=$(./contacts mode email email_body 2>&1)
+result=$(./contacts2 mode email email_body 2>&1)
 exit_code=$?
 
 if [ $exit_code -eq 0 ]; then
@@ -655,7 +655,7 @@ fi
 
 ```bash
 c@c:~/cos3105$ ./contacts2.sh
-Error: Program failed with exit code 1
+Error (exit code 3): Error: File not found
 ```
 
 {/* ## DuckDB
