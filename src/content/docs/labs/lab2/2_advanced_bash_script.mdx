@@ -639,11 +639,14 @@ int main(int argc, char *argv[]) {
 ```bash
 #!/bin/bash
 
-if result=$(./contacts mode email email_body); then
+# Capture stdout and stderr separately
+result=$(./contacts mode email email_body 2>&1)
+exit_code=$?
+
+if [ $exit_code -eq 0 ]; then
     echo "Success: $result"
 else
-    exit_code=$?
-    echo "Error: Program failed with exit code $exit_code"
+    echo "Error (exit code $exit_code): $result"
 fi
 ```
 
