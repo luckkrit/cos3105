@@ -596,10 +596,26 @@ if curl -f -s --location --request POST \
 else
     echo "Failed (non-2xx response or network error)"
 fi
-
-
-
 ```
+
+- Get response code
+
+```bash
+# Get just the response code
+curl -s -o /dev/null -w "%{http_code}" https://example.com
+
+# Get response code with other info
+curl -w "Response: %{http_code}\nTime: %{time_total}s\n" https://example.com
+
+# Store response code in variable (bash)
+response_code=$(curl -s -o /dev/null -w "%{http_code}" https://example.com)
+if [ "$response_code" -eq 200 ]; then
+    echo "Success!"
+else
+    echo "Error: $response_code"
+fi
+```
+
 
 ## CRON
 
@@ -682,3 +698,32 @@ crontab -e
 crontab -r
 ```
 
+### Full Example
+
+- Bash script
+
+```bash
+#!/bin/bash
+
+
+if [ ! -d "/home/c/cos3105/logs" ]; then
+    mkdir /home/c/cos3105/logs
+fi
+
+touch "/home/c/cos3105/logs/log_$(date +"%Y_%m_%d_%H_%M_%S.txt")"
+```
+
+- Cron script
+
+```bash
+# If you not use crontab, you can comment this line 
+* * * * * /home/c/cos3105/ex_cron.sh >> /home/c/cos3105/cron_output.log 2>&1
+```
+
+
+**OUTPUT**
+
+<video width="1062" height="852" controls autoplay>
+  <source src="/cos3105/videos/lab2/crontab.mp4" type="video/mp4" />
+Your browser does not support the video tag.
+</video>
