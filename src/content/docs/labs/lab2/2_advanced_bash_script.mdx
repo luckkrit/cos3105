@@ -603,6 +603,57 @@ echo "Done!"
 
 ![Whiptail progress bar](/cos3105/images/lab2/whiptail_progress_bar.gif)
 
+## Handle errors from C program
+
+- Example of C program
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <command>\n", argv[0]);
+        return 1;  // Error code
+    }
+    
+    // Your logic here
+    if (argc == 2) {
+        fprintf(stderr, "Error: Something went wrong\n");
+        return 2;  // Specific error code
+    }
+    
+    if (argc > 2) {
+        fprintf(stderr, "Error: File not found\n");
+        return 3;  // Different error code
+    }
+    
+    // Success case
+    printf("Operation successful\n");
+    return 0;  // Success
+}
+```
+
+- Example of bash script
+
+```bash
+#!/bin/bash
+
+if result=$(./contacts mode email email_body); then
+    echo "Success: $result"
+else
+    exit_code=$?
+    echo "Error: Program failed with exit code $exit_code"
+fi
+```
+
+**OUTPUT**
+
+
+```bash
+c@c:~/cos3105$ ./contacts2.sh
+Error: Program failed with exit code 1
+```
 
 {/* ## DuckDB
 
@@ -630,3 +681,5 @@ duckdb --version
 ## References
 
 - https://duckdb.org/2024/06/20/cli-data-processing-using-duckdb-as-a-unix-tool.html */}
+
+
