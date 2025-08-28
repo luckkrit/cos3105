@@ -734,3 +734,45 @@ touch "/home/c/cos3105/logs/log_$(date +"%Y_%m_%d_%H_%M_%S.txt")"
   <source src="/cos3105/videos/lab2/crontab.mp4" type="video/mp4" />
 Your browser does not support the video tag.
 </video>
+
+
+{/* ## Example usecase
+
+### Create multiple users
+
+- Create 50 users 
+
+```bash
+#!/usr/bin/env bash
+
+users=50
+admin_user="c"
+
+# Create a shared group for lab access
+groupadd labusers 2>/dev/null || true
+usermod -a -G labusers "$admin_user"
+
+for ((i=1; i<=users; i++)); do
+    username="user$i"
+    echo "Creating $username..."
+    
+    # Create user and add to labusers group
+    useradd -s /bin/bash -d /home/$username -m -G labusers "$username"
+    
+    # Set password
+    echo "$username:$username" | chpasswd
+    
+    # Create lab directory
+    sudo -u "$username" mkdir /home/$username/lab
+    
+    # Set proper ownership and permissions
+    chown "$username:labusers" /home/$username/lab
+    chmod 775 /home/$username/lab  # User and group can write
+    
+    echo "✓ Created $username"
+done
+
+echo "✅ Successfully created $users users!"
+echo "ℹ️  All users are in the 'labusers' group"
+echo "ℹ️  User '$admin_user' can access all lab directories"
+``` */}
