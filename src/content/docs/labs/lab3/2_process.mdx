@@ -9,7 +9,208 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 
 ## Process
 
-### Stack frame of Process
+### Process : Memory Layout
+
+```c
+/* This file is part of the sample code and exercises
+ * used by the class "Advanced Programming in the UNIX
+ * Environment" taught by Jan Schaumann
+ * <jschauma@netmeister.org> at Stevens Institute of
+ * Technology.
+ *
+ * This file is in the public domain.
+ *
+ * You don't have to, but if you feel like
+ * acknowledging where you got this code, you may
+ * reference me by name, email address, or point
+ * people to the course website:
+ * https://stevens.netmeister.org/631/
+ */
+
+/* This program allows us to visualize the layout of a
+ * process in memory, printing the addresses of
+ * various parts of the program, including components
+ * in the text, data, and bss segments as well as on
+ * the heap and the stack.
+ *
+ * This program can also illustrate a stack overflow
+ * if compiled with '-DSTACKOVERFLOW'.
+ */
+
+#include <err.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define ARRAY_SIZE 16
+#define MALLOC_SIZE 32
+
+char array[ARRAY_SIZE];
+char *string = "a string";
+char *string2;
+int num = 10;
+int num2;
+
+extern char **environ;
+
+void func(int);
+void func2(const char *);
+
+int
+main(int argc, char **argv) {
+	int var;
+	char *ptr;
+
+	char func_array[ARRAY_SIZE];
+
+	(void)printf("High address (args and env):\n");
+	(void)printf("----------------------------\n");
+	(void)printf("environ[0] at                                          : 0x%12lX\n", (unsigned long)environ);
+	(void)printf("last arg at                                            : 0x%12lX\n", (unsigned long)&argv[argc]);
+	(void)printf("first arg at                                           : 0x%12lX\n", (unsigned long)&argv[0]);
+	(void)printf("\n");
+
+	(void)printf("Stack:\n");
+	(void)printf("------\n");
+	(void)printf("First variable inside main at                          : 0x%12lX\n", (unsigned long)&var);
+	(void)printf("func_array[] ends at                                   : 0x%12lX\n", (unsigned long)&func_array[ARRAY_SIZE]);
+	(void)printf("func_array[] (like 'array[]', but on stack) begins at  : 0x%12lX\n", (unsigned long)&func_array[0]);
+
+	(void)printf("argc at                                                : 0x%12lX\n", (unsigned long)&argc);
+	(void)printf("argv at                                                : 0x%12lX\n", (unsigned long)&argv);
+
+	func2("from main");
+	func(0);
+
+	(void)printf("\n");
+
+	(void)printf("Heap:\n");
+	(void)printf("-----\n");
+	if ((ptr = malloc(MALLOC_SIZE)) == NULL) {
+		err(EXIT_FAILURE, "unable to allocate memory");
+		/* NOTREACHED */
+	}
+
+	(void)printf("malloced area ends at                                  : 0x%12lX\n", (unsigned long)ptr+MALLOC_SIZE);
+	(void)printf("malloced area begins at                                : 0x%12lX\n", (unsigned long)ptr);
+	free(ptr);
+	(void)printf("\n");
+
+	(void)printf("Uninitialized Data (BSS):\n");
+	(void)printf("-------------------------\n");
+	(void)printf("array[] ends at                                        : 0x%12lX\n", (unsigned long)&array[ARRAY_SIZE]);
+	(void)printf("array[] (uninitialized, fixed-size char * on BSS) from : 0x%12lX\n", (unsigned long)&array[0]);
+	(void)printf("num2 (uninitialized global int) at                     : 0x%12lX\n", (unsigned long)&num2);
+	(void)printf("string2 (uninitialized global char *) at               : 0x%12lX\n", (unsigned long)&string2);
+	(void)printf("extern **environ at                                    : 0x%12lX\n", (unsigned long)&environ);
+	(void)printf("\n");
+
+	(void)printf("Initialized Data:\n");
+	(void)printf("-----------------\n");
+	(void)printf("num (initialized global int) at                        : 0x%12lX\n", (unsigned long)&num);
+	(void)printf("string (initialized global char *) at                  : 0x%12lX\n", (unsigned long)&string);
+	(void)printf("\n");
+
+	(void)printf("Text Segment:\n");
+	(void)printf("-------------\n");
+	(void)printf("func2 (function) at                                    : 0x%12lX\n", (unsigned long)&func2);
+	(void)printf("func (function) at                                     : 0x%12lX\n", (unsigned long)&func);
+	(void)printf("main (function) at                                     : 0x%12lX\n", (unsigned long)&main);
+	(void)printf("\n");
+
+	return EXIT_SUCCESS;
+}
+
+
+void
+func(int recurse) {
+	int fint;
+	char *msg = "from func";
+
+	/* Change this value to 0 and note how
+	 * the location of where it is stored
+	 * changes from the Data to BSS segment. */
+	static int n = 1;
+	(void)printf("func frame at                                          : 0x%12lX\n", (unsigned long)&fint);
+
+	if (recurse) {
+		msg = "recursive";
+	}
+	(void)printf("static int n within func at                            : 0x%12lX\n", (unsigned long)&n);
+	printf("func (called %5d times): frame at                    : 0x%12lX\n", n, (unsigned long)&fint);
+
+	n++;
+	func2(msg);
+}
+
+void
+func2(const char *how) {
+	int fint;
+	(void)printf("func2 (%s): frame at                            : 0x%12lX\n", how, (unsigned long)&fint);
+#ifdef STACKOVERFLOW
+	func(1);
+#endif
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./memory_layout2
+High address (args and env):
+----------------------------
+environ[0] at                                          : 0x7FFDCBCB41F8
+last arg at                                            : 0x7FFDCBCB41F0
+first arg at                                           : 0x7FFDCBCB41E8
+
+Stack:
+------
+First variable inside main at                          : 0x7FFDCBCB4094
+func_array[] ends at                                   : 0x7FFDCBCB40B0
+func_array[] (like 'array[]', but on stack) begins at  : 0x7FFDCBCB40A0
+argc at                                                : 0x7FFDCBCB408C
+argv at                                                : 0x7FFDCBCB4080
+func2 (from main): frame at                            : 0x7FFDCBCB4064
+func frame at                                          : 0x7FFDCBCB405C
+static int n within func at                            : 0x5731C2CFA014
+func (called     1 times): frame at                    : 0x7FFDCBCB405C
+func2 (from func): frame at                            : 0x7FFDCBCB4024
+
+Heap:
+-----
+malloced area ends at                                  : 0x5731C5DE96D0
+malloced area begins at                                : 0x5731C5DE96B0
+
+Uninitialized Data (BSS):
+-------------------------
+array[] ends at                                        : 0x5731C2CFA040
+array[] (uninitialized, fixed-size char * on BSS) from : 0x5731C2CFA030
+num2 (uninitialized global int) at                     : 0x5731C2CFA048
+string2 (uninitialized global char *) at               : 0x5731C2CFA040
+extern **environ at                                    : 0x5731C2CFA020
+
+Initialized Data:
+-----------------
+num (initialized global int) at                        : 0x5731C2CFA010
+string (initialized global char *) at                  : 0x5731C2CFA018
+
+Text Segment:
+-------------
+func2 (function) at                                    : 0x5731C2CF76A0
+func (function) at                                     : 0x5731C2CF75DB
+main (function) at                                     : 0x5731C2CF7209
+
+```
+
+::note
+รายละเอียดเพิ่มเติมดูได้จาก 
+https://www.youtube.com/watch?v=aHmcowhoOzU&list=PLP1MYFr-q-2P8Mz37BOaj5Kbv1aINeMAG&index=14&ab_channel=cs631apue
+
+
+![Memory Layout](/cos3105/images/lab3/memory_layout_youtube.png)
+::
+
+### Process : Stack frame 
 
 <Steps>
 1. Create file `memory_layout.c`
@@ -107,7 +308,7 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 </Steps>
 
 
-### Process Control Block (PCB)
+### Process : Process Control Block (PCB)
 
 ```c
 
@@ -319,6 +520,9 @@ int main() {
 
 ### Process : Create Process
 
+<Tabs>
+
+<TabItem label="C">
 ```c
 //create_process.c
 #include <stdio.h>
@@ -342,6 +546,33 @@ int main()
      fgets(read,sizeof(read),stdin);
 }
 ```
+</TabItem>
+<TabItem label="C++">
+
+```cpp
+//create_process.cpp
+#include <iostream>
+#include <unistd.h>
+#include <sys/wait.h>
+
+using namespace std;
+
+int main(){
+    pid_t pid = fork();
+    if (pid==0){
+        cout << "Child ID : " << getpid()
+        << ", Parent ID : " << getppid() << endl;
+    }else{
+        cout << "Parent ID : " << getpid()
+        << ", Child ID : " << pid << endl;
+
+        wait(nullptr);
+    }
+}
+```
+
+</TabItem>
+</Tabs>
 
 **OUTPUT**
 
@@ -368,7 +599,7 @@ c          30753  0.0  0.0   2680   896 pts/1    S+   15:06   0:00 ./create_proc
 c          30837  0.0  0.0   6676  2304 pts/0    S+   15:06   0:00 grep --color=auto create_process
 ```
 
-### Show process tree
+### Process : Show process tree
 
 1. pstree
 
@@ -670,4 +901,271 @@ systemd─┬─ModemManager───3*[{ModemManager}]
         ├─udisksd───5*[{udisksd}]
         ├─unattended-upgr───{unattended-upgr}
         └─upowerd───3*[{upowerd}]
+```
+
+### Process : Create Orphan Process
+
+
+```c ins={11}
+//create_orphan_process.c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+int main()
+{
+    pid_t p;
+    p=fork();
+    if(p==0)
+    {
+        sleep(5); //child goes to sleep and in the mean time parent terminates
+        printf("I am child having PID %d\n",getpid());
+        printf("My parent PID is %d\n",getppid());
+    }
+    else
+    {
+        printf("I am parent having PID %d\n",getpid());
+        printf("My child PID is %d\n",p);
+    }
+}
+
+```
+
+ **OUTPUT**
+
+ :::caution
+ในกรณี orphan process ตัว parent process ได้จบการทำงานไปก่อน ทำให้ id จะเปลี่ยนไป ไม่ใช่ id เดิม
+ :::
+
+ <video src="/cos3105/videos/lab3/output_orphan_process.webm" autoplay loop>
+ </video>
+
+
+### Process : Create Zombie Process
+
+```c ins={16}
+//create_zombie_process.c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+int main()
+{
+    pid_t t;
+    t=fork();
+    if(t==0)
+    {
+   	    printf("Child having id %d\n",getpid());
+	}
+	else
+	{
+    	printf("Parent having id %d\n",getpid());
+    	sleep(15); // Parent sleeps. Run the ps command during this time
+	}
+}
+
+```
+ **OUTPUT**
+
+ :::caution
+ในกรณี zombie process ตัว child process ได้จบการทำงานไปก่อน แต่ยังต้องคาเอาไว้เพราะตัว parent process ยังถือว่าทำงานอยู่
+ :::
+
+ <video src="/cos3105/videos/lab3/output_zombie_process.webm" autoplay loop>
+ </video>
+
+
+
+
+### Process : Prevent Zombie process by wait()
+
+
+```c ins={18}
+//prevent_zombie_process.c
+#include <unistd.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <sys/wait.h>
+int main()
+{
+    pid_t p;
+    printf("before fork\n");
+    p=fork();
+    if(p==0)//child
+    {
+        printf("I am child having id %d\n",getpid());
+        printf("My parent's id is %d\n",getppid());
+    }
+    else//parent
+    {
+        wait(NULL); 
+        printf("My child's id is %d\n",p);
+        printf("I am parent having id %d\n",getpid());
+    }
+    printf("Common\n");
+}
+
+```
+
+ **OUTPUT**
+
+![Prevent Zombie Process](/cos3105/images/lab3/prevent_zombie_process.png)
+
+### Process : Simulate context switch among process
+
+:::note
+The `sched_yield()` is a voluntary system call that causes the calling process to give up the `CPU` and triggers the `OS scheduler` to potentially switch to another process. However, there are important details to understand:
+
+**How `sched_yield()` Works**
+
+1. **Voluntary Context Switch:**
+
+The process voluntarily relinquishes the CPU.
+It moves from "running" to "ready" state.
+The scheduler is invoked to select the next process.
+
+2. **Scheduler Behavior:**
+
+If there are other runnable processes with the same or higher priority, the scheduler will switch to them.
+If no other processes are ready, the same process may continue running immediately.
+The exact behavior depends on the scheduling policy (CFS, RT, etc.).
+:::
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sched.h>
+
+void process_task(const char* name, int task_id, int duration) {
+    printf("Process %s (PID: %d) started\n", name, getpid());
+    
+    for (int i = 0; i < duration; i++) {
+        printf("Process %s: Step %d/%d (PID: %d)\n", 
+               name, i + 1, duration, getpid());
+        sleep(1);
+        
+        // Simulate voluntary context switch by calling sched_yield()
+        if (i < duration - 1) {
+            printf("Process %s yielding CPU...\n", name);
+            sched_yield();
+        }
+    }
+    
+    printf("Process %s (PID: %d) completed\n", name, getpid());
+}
+
+void demonstrate_context_info() {
+    printf("\nContext Switch Information:\n");
+    printf("==========================\n");
+    printf("Parent PID: %d\n", getppid());
+    printf("Current PID: %d\n", getpid());
+    printf("Process Group ID: %d\n", getpgrp());
+    
+    // Show some context information
+    printf("User ID: %d\n", getuid());
+    printf("Group ID: %d\n", getgid());
+}
+
+int main() {
+    printf("Process Context Switch Demonstration\n");
+    printf("====================================\n");
+    
+    demonstrate_context_info();
+    
+    pid_t pid1, pid2, pid3;
+    int status;
+    
+    // Create first child process
+    pid1 = fork();
+    if (pid1 == 0) {
+        // Child process 1
+        process_task("Task-A", 1, 3);
+        exit(0);
+    } else if (pid1 < 0) {
+        perror("Fork failed");
+        exit(1);
+    }
+    
+    // Create second child process
+    pid2 = fork();
+    if (pid2 == 0) {
+        // Child process 2
+        process_task("Task-B", 2, 4);
+        exit(0);
+    } else if (pid2 < 0) {
+        perror("Fork failed");
+        exit(1);
+    }
+    
+    // Create third child process
+    pid3 = fork();
+    if (pid3 == 0) {
+        // Child process 3
+        process_task("Task-C", 3, 2);
+        exit(0);
+    } else if (pid3 < 0) {
+        perror("Fork failed");
+        exit(1);
+    }
+    
+    // Parent process monitors children
+    printf("\nParent process (PID: %d) monitoring children...\n", getpid());
+    
+    // Wait for all children to complete
+    for (int i = 0; i < 3; i++) {
+        pid_t finished_pid = wait(&status);
+        printf("Child process %d finished with status %d\n", 
+               finished_pid, WEXITSTATUS(status));
+    }
+    
+    printf("\nAll processes completed. Context switching demonstration finished.\n");
+    
+    return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./context_switch_among_process 
+Process Context Switch Demonstration
+====================================
+
+Context Switch Information:
+==========================
+Parent PID: 1088
+Current PID: 25636
+Process Group ID: 25636
+User ID: 1000
+Group ID: 1000
+Process Task-A (PID: 25638) started
+Process Task-A: Step 1/3 (PID: 25638)
+
+Parent process (PID: 25636) monitoring children...
+Process Task-B (PID: 25639) started
+Process Task-B: Step 1/4 (PID: 25639)
+Process Task-C (PID: 25640) started
+Process Task-C: Step 1/2 (PID: 25640)
+Process Task-A yielding CPU...
+Process Task-C yielding CPU...
+Process Task-A: Step 2/3 (PID: 25638)
+Process Task-C: Step 2/2 (PID: 25640)
+Process Task-B yielding CPU...
+Process Task-B: Step 2/4 (PID: 25639)
+Process Task-A yielding CPU...
+Process Task-B yielding CPU...
+Process Task-C (PID: 25640) completed
+Process Task-A: Step 3/3 (PID: 25638)
+Process Task-B: Step 3/4 (PID: 25639)
+Child process 25640 finished with status 0
+Process Task-A (PID: 25638) completed
+Process Task-B yielding CPU...
+Process Task-B: Step 4/4 (PID: 25639)
+Child process 25638 finished with status 0
+Process Task-B (PID: 25639) completed
+Child process 25639 finished with status 0
+
+All processes completed. Context switching demonstration finished.
 ```

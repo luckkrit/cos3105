@@ -1,0 +1,545 @@
+---
+title: 0 - Make tutorial
+lastUpdated: 2025-08-24
+---
+
+import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
+
+
+## Table of Contents
+1. [What is Make?](#what-is-make)
+2. [Installation](#installation)
+3. [Basic Concepts](#basic-concepts)
+4. [Your First Makefile](#your-first-makefile)
+5. [Makefile Syntax](#makefile-syntax)
+6. [Variables](#variables)
+7. [Pattern Rules](#pattern-rules)
+8. [Built-in Functions](#built-in-functions)
+9. [Common Use Cases](#common-use-cases)
+10. [Best Practices](#best-practices)
+11. [Troubleshooting](#troubleshooting)
+
+## What is Make?
+
+Make is a build automation tool that automatically builds executable programs and libraries from source code by reading files called Makefiles. It determines which parts of a program need to be recompiled and issues commands to recompile them.
+
+**Key Benefits:**
+- Automatic dependency management
+- Incremental builds (only rebuilds what changed)
+- Cross-platform compatibility
+- Simple yet powerful syntax
+
+## Installation
+
+### Linux (Ubuntu/Debian)
+```bash
+sudo apt update
+sudo apt install build-essential
+```
+
+### Linux (CentOS/RHEL/Fedora)
+```bash
+# CentOS/RHEL
+sudo yum groupinstall "Development Tools"
+
+# Fedora
+sudo dnf groupinstall "Development Tools"
+```
+
+### macOS
+```bash
+# Install Xcode Command Line Tools
+xcode-select --install
+
+# Or using Homebrew
+brew install make
+```
+
+### Windows
+- Install through WSL (Windows Subsystem for Linux)
+- Use MinGW-w64
+- Install through Visual Studio Build Tools
+
+Verify installation:
+```bash
+make --version
+```
+
+## Basic Concepts
+
+### Targets, Prerequisites, and Recipes
+
+A Makefile consists of rules with this structure:
+```makefile
+target: prerequisites
+	recipe
+```
+
+- **Target**: The file to be created or action to be performed
+- **Prerequisites**: Files that the target depends on
+- **Recipe**: Commands to create the target (must be indented with a TAB)
+
+### How Make Works
+
+1. You run `make target`
+2. Make checks if the target file exists
+3. If prerequisites are newer than the target, or target doesn't exist, Make runs the recipe
+4. Make recursively checks prerequisites
+
+## Your First Makefile
+
+Create a file named `Makefile` (no extension):
+
+```makefile
+# Simple C program compilation
+program: main.c
+	gcc -o program main.c
+
+clean:
+	rm -f program
+
+.PHONY: clean
+```
+
+**Usage:**
+```bash
+make program    # Compiles the program
+make clean      # Removes compiled files
+make           # Runs the first target (program)
+```
+
+## Makefile Syntax
+
+### Comments
+```makefile
+# This is a comment
+target: prereq  # Inline comment
+	# Comment in recipe
+	command
+```
+
+### Line Continuation
+```makefile
+long-command:
+	gcc -Wall -Wextra -std=c99 \
+	    -O2 -g -o program \
+	    main.c utils.c
+```
+
+### Multiple Targets
+```makefile
+all: program1 program2 program3
+
+program1: main1.c
+	gcc -o program1 main1.c
+
+program2: main2.c
+	gcc -o program2 main2.c
+
+program3: main3.c
+	gcc -o program3 main3.c
+```
+
+## Variables
+
+### Defining Variables
+```makefile
+# Simple assignment
+CC = gcc
+CFLAGS = -Wall -Wextra -std=c99
+TARGET = myprogram
+SOURCES = main.c utils.c math.c
+
+# Recursive assignment (evaluated when used)
+OBJECTS = $(SOURCES:.c=.o)
+
+# Immediate assignment (evaluated when defined)
+DATE := $(shell date)
+```
+
+### Using Variables
+```makefile
+$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJECTS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+```
+
+### Automatic Variables
+```makefile
+# $@ - Target name
+# $< - First prerequisite
+# $^ - All prerequisites
+# $? - Prerequisites newer than target
+
+program: main.o utils.o
+	gcc -o $@ $^  # Same as: gcc -o program main.o utils.o
+
+%.o: %.c
+	gcc -c $< -o $@  # Same as: gcc -c main.c -o main.o
+```
+
+### Environment Variables
+```makefile
+# Use environment variables
+program:
+	echo "User: $(USER)"
+	echo "Path: $(PATH)"
+
+# Override environment variables
+PATH = /custom/path
+```
+
+## Pattern Rules
+
+### Implicit Rules
+Make has built-in rules for common operations:
+```makefile
+# These are automatic:
+%.o: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+
+# Just specify dependencies
+program: main.o utils.o
+	$(CC) -o $@ $^
+```
+
+### Custom Pattern Rules
+```makefile
+# Compile .cpp files to .o files
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Convert .md to .html
+%.html: %.md
+	pandoc $< -o $@
+
+# Multiple pattern matching
+%_test: %_test.o %.o
+	$(CC) -o $@ $^
+```
+
+## Built-in Functions
+
+### String Functions
+```makefile
+SOURCES = main.c utils.c math.c
+
+# Substitution
+OBJECTS = $(subst .c,.o,$(SOURCES))
+# or
+OBJECTS = $(SOURCES:.c=.o)
+
+# Pattern substitution
+OBJECTS = $(patsubst %.c,%.o,$(SOURCES))
+
+# Word functions
+FIRST_SOURCE = $(firstword $(SOURCES))
+WORD_COUNT = $(words $(SOURCES))
+```
+
+### File Functions
+```makefile
+# Wildcard expansion
+C_FILES = $(wildcard *.c)
+HEADERS = $(wildcard include/*.h)
+
+# Directory functions
+SRC_DIR = src
+SOURCES = $(wildcard $(SRC_DIR)/*.c)
+OBJECTS = $(patsubst $(SRC_DIR)/%.c,obj/%.o,$(SOURCES))
+
+# Create directories
+$(OBJECTS): | obj
+obj:
+	mkdir -p obj
+```
+
+### Control Functions
+```makefile
+# Conditional assignment
+DEBUG ?= 0
+
+# If-else
+CFLAGS = -Wall
+ifeq ($(DEBUG),1)
+    CFLAGS += -g -DDEBUG
+else
+    CFLAGS += -O2 -DNDEBUG
+endif
+
+# Function calls
+SUPPORTED_OS = linux darwin
+ifeq ($(filter $(OS),$(SUPPORTED_OS)),)
+    $(error Unsupported OS: $(OS))
+endif
+```
+
+## Common Use Cases
+
+### C/C++ Project
+```makefile
+# Project settings
+CC = gcc
+CXX = g++
+CFLAGS = -Wall -Wextra -std=c99
+CXXFLAGS = -Wall -Wextra -std=c++17
+TARGET = myproject
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
+
+# Find source files
+C_SOURCES = $(wildcard $(SRC_DIR)/*.c)
+CXX_SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
+C_OBJECTS = $(C_SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+CXX_OBJECTS = $(CXX_SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+OBJECTS = $(C_OBJECTS) $(CXX_OBJECTS)
+
+# Default target
+all: $(BIN_DIR)/$(TARGET)
+
+# Link
+$(BIN_DIR)/$(TARGET): $(OBJECTS) | $(BIN_DIR)
+	$(CXX) -o $@ $^
+
+# Compile C files
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Compile C++ files
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Create directories
+$(OBJ_DIR) $(BIN_DIR):
+	mkdir -p $@
+
+# Clean
+clean:
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+# Install
+install: $(BIN_DIR)/$(TARGET)
+	cp $< /usr/local/bin/
+
+# Run
+run: $(BIN_DIR)/$(TARGET)
+	./$(BIN_DIR)/$(TARGET)
+
+
+.PHONY: all clean install
+```
+
+### Documentation Generation
+```makefile
+DOCS_DIR = docs
+MD_FILES = $(wildcard $(DOCS_DIR)/*.md)
+HTML_FILES = $(MD_FILES:%.md=%.html)
+
+docs: $(HTML_FILES)
+
+%.html: %.md
+	pandoc $< -o $@
+
+clean-docs:
+	rm -f $(DOCS_DIR)/*.html
+
+.PHONY: docs clean-docs
+```
+
+### Testing
+```makefile
+TEST_DIR = tests
+TEST_SOURCES = $(wildcard $(TEST_DIR)/*_test.c)
+TEST_TARGETS = $(TEST_SOURCES:%.c=%)
+
+tests: $(TEST_TARGETS)
+	@for test in $(TEST_TARGETS); do \
+		echo "Running $$test..."; \
+		./$$test || exit 1; \
+	done
+
+%_test: %_test.c
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
+clean-tests:
+	rm -f $(TEST_TARGETS)
+
+.PHONY: tests clean-tests
+```
+
+## Best Practices
+
+### 1. Use .PHONY for Non-File Targets
+```makefile
+.PHONY: all clean install test
+```
+
+### 2. Set Default Variables
+```makefile
+CC ?= gcc
+CFLAGS ?= -Wall -O2
+PREFIX ?= /usr/local
+```
+
+### 3. Create Output Directories
+```makefile
+$(OBJECTS): | $(OBJ_DIR)
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
+```
+
+### 4. Handle Dependencies
+```makefile
+# Generate dependency files
+DEPDIR = .deps
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.d
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(DEPDIR)/%.d | $(DEPDIR) $(OBJ_DIR)
+	$(CC) $(DEPFLAGS) $(CFLAGS) -c $< -o $@
+
+$(DEPDIR):
+	mkdir -p $(DEPDIR)
+
+DEPFILES := $(C_SOURCES:$(SRC_DIR)/%.c=$(DEPDIR)/%.d)
+$(DEPFILES):
+
+include $(wildcard $(DEPFILES))
+```
+
+### 5. Use Consistent Naming
+```makefile
+# Good naming convention
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
+TEST_DIR = tests
+INCLUDE_DIR = include
+```
+
+### 6. Add Help Target
+```makefile
+help:
+	@echo "Available targets:"
+	@echo "  all     - Build the project"
+	@echo "  clean   - Remove build files"
+	@echo "  install - Install the program"
+	@echo "  test    - Run tests"
+	@echo "  help    - Show this help"
+
+.PHONY: help
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**1. "missing separator" error**
+- Make sure recipes are indented with TAB, not spaces
+- Check for mixed tabs and spaces
+
+**2. "No rule to make target" error**
+- Check spelling of target names
+- Ensure prerequisites exist or can be built
+- Verify file paths
+
+**3. "Nothing to be done for target"**
+- Target file is newer than prerequisites
+- Use `make -B` to force rebuild
+- Check file timestamps
+
+**4. Variables not expanding**
+```makefile
+# Wrong - recursive assignment creates infinite loop
+CFLAGS = $(CFLAGS) -Wall
+
+# Right - use append
+CFLAGS += -Wall
+
+# Or use immediate assignment
+CFLAGS := $(CFLAGS) -Wall
+```
+
+### Debug Tips
+
+**1. Print variable values:**
+```makefile
+debug:
+	@echo "CC: $(CC)"
+	@echo "CFLAGS: $(CFLAGS)"
+	@echo "SOURCES: $(SOURCES)"
+	@echo "OBJECTS: $(OBJECTS)"
+
+.PHONY: debug
+```
+
+**2. Use dry run:**
+```bash
+make -n target    # Show commands without executing
+make -p          # Print database of rules and variables
+```
+
+**3. Enable debugging:**
+```bash
+make -d target   # Debug mode
+make --trace     # Trace execution
+```
+
+### Makefile Templates
+
+Save time with this basic template:
+```makefile
+# Project Configuration
+PROJECT = myproject
+CC = gcc
+CFLAGS = -Wall -Wextra -std=c99 -O2
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
+
+# Find Sources
+SOURCES = $(wildcard $(SRC_DIR)/*.c)
+OBJECTS = $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+TARGET = $(BIN_DIR)/$(PROJECT)
+
+# Default Target
+all: $(TARGET)
+
+# Build Target
+$(TARGET): $(OBJECTS) | $(BIN_DIR)
+	$(CC) -o $@ $^
+
+# Compile Objects
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Create Directories
+$(OBJ_DIR) $(BIN_DIR):
+	mkdir -p $@
+
+# Clean
+clean:
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	
+# Run
+run: $(BIN_DIR)/$(TARGET)
+	./$(BIN_DIR)/$(TARGET)
+
+# Help
+help:
+	@echo "Targets: all, clean, help"
+
+.PHONY: all clean help
+```
+
+## Conclusion
+
+Make is a powerful build automation tool that can significantly streamline your development workflow. Start with simple Makefiles and gradually incorporate more advanced features as your projects grow in complexity.
+
+**Next Steps:**
+1. Practice with small C/C++ projects
+2. Explore GNU Make documentation for advanced features
+3. Look into alternative build systems (CMake, Ninja) for complex projects
+4. Integrate Make with your IDE or editor
