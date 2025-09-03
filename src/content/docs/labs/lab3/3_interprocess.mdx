@@ -8,3 +8,206 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 
 
 ## Inter Process Communication
+
+### process : without shared memory
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+int main() {
+    pid_t pid = fork();
+    int shared = 10;
+    if (pid == 0) { // Child process
+        shared += 1;
+        printf("child: shared = %d\n", shared);
+    } else { // Parent process
+        shared += 2;
+        printf("parent: shared = %d\n", shared);
+        wait(NULL);
+    }
+    return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./create_process2
+parent: shared = 12
+child: shared = 10
+```
+
+### process : shared memory
+
+```c ins={30}
+// write_shared_memory.c
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<sys/shm.h>
+#include<string.h>
+int main()
+{
+    int i;
+    void *shared_memory;
+    char buff[100];
+    int shmid;
+
+    /* creates shared memory segment with key 2345, having size 1024 bytes.
+       IPC_CREAT is used to create the shared segment if it does not exist.
+       0666 are the permisions on the shared segment */
+    shmid=shmget((key_t)2345, 1024, 0666|IPC_CREAT);
+    printf("Key of shared memory is %d\n",shmid);
+
+    //process attached to shared memory segment
+    shared_memory=shmat(shmid,NULL,0);
+
+    //this prints the address where the segment is attached with this process
+    printf("Process attached at %p\n",shared_memory);
+
+    printf("Enter some data to write to shared memory\n");
+    //get some input from user
+    read(0,buff,100);
+    //data written to shared memory
+    strcpy(shared_memory,buff); 
+    printf("You wrote : %s\n",(char *)shared_memory);
+}
+
+```
+
+ **OUTPUT**
+
+  ![Write Shared Memory](/cos3105/images/lab3/write_shared_memory.png)
+
+
+```c ins={17}
+// read_shared_memory.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/shm.h>
+#include <string.h>
+int main()
+{
+    int i;
+    void *shared_memory;
+    char buff[100];
+    int shmid;
+    shmid=shmget((key_t)2345, 1024, 0666);
+    printf("Key of shared memory is %d\n",shmid);
+    shared_memory=shmat(shmid,NULL,0); //process attached to shared memory segment
+    printf("Process attached at %p\n",shared_memory);
+    printf("Data read from shared memory is : %s\n",(char *)shared_memory); 
+}
+
+```
+
+ **OUTPUT**
+
+  ![Read Shared Memory](/cos3105/images/lab3/read_shared_memory.png)
+
+### process : shared memory between parent and child
+
+```c
+#include<stdio.h>
+#include<stdlib.h>
+#include <sys/wait.h>
+#include<unistd.h>
+#include<sys/shm.h>
+#include<string.h>
+int main()
+{
+    
+    void *shared_memory;
+    char buff[100];
+    int shmid;
+    pid_t pid = fork();
+    if (pid == 0) {
+        printf("Child process:\n");
+        /* creates shared memory segment with key 2345, having size 1024 bytes.
+        IPC_CREAT is used to create the shared segment if it does not exist.
+        0666 are the permisions on the shared segment */
+        shmid=shmget((key_t)2345, 1024, 0666|IPC_CREAT);
+        printf("Key of shared memory is %d\n",shmid);
+
+        //process attached to shared memory segment
+        shared_memory=shmat(shmid,NULL,0);
+
+        //this prints the address where the segment is attached with this process
+        printf("Process %d attached at %p\n",getpid(),shared_memory);
+
+        strcpy(buff,"Krit Chomaitong");
+        //data written to shared memory
+        strcpy(shared_memory,buff);
+        printf("You wrote : %s\n",(char *)shared_memory);
+    } else {
+        
+        sleep(3);
+        printf("Parent process:\n");
+        shmid=shmget((key_t)2345, 1024, 0666);
+        printf("Key of shared memory is %d\n",shmid);
+        shared_memory=shmat(shmid,NULL,0); //process attached to shared memory segment
+        printf("Process %d attached at %p\n",getpid(),shared_memory);
+        printf("Data read from shared memory is : %s\n",(char *)shared_memory);
+        wait(NULL);
+    }
+    return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105/tutorial$ make run
+./bin/myproject
+Child process:
+Key of shared memory is 0
+Process 3228 attached at 0x75d7b67fc000
+You wrote : Krit Chomaitong
+Parent process:
+Key of shared memory is 0
+Process 3227 attached at 0x75d7b67fc000
+Data read from shared memory is : Krit Chomaitong
+```
+
+### process : shared memory using mmap
+
+- Normally mmap will use `file` which is managed by OS for shared data among processes
+- But `MAP_ANONYMOUS` will not use file but use same physical memory location for share data between child and parent
+
+```c
+#include <stdio.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main() {
+    // Create shared integer
+    int *shared_num = mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    *shared_num = 10;
+    if (fork() == 0) {
+        // Child process
+        printf("Child sees: %d\n", *shared_num);
+        *shared_num = 20;
+        printf("Child changed it to: %d\n", *shared_num);
+    } else {
+        // Parent process
+        sleep(1);  // Let child run first
+        printf("Parent sees: %d\n", *shared_num);  // Will show 20
+        wait(NULL);
+    }
+    
+    return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./create_process3
+Child sees: 10
+Child changed it to: 20
+Parent sees: 20
+```
