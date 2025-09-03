@@ -205,6 +205,24 @@ program: main.o utils.o
 	$(CC) -o $@ $^
 ```
 
+```makefile
+
+# Must write separate rule for each file!
+main.o: main.c
+    gcc -c main.c -o main.o
+
+utils.o: utils.c
+    gcc -c utils.c -o utils.o
+
+math.o: math.c
+    gcc -c math.c -o math.o
+
+# The several commands above can replace with this one
+%.o: %.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+
+```
+
 ### Custom Pattern Rules
 ```makefile
 # Compile .cpp files to .o files
@@ -251,6 +269,9 @@ SOURCES = $(wildcard $(SRC_DIR)/*.c)
 OBJECTS = $(patsubst $(SRC_DIR)/%.c,obj/%.o,$(SOURCES))
 
 # Create directories
+# must evaluate obj if not exists
+# Order-Only Prerequisites (|)
+# The | symbol means "order-only prerequisite":
 $(OBJECTS): | obj
 obj:
 	mkdir -p obj
@@ -375,6 +396,34 @@ clean-tests:
 ### 1. Use .PHONY for Non-File Targets
 ```makefile
 .PHONY: all clean install test
+```
+
+- if not use .PHONY, this might confuse make.
+
+```makefile
+# Without .PHONY
+clean:
+	rm -f *.o program
+
+test:
+	./program --test
+
+install:
+	cp program /usr/local/bin/
+```
+
+- What if someone creates actual files named clean, test, or install?
+
+```bash
+# Someone accidentally creates these files:
+touch clean
+touch test
+touch install
+
+# Now Make thinks these targets are up-to-date!
+make clean
+# Output: make: 'clean' is up to date.
+# The rm command never runs!
 ```
 
 ### 2. Set Default Variables
