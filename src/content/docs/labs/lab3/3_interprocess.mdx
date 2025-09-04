@@ -174,7 +174,7 @@ Data read from shared memory is : Krit Chomaitong
 
 ### process : shared memory using mmap
 
-- Normally mmap will use `file` which is managed by OS for shared data among processes
+- Normally mmap will use `file` which is managed by OS for shared data among processes,
 - But `MAP_ANONYMOUS` will not use file but use same physical memory location for share data between child and parent
 
 ```c

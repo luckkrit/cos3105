@@ -12,7 +12,7 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 
 1. Create file `memory_layout.c`
     ```c
-    # memory_layout.c
+    // memory_layout.c
     #include <stdio.h>
     int variable_data = 100;
     int variable_bss;
@@ -119,3 +119,45 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
     ```
 
 </Steps>
+
+### Observe symbol/variable size of data section in Object file
+
+<Steps>
+
+
+1. Create file `memory_layout.c`
+    ```c
+     // memory_layout.c
+     #include <stdio.h>
+     int variable_data = 100; // Goes to DATA (initialized global) - 4 bytes
+     int variable_bss; // Goes to BSS (uninitialized global) - not in DATA
+     int main(){
+          int variable_local_x = 200; // Goes to STACK (local variable) - not in DATA 
+          int variable_local_y; // Goes to STACK (local variable) - not in DATA
+          
+          return 0;
+     }
+    ```
+
+2. Create object file by `gcc memory_layout.c -c memory_layout.o`
+    ```bash
+    c@c:~/cos3105$ gcc memory_layout.c -c memory_layout.o
+    gcc: warning: memory_layout.o: linker input file unused because linking not done
+    ```
+
+3. Run `size` for observe size of object file
+     ```bash
+     c@c:~/cos3105$ size memory_layout.o
+     text    data     bss     dec     hex filename
+     147       4       4     155      9b memory_layout.o
+     ```
+</Steps>
+
+:::note
+- When you link (without -c), the linker includes:
+     - C runtime startup code (crt0.o)
+     - Standard library code
+     - Runtime initialization variables
+     - I/O buffers and state management
+- So the size of bss might not accurate!
+:::
