@@ -9,7 +9,27 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 
 ## Inter Process Communication
 
-### process : without shared memory
+- There are 2 kinds: **SYSTEM V** and **POSIX** in unix based
+
+### SYSTEM V
+
+- **Introduced:** Early UNIX (AT&T System V, 1983).
+- **APIs:**
+    - **Message Queues:** `msgget`, `msgsnd`, `msgrcv`, `msgctl`
+    - **Shared Memory:** `shmget`, `shmat`, `shmdt`, `shmctl`
+    - **Semaphores:** `semget`, `semop`, `semctl`
+
+### POSIX IPC
+
+- **Introduced:** POSIX.1b (1993), more modern and portable.
+
+- **APIs:**
+    - **Message Queues:** mq_open, mq_send, mq_receive, mq_close, mq_unlink
+    - **Shared Memory:** shm_open, mmap, shm_unlink
+    - **Semaphores:** sem_open, sem_wait, sem_post, sem_unlink
+
+## Shared Memory
+### Without shared memory
 
 ```c
 #include <stdio.h>
@@ -39,7 +59,7 @@ parent: shared = 12
 child: shared = 10
 ```
 
-### process : shared memory
+### Shared Memory
 
 ```c ins={30}
 // write_shared_memory.c
@@ -108,7 +128,7 @@ int main()
 
   ![Read Shared Memory](/cos3105/images/lab3/read_shared_memory.png)
 
-### process : shared memory between parent and child
+### Parent and Child process
 
 ```c
 #include<stdio.h>
@@ -172,7 +192,7 @@ Process 3227 attached at 0x75d7b67fc000
 Data read from shared memory is : Krit Chomaitong
 ```
 
-### process : shared memory using mmap
+### Using mmap(POSIX)
 
 - Normally mmap will use `file` which is managed by OS for shared data among processes,
 - But `MAP_ANONYMOUS` will not use file but use same physical memory location for share data between child and parent
@@ -210,4 +230,819 @@ c@c:~/cos3105$ ./create_process3
 Child sees: 10
 Child changed it to: 20
 Parent sees: 20
+```
+
+## Pipes
+
+### Ordinary Pipes
+
+```c
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <string.h>
+#include <stdlib.h>
+
+int main() {
+    int pipefd[2];
+    pid_t pid;
+    
+    // Create pipe
+    if (pipe(pipefd) == -1) {
+        perror("pipe failed");
+        exit(1);
+    }
+    
+    // Fork process
+    pid = fork();
+    if (pid == -1) {
+        perror("fork failed");
+        exit(1);
+    }
+    
+    if (pid == 0) {
+        // Child process - writer
+        close(pipefd[0]);  // Close read end
+        
+        printf("Child: Sending message...\n");
+        write(pipefd[1], "Hello", 5);
+        
+        close(pipefd[1]);  // Close write end
+        printf("Child: Message sent, exiting\n");
+        
+    } else {
+        // Parent process - reader
+        close(pipefd[1]);  // Close write end
+        
+        char buffer[10];
+        memset(buffer, 0, sizeof(buffer));  // Initialize buffer
+        
+        printf("Parent: Waiting for message...\n");
+        ssize_t bytes_read = read(pipefd[0], buffer, 5);
+        
+        if (bytes_read > 0) {
+            printf("Parent: Received message: '%s'\n", buffer);
+        } else {
+            printf("Parent: Failed to read message\n");
+        }
+        
+        close(pipefd[0]);  // Close read end
+        
+        // Wait for child to finish
+        wait(NULL);
+        printf("Parent: Child process finished\n");
+    }
+    
+    return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./message_passing 
+Parent: Waiting for message...
+Child: Sending message...
+Child: Message sent, exiting
+Parent: Received message: 'Hello'
+Parent: Child process finished
+```
+
+### Named Pipes
+
+- **Write**
+
+```c
+#include <stdio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+
+int main() {
+    mkfifo("/tmp/mypipe", 0666);
+    
+    int fd = open("/tmp/mypipe", O_WRONLY);
+    write(fd, "Hello from writer!", 18);
+    close(fd);
+    
+    printf("Message sent\n");
+    return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./writer
+Message sent
+
+```
+
+- **Read**
+
+```c
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int main() {
+    char buffer[100];
+    
+    int fd = open("/tmp/mypipe", O_RDONLY);
+    read(fd, buffer, 18);
+    close(fd);
+    
+    printf("Message received: %s\n", buffer);
+    
+    // Clean up
+    unlink("/tmp/mypipe");
+    
+    return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./reader
+Message received: Hello from writer!
+```
+## Message Queues
+
+- For send/receive for message queues, it needs to create key and id for distinguish messages.
+
+<Steps>
+1. **Generate a Key (`ftok()`) that is a unique identifier for multple processes can share.**
+    ```c
+    key_t key = ftok(path, proj_id);
+    ```
+    :::note
+    - **`path` is path of file that read file's inode and device information**
+    - **`proj_id` is any non zero value (1-255) can be character like `'A'`, `'B'` and integer like `1`,`2`,`3`**
+
+    - **Example** 
+        - **Same key (processes can share the queue):**
+        ```c
+        // Process 1
+        key_t key = ftok(".", 'A');      // → 0x41010123
+
+        // Process 2 (from same directory)
+        key_t key = ftok(".", 'A');      // → 0x41010123 (same!)
+        ```
+
+        - **Different keys (separate queues):**
+
+        ```c
+        key_t key1 = ftok(".", 'A');     // → 0x41010123
+        key_t key2 = ftok(".", 'B');     // → 0x42010123 (different!)
+        key_t key3 = ftok("/tmp", 'A');  // → 0x41020456 (different path)
+        ```
+    :::
+2. **Get/Create Message Queue ID (`msgget()`)**
+    ```c
+    int msgid = msgget(key, 0666 | IPC_CREAT);
+    ```
+
+    :::note
+    - **`0666`: means pemission value**
+    **Octal format:**
+
+    - The leading 0 tells the compiler this is octal (base 8)
+    - Each digit represents permissions for: `owner`, `group`, `others`
+
+    **Each digit (0-7) is made up of:**
+
+    - 4 = read permission
+    - 2 = write permission
+    - 1 = execute permission
+
+    **So 0666 means:**
+    ```
+    0 6 6 6
+    │ │ │ └── Others: 6 = read(4) + write(2) = rw-
+    │ │ └──── Group:  6 = read(4) + write(2) = rw-
+    │ └────── Owner:  6 = read(4) + write(2) = rw-
+    └──────── Leading zero (octal indicator)
+    ```
+
+    **Common permission values:**
+    ```bash
+    0666  // rw-rw-rw- (read/write for everyone)
+    0644  // rw-r--r-- (read/write for owner, read-only for others)
+    0600  // rw------- (read/write for owner only)
+    0777  // rwxrwxrwx (read/write/execute for everyone)
+    ```
+
+    **In message queue context:**
+    ```c
+    int msgid = msgget(key, 0666 | IPC_CREAT);
+    ```
+    - 0666: Any user can send/receive messages to/from this queue
+    - 0600: Only the creator can use the queue
+    - 0644: Creator can send/receive, others can only receive
+
+    - **`|` (Bitwise OR operator):**
+        - Combines multiple flags together
+        - Each flag is a bit pattern that gets merged
+    - **`IPC_CREAT`**
+        - Tells `msgget()` to **create the message queue if it doesn't exist**
+        - If the queue already exists, just return its ID
+        - Without this flag, `msgget()` will **fail** if the queue doesn't exist
+    - **Example**
+    ```c
+    // First time running your program
+    int msgid = msgget(key, 0666 | IPC_CREAT);  // Creates new queue
+    // Returns: 0 (new queue ID)
+
+    // Second time running your program  
+    int msgid = msgget(key, 0666 | IPC_CREAT);  // Finds existing queue
+    // Returns: 0 (same queue ID)
+    ```
+    :::
+
+3. **Send message**
+
+    ```c
+    #include<stdlib.h>
+    #include<stdio.h>
+    #include<string.h>
+    #include<unistd.h>
+    #include<sys/types.h>
+    #include<sys/ipc.h>
+    #include<sys/msg.h>
+
+    #define MAX_TEXT 512
+
+    struct msgbuf {
+               long mtype;       /* message type, must be > 0 */
+               char mtext[MAX_TEXT];    /* message data */
+           };
+
+
+
+    int main(){
+        struct msgbuf message;
+        key_t key = ftok(".", 'A');
+        if (key == -1) {
+            perror("ftok failed");
+            return 1;
+        }
+        int msgid = msgget(key, 0666 | IPC_CREAT);
+        if (msgid == -1) {
+            perror("msgget failed");
+            return 1;
+        }
+        strcpy(message.mtext,"Test Message Queue");
+        message.mtype = 1; // message type
+        if(msgsnd(msgid,(void *)&message, MAX_TEXT,0)==-1) // msgsnd returns -1 if the message is not sent
+        {
+                perror("msgsnd failed");
+                return 1;
+        }
+        return 0;
+    }
+    ```
+
+4. **Check message queues**
+    ```bash
+    c@c:~/cos3105/lab3_module$ ipcs -q
+
+    ------ Message Queues --------
+    key        msqid      owner      perms      used-bytes   messages    
+    0x41000272 2          c          666        1536         1           
+
+    ```
+5. **Receive message**
+
+    ```c
+    #include<stdlib.h>
+    #include<stdio.h>
+    #include<string.h>
+    #include<unistd.h>
+    #include<sys/types.h>
+    #include<sys/ipc.h>
+    #include<sys/msg.h>
+    
+    #define MAX_TEXT 512
+
+    struct msgbuf {
+               long mtype;       /* message type, must be > 0 */
+               char mtext[MAX_TEXT];    /* message data */
+           };
+
+
+
+    int main(){
+        struct msgbuf message;
+        key_t key = ftok(".", 'A');
+        if (key == -1) {
+            perror("ftok failed");
+            return 1;
+        }
+        int msgid = msgget(key, 0666 | IPC_CREAT);
+        if (msgid == -1) {
+            perror("msgget failed");
+            return 1;
+        }
+        // Pick message queue that msg_type = 1
+        if(msgrcv(msgid, &message, sizeof(message.mtext), 1, 0)==-1){ 
+            perror("msgrcv failed");
+            return 1;
+        }
+        printf("Received: %s\n",message.mtext);
+        return 0;
+    }
+    ```
+
+    **OUTPUT**
+
+    ```bash
+    c@c:~/cos3105$ ./test
+    Received: Test Message Queue
+    ```
+
+6. **Check message queues**
+    ```bash
+    c@c:~/cos3105/lab3_module$ ipcs -q
+
+    ------ Message Queues --------
+    key        msqid      owner      perms      used-bytes   messages    
+    0x41000272 2          c          666        0            0           
+
+    ```
+</Steps>
+
+## Socket
+
+### Socket File
+
+:::caution
+Run Server first!
+:::
+
+- **Server**
+
+```c
+Server waiting for connection...
+Client connected!
+Received: Hello from client!
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./socket_file_server
+Server waiting for connection...
+Client connected!
+Received: Hello from client!
+```
+
+- **Client**
+
+```c
+#include <stdio.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+#include <string.h>
+
+int main() {
+    int client_fd;
+    struct sockaddr_un addr;
+    char buffer[100];
+    
+    // Create socket
+    client_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    
+    // Setup address
+    addr.sun_family = AF_UNIX;
+    strcpy(addr.sun_path, "/tmp/simple_socket");
+    
+    // Connect to server
+    connect(client_fd, (struct sockaddr*)&addr, sizeof(addr));
+    printf("Connected to server!\n");
+    
+    // Send message
+    send(client_fd, "Hello from client!", 18, 0);
+    
+    // Receive response
+    recv(client_fd, buffer, sizeof(buffer), 0);
+    printf("Server said: %s\n", buffer);
+    
+    // Cleanup
+    close(client_fd);
+    
+    return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+Connected to server!
+Server said: Hello from server!
+```
+
+
+### Network Socket
+
+```c
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+
+int main() {
+    printf("Configuring local address...\n");
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    struct addrinfo *bind_address;
+    if (getaddrinfo(0, "3030", &hints, &bind_address) != 0) {
+        fprintf(stderr, "getaddrinfo() failed.\n");
+        return 1;
+    }
+
+    printf("Creating socket...\n");
+    int socket_listen;
+    socket_listen = socket(bind_address->ai_family,
+            bind_address->ai_socktype, bind_address->ai_protocol);
+    if (socket_listen < 0) {
+        fprintf(stderr, "socket() failed. (%d)\n", errno);
+        freeaddrinfo(bind_address);
+        return 1;
+    }
+
+    // Enable address reuse to avoid "Address already in use" error
+    int yes = 1;
+    if (setsockopt(socket_listen, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+        fprintf(stderr, "setsockopt() failed. (%d)\n", errno);
+        close(socket_listen);
+        freeaddrinfo(bind_address);
+        return 1;
+    }
+
+    printf("Binding socket to local address...\n");
+    if (bind(socket_listen, bind_address->ai_addr, bind_address->ai_addrlen)) {
+        fprintf(stderr, "bind() failed. (%d)\n", errno);
+        close(socket_listen);
+        freeaddrinfo(bind_address);
+        return 1;
+    }
+    freeaddrinfo(bind_address);
+
+    printf("Listening...\n");
+    if (listen(socket_listen, 10) < 0) {
+        fprintf(stderr, "listen() failed. (%d)\n", errno);
+        close(socket_listen);
+        return 1;
+    }
+
+    printf("Waiting for connection...\n");
+    struct sockaddr_storage client_address;
+    socklen_t client_len = sizeof(client_address);
+    int socket_client = accept(socket_listen,
+            (struct sockaddr*) &client_address, &client_len);
+    if (socket_client < 0) {
+        fprintf(stderr, "accept() failed. (%d)\n", errno);
+        close(socket_listen);
+        return 1;
+    }
+
+    printf("Client is connected... ");
+    char address_buffer[100];
+    if (getnameinfo((struct sockaddr*)&client_address,
+            client_len, address_buffer, sizeof(address_buffer), 0, 0,
+            NI_NUMERICHOST) == 0) {
+        printf("%s\n", address_buffer);
+    } else {
+        printf("unknown\n");
+    }
+
+    printf("Reading request...\n");
+    char request[1024];
+    int bytes_received = recv(socket_client, request, sizeof(request) - 1, 0);
+    if (bytes_received > 0) {
+        printf("Received %d bytes.\n", bytes_received);
+        request[bytes_received] = '\0'; // Null terminate for safety
+        // Uncomment the next line if you want to see the request
+        // printf("Request: %.*s", bytes_received, request);
+    } else {
+        printf("Failed to receive data or connection closed.\n");
+        close(socket_client);
+        close(socket_listen);
+        return 1;
+    }
+
+    printf("Sending response...\n");
+    
+    // Get time first
+    time_t timer;
+    time(&timer);
+    char *time_msg = ctime(&timer);
+    
+    // Calculate content length (remove newline from ctime)
+    int time_len = strlen(time_msg);
+    if (time_len > 0 && time_msg[time_len - 1] == '\n') {
+        time_msg[time_len - 1] = '\0'; // Remove trailing newline
+        time_len--;
+    }
+    
+    char response_buffer[1024];
+    int content_length = strlen("Local time is: ") + time_len;
+    
+    // Build complete HTTP response with proper Content-Length header
+    int response_len = snprintf(response_buffer, sizeof(response_buffer),
+        "HTTP/1.1 200 OK\r\n"
+        "Connection: close\r\n"
+        "Content-Type: text/plain\r\n"
+        "Content-Length: %d\r\n"
+        "\r\n"
+        "Local time is: %s",
+        content_length, time_msg);
+    
+    int bytes_sent = send(socket_client, response_buffer, response_len, 0);
+    printf("Sent %d of %d bytes.\n", bytes_sent, response_len);
+
+    printf("Closing connection...\n");
+    close(socket_client);
+
+    printf("Closing listening socket...\n");
+    close(socket_listen);
+
+    printf("Finished.\n");
+    return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ curl localhost:3030
+Local time is: Sun Sep  7 12:53:56 2025
+```
+
+- OR open in browser http://localhost:8080/proxy/3030/
+
+### RPC
+
+- **Server**
+
+```c
+#include <stdio.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+
+struct rpc_data {
+    int a, b, result;
+};
+
+int main() {
+    int server_fd, client_fd;
+    struct sockaddr_un addr;
+    struct rpc_data data;
+    
+    // Create socket
+    server_fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    
+    // Setup address  
+    addr.sun_family = AF_UNIX;
+    strcpy(addr.sun_path, "/tmp/rpc");
+    unlink("/tmp/rpc");
+    
+    // Bind and listen
+    bind(server_fd, (struct sockaddr*)&addr, sizeof(addr));
+    listen(server_fd, 1);
+    
+    printf("RPC Server ready\n");
+    
+    // Accept client
+    client_fd = accept(server_fd, NULL, NULL);
+    
+    // Receive parameters
+    recv(client_fd, &data, sizeof(data), 0);
+    printf("Received: %d + %d\n", data.a, data.b);
+    
+    // Do calculation (this is the "remote" function)
+    data.result = data.a + data.b;
+    
+    // Send result back
+    send(client_fd, &data, sizeof(data), 0);
+    printf("Sent result: %d\n", data.result);
+    
+    close(client_fd);
+    close(server_fd);
+    unlink("/tmp/rpc");
+    
+    return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./rpc_server
+RPC Server ready
+Received: 10 + 5
+Sent result: 15
+```
+
+- **Client**
+
+```c
+#include <stdio.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
+
+struct rpc_data {
+    int a, b, result;
+};
+
+// This function looks local but actually calls remote server
+int remote_add(int x, int y) {
+    int sockfd;
+    struct sockaddr_un addr;
+    struct rpc_data data;
+    
+    // Connect to server
+    sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+    addr.sun_family = AF_UNIX;
+    strcpy(addr.sun_path, "/tmp/rpc");
+    connect(sockfd, (struct sockaddr*)&addr, sizeof(addr));
+    
+    // Send parameters
+    data.a = x;
+    data.b = y;
+    send(sockfd, &data, sizeof(data), 0);
+    
+    // Get result
+    recv(sockfd, &data, sizeof(data), 0);
+    
+    close(sockfd);
+    return data.result;
+}
+
+int main() {
+    printf("RPC Client\n");
+    
+    // This looks like a normal function call!
+    int result = remote_add(10, 5);
+    
+    printf("10 + 5 = %d\n", result);
+    
+    return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./rpc_client
+RPC Client
+10 + 5 = 15
+```
+
+## Producer/Consumer (Race condition)
+
+### Not use all buffer
+
+```c
+#include <stdio.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdbool.h>
+#define ARRAY_SIZE 5
+struct Item {
+  int buffers[ARRAY_SIZE];
+  int in;
+  int out;
+};
+int main() {
+  // Create shared array
+  struct Item *shared_items = mmap(NULL, sizeof(struct Item),
+              PROT_READ | PROT_WRITE,
+              MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+  if (fork() == 0) {
+    // Child process
+    int value = 10;
+    while(true){
+      while((shared_items->in + 1) % ARRAY_SIZE == shared_items->out);
+      printf("produce: %d\n", value);
+      shared_items->buffers[shared_items->in] = value;
+      shared_items->in = (shared_items->in + 1) % ARRAY_SIZE;
+      value+=10;
+      sleep(1);
+    }
+
+  }
+else {
+    // Parent process
+    sleep(1);
+    while(true){
+      while(shared_items->in == shared_items->out);
+      int value = shared_items->buffers[shared_items->out];
+      printf("consume: %d\n", value);
+      shared_items->out = (shared_items->out + 1) % ARRAY_SIZE;
+      sleep(1);
+    }
+    wait(NULL); // Wait for child
+    munmap(shared_items, sizeof(struct Item));
+  }
+
+  return 0;
+}
+```
+
+### Use all buffer
+
+```c
+#include <stdio.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdbool.h>
+
+#define ARRAY_SIZE 5
+struct Item {
+  int buffers[ARRAY_SIZE];
+  int in;
+  int out;
+  int counter;
+};
+int main() {
+  // Create shared array
+  struct Item *shared_items = mmap(NULL, sizeof(struct Item), 
+              PROT_READ | PROT_WRITE, 
+              MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+  
+  if (fork() == 0) {
+    // Child process
+    int value = 10;
+    while(true){
+      while(shared_items->counter == ARRAY_SIZE);
+      printf("produce: %d\n", value);
+      shared_items->buffers[shared_items->in] = value;
+      shared_items->in = (shared_items->in + 1) % ARRAY_SIZE;
+      shared_items->counter = shared_items->counter+1;
+      value+=10;
+      // sleep(3);
+    }
+    
+  }
+else {
+    // Parent process
+    // sleep(1);
+    while(true){
+      while(shared_items->counter == 0);
+      int value = shared_items->buffers[shared_items->out];
+      printf("consume: %d\n", value);
+      shared_items->out = (shared_items->out + 1) % ARRAY_SIZE;
+      shared_items->counter = shared_items->counter-1;
+      // sleep(1);
+    }
+
+    wait(NULL); // Wait for child
+    munmap(shared_items, sizeof(struct Item));
+  }
+  
+  return 0;
+}
+
+```
+
+**OUTPUT**
+
+```bash
+consume: 1042170
+produce: 1042210
+consume: 1042180
+produce: 1042220
+consume: 1042190
+produce: 1042230
+consume: 1042200
+produce: 1042240
+consume: 1042210
+produce: 1042250
+consume: 1042220
+produce: 1042260
+consume: 1042230
+produce: 1042270
+consume: 1042240
+produce: 1042280
+consume: 1042250
+
 ```
