@@ -46,6 +46,9 @@ export default defineConfig({
 				'./src/styles/kbd.css',
 				'./src/styles/mathjax.css',
 			],
+			expressiveCode: {
+				tabWidth: 0
+			}
 		}),
 	],
 });
