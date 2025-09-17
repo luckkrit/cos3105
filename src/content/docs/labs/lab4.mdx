@@ -414,3 +414,74 @@ int main() {
 </Card>
 
 
+## Race condition
+
+```c
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+#include <string.h>
+
+// GLOBAL VARIABLES - SHARED between all threads
+int global_counter = 0;
+char global_message[100] = "Shared message";
+
+void* thread_function(void* arg) {
+    int thread_id = *(int*)arg;
+    
+    // LOCAL VARIABLES - PRIVATE to each thread (each thread has its own copy)
+    int local_counter = 0;
+    char local_message[50];
+    
+    sprintf(local_message, "Thread %d private message", thread_id);
+    
+    printf("Thread %d starting\n", thread_id);
+    
+    for(int i = 0; i < 5; i++) {
+        // Each thread increments its own local counter
+        local_counter++;
+        
+        // All threads share and modify the same global counter
+        global_counter++;
+        
+        printf("Thread %d: local_counter=%d, global_counter=%d\n", 
+               thread_id, local_counter, global_counter);
+        
+        printf("Thread %d: local_message='%s'\n", thread_id, local_message);
+        printf("Thread %d: global_message='%s'\n", thread_id, global_message);
+        
+        // sleep(1);
+    }
+    
+    return NULL;
+}
+
+int main() {
+    pthread_t thread1, thread2;
+    int id1 = 1, id2 = 2;
+    
+    printf("=== VARIABLE SHARING DEMONSTRATION ===\n");
+    printf("Initial global_counter: %d\n", global_counter);
+    printf("Initial global_message: '%s'\n\n", global_message);
+    
+    // Create two threads
+    pthread_create(&thread1, NULL, thread_function, &id1);
+    pthread_create(&thread2, NULL, thread_function, &id2);
+    
+    // Let threads run for a bit, then modify global variable from main
+    sleep(3);
+    strcpy(global_message, "Modified by main thread");
+    printf("\n*** MAIN: Changed global_message ***\n\n");
+    
+    // Wait for threads to complete
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    
+    printf("\nFinal global_counter: %d\n", global_counter);
+    printf("Final global_message: '%s'\n", global_message);
+    
+    return 0;
+}
+
+
+```
