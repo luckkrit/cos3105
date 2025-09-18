@@ -484,24 +484,39 @@ int main() {
 ```
 
 ## Signals
+
 :::note
 
 **Types of signal**
 
 SIGHUP  = 1   // Hangup
+
 SIGINT  = 2   // Interrupt (Ctrl+C)
+
 SIGQUIT = 3   // Quit (Ctrl+\)
+
 SIGILL  = 4   // Illegal instruction
+
 SIGTRAP = 5   // Trace trap
+
 SIGABRT = 6   // Abort
+
 SIGBUS  = 7   // Bus error
+
 SIGFPE  = 8   // Floating point exception
+
 SIGKILL = 9   // Kill (uncatchable)
+
 SIGUSR1 = 10  // User-defined signal 1
+
 SIGSEGV = 11  // Segmentation violation
+
 SIGUSR2 = 12  // User-defined signal 2
+
 SIGPIPE = 13  // Broken pipe
+
 SIGALRM = 14  // Alarm clock
+
 SIGTERM = 15  // Termination
 
 - you can simulate by
@@ -517,6 +532,7 @@ kill -15 <pid>   # Same as kill -TERM <pid> or just kill <pid>
 kill -9 <pid>    # Same as kill -KILL <pid>
 ```
 :::
+
 ### Process
 
 ```c
