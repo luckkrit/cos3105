@@ -485,3 +485,156 @@ int main() {
 
 
 ```
+
+## Signals
+:::note
+
+**Types of signal**
+
+SIGHUP  = 1   // Hangup
+SIGINT  = 2   // Interrupt (Ctrl+C)
+SIGQUIT = 3   // Quit (Ctrl+\)
+SIGILL  = 4   // Illegal instruction
+SIGTRAP = 5   // Trace trap
+SIGABRT = 6   // Abort
+SIGBUS  = 7   // Bus error
+SIGFPE  = 8   // Floating point exception
+SIGKILL = 9   // Kill (uncatchable)
+SIGUSR1 = 10  // User-defined signal 1
+SIGSEGV = 11  // Segmentation violation
+SIGUSR2 = 12  // User-defined signal 2
+SIGPIPE = 13  // Broken pipe
+SIGALRM = 14  // Alarm clock
+SIGTERM = 15  // Termination
+
+- you can simulate by
+
+```bash
+# Send SIGINT using signal number
+kill -2 <pid>    # Same as kill -INT <pid>
+
+# Send SIGTERM using signal number  
+kill -15 <pid>   # Same as kill -TERM <pid> or just kill <pid>
+
+# Force kill using signal number
+kill -9 <pid>    # Same as kill -KILL <pid>
+```
+:::
+### Process
+
+```c
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+
+void signal_handler(int sig) {
+    printf("Process %d received signal %d\n", getpid(), sig);
+    exit(0);
+}
+
+int main() {
+    printf("Press CTRL + C to send interrupt.\n");
+    sleep(1);
+    signal(SIGINT, signal_handler);  // Register handler
+    
+    while(1) {
+        // Process work - can be interrupted by signal
+        
+        sleep(1);
+    }
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./process_signals 
+Press CTRL + C to send interrupt.
+^CProcess 2577 received signal 2
+```
+
+### Threads
+
+```c
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <pthread.h>
+
+volatile int shutdown_flag = 0;  // Global flag for coordinated shutdown
+
+void signal_handler(int sig) {
+    printf("Process %d received signal %d\n", getpid(), sig);
+    
+    if (sig == SIGINT || sig == SIGTERM) {
+        printf("Termination signal received, shutting down all threads\n");
+        shutdown_flag = 1;  // Signal all threads to stop
+        exit(0);  // Immediate shutdown for this example
+    }
+}
+
+// Designate one thread for signal handling
+void* signal_thread(void* arg) {
+    sigset_t set;
+    int sig;
+    sigfillset(&set);
+    
+    while(!shutdown_flag) {
+        if (sigwait(&set, &sig) == 0) {  // Wait for signals
+            signal_handler(sig);
+        }
+    }
+    printf("Signal thread exiting\n");
+    return NULL;
+}
+
+// Worker thread function
+void* worker_func(void* arg) {
+    while(!shutdown_flag) {  // Check shutdown flag
+        printf("Worker thread working...\n");
+        sleep(1);
+    }
+    printf("Worker thread exiting gracefully\n");
+    return NULL;
+}
+
+int main() {
+    pthread_t sig_thread;
+    pthread_t worker;
+    
+    // Block signals in all threads
+    sigset_t set;
+    sigfillset(&set);
+    pthread_sigmask(SIG_BLOCK, &set, NULL);
+    
+    printf("Starting program. Use 'kill -2 %d' to send SIGINT\n", getpid());
+    
+    // Create dedicated signal handler thread
+    pthread_create(&sig_thread, NULL, signal_thread, NULL);
+    
+    // Create worker thread (signals blocked)
+    pthread_create(&worker, NULL, worker_func, NULL);
+    
+    // Wait for threads to complete
+    pthread_join(sig_thread, NULL);
+    pthread_join(worker, NULL);
+    
+    printf("Program terminated\n");
+    return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./threads_signals 
+Starting program. Use 'kill -2 6193' to send SIGINT
+Worker thread working...
+Worker thread working...
+Worker thread working...
+Process 6193 received signal 2
+Termination signal received, shutting down all threads
+```
