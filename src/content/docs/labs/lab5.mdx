@@ -1,7 +1,6 @@
 ---
 title: Lab5 - CPU Scheduling
 lastUpdated: 2025-01-21
-draft: true
 ---
 
 import {
@@ -12,20 +11,323 @@ import {
   LinkButton,
 } from "@astrojs/starlight/components";
 
-<LinkButton href={"/cos3105/print/lab3"} icon="seti:pdf" target={"_blank"}>
-  Print
-</LinkButton>
+## Linux Scheduling
 
+:::note
+This program demonstrates pthread scheduling policies in Linux/Unix. It creates multiple threads and attempts to change their scheduling behavior from the default to a real-time scheduling policy.
 
-:::tip
-ใน Lab นี้จะเรียนรู้เกี่ยวกับการใช้งานภาษา C คู่กับ Python และใช้ Python แสดงข้อมูลกราฟ Gantt Chart
+Key Components Breakdown
+
+1. **Scheduling Policies**
+
+```c
+SCHED_OTHER  // Default time-sharing policy (normal programs)
+SCHED_FIFO   // Real-time First-In-First-Out policy  
+SCHED_RR     // Real-time Round-Robin policy
+```
+
+2. **Main Function Flow**
+
+<Steps>
+
+1. Set Process Policy
+    ```c
+    sched_setscheduler(0, SCHED_FIFO, &param);
+    ```
+
+    - Tries to change the main process to use FIFO scheduling
+    - 0 means "current process"
+    - FIFO = threads run until they finish or yield (no time slicing)
+
+2. Configure Thread Attributes
+
+    ```c
+    pthread_attr_init(&attr);
+    pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+    ```
+
+    - Creates a template for how new threads should be configured
+    - Sets the desired scheduling policy in the template
+
+3. Create Threads
+
+    ```c
+    for (i = 0; i < NUM_THREADS; i++)
+        pthread_create(&tid[i], &attr, runner, (void*)(long)i);
+    ```
+
+    - Creates 5 threads using the configured attributes
+    - Each thread starts executing the runner() function
+
+4. Wait for Completion
+
+    ```c
+    for (i = 0; i < NUM_THREADS; i++)
+        pthread_join(tid[i], NULL);
+    ```
+
+    - Main thread waits for all worker threads to finish
+
+3. **Thread Function (runner)**
+
+    Each thread does this:
+
+    1. Tries to set its own scheduling policy
+
+    ```c
+    pthread_setschedparam(pthread_self(), SCHED_FIFO, &sched_param);
+    ```
+
+    2. Checks what policy it actually got
+
+    ```c
+    pthread_getschedparam(pthread_self(), &policy, &sched_param);
+    ```
+
+    3. Simulates work
+
+    ```c
+    sleep(1);  // Pretends to do work for 1 second
+    ```
+
+</Steps>
+**What's the Difference Between Scheduling Policies?**
+- **SCHED_OTHER (Default)**
+
+  - Time-sharing: OS gives each thread small time slices
+  - Preemptive: OS can interrupt a thread anytime
+  - Fair: All threads get roughly equal CPU time
+
+- **SCHED_FIFO (Real-time)**
+
+  - Run-to-completion: Thread runs until it finishes or yields
+  - Priority-based: Higher priority threads always run first
+  - No time slicing: Won't be interrupted by equal-priority threads
+
+- **SCHED_RR (Real-time Round-Robin)**
+
+  - Like FIFO but with time slicing among equal-priority threads
+
+**Why This Matters**
+
+**Normal programs use SCHED_OTHER:**
+
+  - Good for typical applications (web browsers, text editors)
+  - Fair sharing of CPU time
+
+**Real-time programs use SCHED_FIFO/SCHED_RR:**
+
+  - Critical for time-sensitive tasks (audio processing, robotics)
+  - Predictable, deterministic timing
+  - Can cause system freezes if misused!
+
+**Practical Example**
+Imagine you're processing audio:
+
+- With SCHED_OTHER: Might get interrupted, causing audio glitches
+- With SCHED_FIFO: Runs uninterrupted, smooth audio playback
+
+**Why You Need `sudo`**
+Real-time scheduling can monopolize the CPU and freeze the system, so Linux requires root privileges to use SCHED_FIFO and SCHED_RR as a safety measure.
+The code essentially demonstrates how different scheduling policies affect thread execution and shows the complexity of actually changing thread scheduling behavior in practice.
 :::
 
-## Install pip3
+```c
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
-<Card>
+#define NUM_THREADS 5
+
+void *runner(void *param);
+void print_policy(int policy, const char *label);
+
+int main(int argc, char *argv[]) {
+    int i, policy;
+    pthread_t tid[NUM_THREADS];
+    pthread_attr_t attr;
+    struct sched_param param;
+    
+    /* Try to set the main process scheduling policy first */
+    param.sched_priority = 10;
+    if (sched_setscheduler(0, SCHED_FIFO, &param) == 0) {
+        printf("Successfully set main process to SCHED_FIFO\n");
+    } else {
+        printf("Failed to set main process to SCHED_FIFO\n");
+    }
+    
+    /* get the default attributes */
+    pthread_attr_init(&attr);
+    
+    /* get the current scheduling policy */
+    if (pthread_attr_getschedpolicy(&attr, &policy) != 0) {
+        fprintf(stderr, "Unable to get initial policy.\n");
+        exit(1);
+    } else {
+        print_policy(policy, "Initial default policy");
+    }
+    
+    /* set the scheduling policy - FIFO */
+    printf("\nAttempting to set SCHED_FIFO policy...\n");
+    if (pthread_attr_setschedpolicy(&attr, SCHED_FIFO) != 0) {
+        fprintf(stderr, "Unable to set SCHED_FIFO policy.\n");
+        printf("This usually requires root privileges. Continuing with default policy.\n");
+    } else {
+        printf("Successfully set SCHED_FIFO policy.\n");
+        
+        /* For real-time policies, we need to set a priority */
+        param.sched_priority = 10;  /* Priority between 1-99 for FIFO/RR */
+        if (pthread_attr_setschedparam(&attr, &param) != 0) {
+            fprintf(stderr, "Unable to set scheduling parameters.\n");
+        } else {
+            printf("Set thread priority to: %d\n", param.sched_priority);
+        }
+    }
+    
+    /* Verify the actual policy after attempting to set it */
+    if (pthread_attr_getschedpolicy(&attr, &policy) != 0) {
+        fprintf(stderr, "Unable to get policy after setting.\n");
+    } else {
+        print_policy(policy, "Actual policy being used");
+    }
+    
+    printf("\nCreating %d threads...\n", NUM_THREADS);
+    
+    /* create the threads */
+    for (i = 0; i < NUM_THREADS; i++) {
+        if (pthread_create(&tid[i], &attr, runner, (void*)(long)i) != 0) {
+            fprintf(stderr, "Error creating thread %d\n", i);
+            exit(1);
+        }
+    }
+    
+    /* now join on each thread */
+    for (i = 0; i < NUM_THREADS; i++) {
+        if (pthread_join(tid[i], NULL) != 0) {
+            fprintf(stderr, "Error joining thread %d\n", i);
+        }
+    }
+    
+    /* cleanup */
+    pthread_attr_destroy(&attr);
+    
+    printf("All threads completed successfully.\n");
+    return 0;
+}
+
+/* Each thread will begin control in this function */
+void *runner(void *param) {
+    int thread_id = (int)(long)param;
+    int policy;
+    struct sched_param sched_param;
+    
+    /* First, try to set the scheduling policy within the thread */
+    sched_param.sched_priority = 10;
+    if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &sched_param) == 0) {
+        printf("Thread %d: Successfully set SCHED_FIFO policy\n", thread_id);
+    } else {
+        printf("Thread %d: Failed to set SCHED_FIFO policy\n", thread_id);
+    }
+    
+    /* Get and display this thread's actual scheduling policy */
+    if (pthread_getschedparam(pthread_self(), &policy, &sched_param) == 0) {
+        printf("Thread %d: ", thread_id);
+        print_policy(policy, "running with policy");
+        if (policy == SCHED_FIFO || policy == SCHED_RR) {
+            printf(" (priority: %d)", sched_param.sched_priority);
+        }
+        printf("\n");
+    }
+    
+    /* Simulate some work */
+    printf("Thread %d: Doing some work...\n", thread_id);
+    sleep(1);  /* Simulate work for 1 second */
+    printf("Thread %d: Work completed.\n", thread_id);
+    
+    pthread_exit(0);
+}
+
+/* Helper function to print scheduling policy names */
+void print_policy(int policy, const char *label) {
+    printf("%s: ", label);
+    if (policy == SCHED_OTHER)
+        printf("SCHED_OTHER");
+    else if (policy == SCHED_RR)
+        printf("SCHED_RR");
+    else if (policy == SCHED_FIFO)
+        printf("SCHED_FIFO");
+    else
+        printf("UNKNOWN_POLICY");
+}
+```
+
+**OUTPUT**
+
+- Non root user
 
 ```bash
-sudo apt install python3-pip python3-pandas
+
+Failed to set main process to SCHED_FIFO
+Initial default policy: SCHED_OTHER
+Attempting to set SCHED_FIFO policy...
+Successfully set SCHED_FIFO policy.
+Set thread priority to: 10
+Actual policy being used: SCHED_FIFO
+Creating 5 threads...
+Thread 0: Failed to set SCHED_FIFO policy
+Thread 0: running with policy: SCHED_OTHER
+Thread 0: Doing some work...
+Thread 3: Failed to set SCHED_FIFO policy
+Thread 3: running with policy: SCHED_OTHER
+Thread 3: Doing some work...
+Thread 1: Failed to set SCHED_FIFO policy
+Thread 1: running with policy: SCHED_OTHER
+Thread 1: Doing some work...
+Thread 2: Failed to set SCHED_FIFO policy
+Thread 2: running with policy: SCHED_OTHER
+Thread 2: Doing some work...
+Thread 4: Failed to set SCHED_FIFO policy
+Thread 4: running with policy: SCHED_OTHER
+Thread 4: Doing some work...
+Thread 1: Work completed.
+Thread 2: Work completed.
+Thread 0: Work completed.
+Thread 3: Work completed.
+Thread 4: Work completed.
+All threads completed successfully.
 ```
-</Card>
+
+- Root user
+
+```bash
+c@c:~/cos3105$ sudo ./cpu_scheduling 
+Successfully set main process to SCHED_FIFO
+Initial default policy: SCHED_OTHER
+Attempting to set SCHED_FIFO policy...
+Successfully set SCHED_FIFO policy.
+Set thread priority to: 10
+Actual policy being used: SCHED_FIFO
+Creating 5 threads...
+Thread 0: Successfully set SCHED_FIFO policy
+Thread 0: running with policy: SCHED_FIFO (priority: 10)
+Thread 0: Doing some work...
+Thread 1: Successfully set SCHED_FIFO policy
+Thread 1: running with policy: SCHED_FIFO (priority: 10)
+Thread 1: Doing some work...
+Thread 2: Successfully set SCHED_FIFO policy
+Thread 2: running with policy: SCHED_FIFO (priority: 10)
+Thread 2: Doing some work...
+Thread 3: Successfully set SCHED_FIFO policy
+Thread 3: running with policy: SCHED_FIFO (priority: 10)
+Thread 3: Doing some work...
+Thread 4: Successfully set SCHED_FIFO policy
+Thread 4: running with policy: SCHED_FIFO (priority: 10)
+Thread 4: Doing some work...
+Thread 0: Work completed.
+Thread 4: Work completed.
+Thread 1: Work completed.
+Thread 2: Work completed.
+Thread 3: Work completed.
+All threads completed successfully.
+```

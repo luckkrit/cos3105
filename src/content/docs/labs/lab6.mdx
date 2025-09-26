@@ -1,0 +1,322 @@
+---
+title: Lab6 - Mutex Lock
+lastUpdated: 2025-09-23
+draft: true
+---
+
+# POSIX Mutex Lock Tutorial for OS Students
+
+## Introduction
+
+A **mutex** (mutual exclusion) is a synchronization primitive that prevents multiple threads from simultaneously accessing shared resources. Think of it as a lock on a door - only one person can hold the key at a time.
+
+---
+
+## Part 1: The Problem - Race Condition
+
+### Without Mutex (BROKEN CODE)
+
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+int counter = 0;  // Shared variable
+
+void* increment(void* arg) {
+    for (int i = 0; i < 100000; i++) {
+        counter++;  // NOT thread-safe!
+    }
+    return NULL;
+}
+
+int main() {
+    pthread_t t1, t2;
+    
+    pthread_create(&t1, NULL, increment, NULL);
+    pthread_create(&t2, NULL, increment, NULL);
+    
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+    
+    printf("Counter = %d (expected: 200000)\n", counter);
+    // Output varies! Might be 150000, 180000, etc.
+    return 0;
+}
+```
+
+**Compile:** `gcc -pthread race.c -o race`
+
+**Problem:** `counter++` is actually 3 operations:
+1. Read counter value
+2. Add 1
+3. Write back
+
+When threads interleave, updates get lost!
+
+---
+
+## Part 2: The Solution - Mutex Lock
+
+### With Mutex (CORRECT CODE)
+
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+int counter = 0;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void* increment(void* arg) {
+    for (int i = 0; i < 100000; i++) {
+        pthread_mutex_lock(&mutex);    // LOCK
+        counter++;                      // Critical section
+        pthread_mutex_unlock(&mutex);  // UNLOCK
+    }
+    return NULL;
+}
+
+int main() {
+    pthread_t t1, t2;
+    
+    pthread_create(&t1, NULL, increment, NULL);
+    pthread_create(&t2, NULL, increment, NULL);
+    
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+    
+    printf("Counter = %d\n", counter);
+    // Always outputs: 200000
+    
+    pthread_mutex_destroy(&mutex);
+    return 0;
+}
+```
+
+---
+
+## Part 3: Core Mutex Functions
+
+### 1. Initialize
+```c
+// Method 1: Static
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// Method 2: Dynamic
+pthread_mutex_t mutex;
+pthread_mutex_init(&mutex, NULL);
+```
+
+### 2. Lock
+```c
+pthread_mutex_lock(&mutex);
+// Blocks if mutex is already locked
+```
+
+### 3. Unlock
+```c
+pthread_mutex_unlock(&mutex);
+// Releases the mutex
+```
+
+### 4. Destroy
+```c
+pthread_mutex_destroy(&mutex);
+// Clean up when done
+```
+
+---
+
+## Part 4: Practical Example - Bank Account
+
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+typedef struct {
+    int balance;
+    pthread_mutex_t mutex;
+} BankAccount;
+
+void account_init(BankAccount *acc, int initial) {
+    acc->balance = initial;
+    pthread_mutex_init(&acc->mutex, NULL);
+}
+
+void deposit(BankAccount *acc, int amount) {
+    pthread_mutex_lock(&acc->mutex);
+    acc->balance += amount;
+    printf("Deposited %d, Balance: %d\n", amount, acc->balance);
+    pthread_mutex_unlock(&acc->mutex);
+}
+
+void withdraw(BankAccount *acc, int amount) {
+    pthread_mutex_lock(&acc->mutex);
+    if (acc->balance >= amount) {
+        acc->balance -= amount;
+        printf("Withdrew %d, Balance: %d\n", amount, acc->balance);
+    } else {
+        printf("Insufficient funds!\n");
+    }
+    pthread_mutex_unlock(&acc->mutex);
+}
+
+void* transaction_thread(void *arg) {
+    BankAccount *acc = (BankAccount*)arg;
+    
+    deposit(acc, 100);
+    withdraw(acc, 50);
+    
+    return NULL;
+}
+
+int main() {
+    BankAccount account;
+    account_init(&account, 1000);
+    
+    pthread_t threads[3];
+    
+    for (int i = 0; i < 3; i++) {
+        pthread_create(&threads[i], NULL, transaction_thread, &account);
+    }
+    
+    for (int i = 0; i < 3; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    
+    printf("Final balance: %d\n", account.balance);
+    
+    pthread_mutex_destroy(&account.mutex);
+    return 0;
+}
+```
+
+---
+
+## Part 5: Important Concepts
+
+### Critical Section
+The code between `lock()` and `unlock()` where shared data is accessed.
+
+```c
+pthread_mutex_lock(&mutex);
+// ← Critical section starts
+shared_data = new_value;
+// ← Critical section ends
+pthread_mutex_unlock(&mutex);
+```
+
+### Best Practices
+
+1. **Always unlock what you lock**
+   ```c
+   pthread_mutex_lock(&mutex);
+   if (error) {
+       pthread_mutex_unlock(&mutex);  // Don't forget!
+       return;
+   }
+   pthread_mutex_unlock(&mutex);
+   ```
+
+2. **Keep critical sections small**
+   ```c
+   // BAD: Lock too long
+   pthread_mutex_lock(&mutex);
+   complex_calculation();  // Doesn't need mutex!
+   shared_data = result;
+   pthread_mutex_unlock(&mutex);
+   
+   // GOOD: Lock only when needed
+   result = complex_calculation();
+   pthread_mutex_lock(&mutex);
+   shared_data = result;
+   pthread_mutex_unlock(&mutex);
+   ```
+
+3. **Avoid deadlocks**
+   ```c
+   // BAD: Can cause deadlock
+   Thread 1: lock(A) → lock(B)
+   Thread 2: lock(B) → lock(A)
+   
+   // GOOD: Always lock in same order
+   Thread 1: lock(A) → lock(B)
+   Thread 2: lock(A) → lock(B)
+   ```
+
+---
+
+## Part 6: Try It Yourself - Exercises
+
+### Exercise 1: Producer-Consumer
+Create a shared buffer where one thread produces data and another consumes it. Use a mutex to protect the buffer.
+
+### Exercise 2: Thread-Safe Counter
+Implement a counter with separate increment, decrement, and get_value functions, all protected by a mutex.
+
+### Exercise 3: Find the Bug
+```c
+pthread_mutex_t m1, m2;
+
+void* thread1() {
+    pthread_mutex_lock(&m1);
+    sleep(1);
+    pthread_mutex_lock(&m2);
+    // work
+    pthread_mutex_unlock(&m2);
+    pthread_mutex_unlock(&m1);
+}
+
+void* thread2() {
+    pthread_mutex_lock(&m2);
+    sleep(1);
+    pthread_mutex_lock(&m1);
+    // work
+    pthread_mutex_unlock(&m1);
+    pthread_mutex_unlock(&m2);
+}
+```
+**Question:** What's wrong? How would you fix it?
+
+---
+
+## Compilation and Testing
+
+```bash
+# Compile
+gcc -pthread program.c -o program
+
+# Run
+./program
+
+# Run multiple times to see race conditions
+for i in {1..10}; do ./program; done
+```
+
+---
+
+## Key Takeaways
+
+- **Mutex = Mutual Exclusion** - only one thread at a time
+- **Always pair lock/unlock** - like opening/closing a door
+- **Protect shared data** - anything accessed by multiple threads
+- **Keep it simple** - lock, modify, unlock
+- **Test thoroughly** - race conditions are hard to debug
+
+---
+
+## Common Errors and Solutions
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| Deadlock | Waiting for mutex that never unlocks | Always unlock; use consistent lock order |
+| Data corruption | Forgot to lock | Identify all shared data and protect it |
+| Performance issues | Holding lock too long | Minimize critical section size |
+| Undefined behavior | Using uninitialized mutex | Always initialize before use |
+
+---
+
+## Further Reading
+
+- `man pthread_mutex_lock`
+- "Operating System Concepts" by Silberschatz (Chapter on Synchronization)
+- Try implementing a thread-safe queue or hash table!
