@@ -1,322 +1,606 @@
 ---
 title: Lab6 - Mutex Lock
-lastUpdated: 2025-09-23
-draft: true
+lastUpdated: 2025-10-02
 ---
 
-# POSIX Mutex Lock Tutorial for OS Students
 
-## Introduction
+import {
+    Steps,
+    Card,
+    Tabs,
+    TabItem,
+    LinkButton,
+} from "@astrojs/starlight/components";
 
-A **mutex** (mutual exclusion) is a synchronization primitive that prevents multiple threads from simultaneously accessing shared resources. Think of it as a lock on a door - only one person can hold the key at a time.
 
----
+## Race Condition
 
-## Part 1: The Problem - Race Condition
-
-### Without Mutex (BROKEN CODE)
+### Process
 
 ```c
+#include <stdbool.h>
 #include <stdio.h>
-#include <pthread.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
-int counter = 0;  // Shared variable
-
-void* increment(void* arg) {
-    for (int i = 0; i < 100000; i++) {
-        counter++;  // NOT thread-safe!
-    }
-    return NULL;
-}
-
+#define ARRAY_SIZE 5
+struct Item {
+  int buffers[ARRAY_SIZE];
+  int in;
+  int out;
+  int counter;
+};
 int main() {
-    pthread_t t1, t2;
-    
-    pthread_create(&t1, NULL, increment, NULL);
-    pthread_create(&t2, NULL, increment, NULL);
-    
-    pthread_join(t1, NULL);
-    pthread_join(t2, NULL);
-    
-    printf("Counter = %d (expected: 200000)\n", counter);
-    // Output varies! Might be 150000, 180000, etc.
-    return 0;
+  // Create shared array
+  struct Item *shared_items =
+      mmap(NULL, sizeof(struct Item), PROT_READ | PROT_WRITE,
+           MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+  if (fork() == 0) {
+    // Child process
+    int value = 10;
+    for(int i=0;i<100000;i++) {
+      while (shared_items->counter == ARRAY_SIZE)
+        ;
+      printf("produce: %d\n", value);
+      shared_items->buffers[shared_items->in] = value;
+      shared_items->in = (shared_items->in + 1) % ARRAY_SIZE;
+      shared_items->counter = shared_items->counter + 1;
+      value += 10;
+      // sleep(3);
+    }
+
+  } else {
+    // Parent process
+    // sleep(1);
+    for(int i=0;i<100000;i++) {
+      while (shared_items->counter == 0)
+        ;
+      int value = shared_items->buffers[shared_items->out];
+      printf("consume: %d\n", value);
+      shared_items->out = (shared_items->out + 1) % ARRAY_SIZE;
+      shared_items->counter = shared_items->counter - 1;
+      // sleep(1);
+    }
+
+    wait(NULL); // Wait for child
+    munmap(shared_items, sizeof(struct Item));
+  }
+
+  return 0;
 }
+
 ```
 
-**Compile:** `gcc -pthread race.c -o race`
+**OUTPUT**
 
-**Problem:** `counter++` is actually 3 operations:
-1. Read counter value
-2. Add 1
-3. Write back
+```bash
+consume: 999900
+produce: 999950
+consume: 999910
+produce: 999960
+consume: 999920
+produce: 999970
+consume: 999930
+produce: 999980
+consume: 999940
+produce: 999990
+consume: 999950
+produce: 1000000
+consume: 999960
+consume: 999970
+consume: 999980
+consume: 999990
+^C
+c@c:~/cos3105$ 
+```
 
-When threads interleave, updates get lost!
-
----
-
-## Part 2: The Solution - Mutex Lock
-
-### With Mutex (CORRECT CODE)
+### Thread
 
 ```c
 #include <stdio.h>
 #include <pthread.h>
 
 int counter = 0;
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+// NO MUTEX!
 
-void* increment(void* arg) {
+void* increment_function(void* arg) {
     for (int i = 0; i < 100000; i++) {
-        pthread_mutex_lock(&mutex);    // LOCK
-        counter++;                      // Critical section
-        pthread_mutex_unlock(&mutex);  // UNLOCK
+        // NO LOCK!
+        counter++;                           // Race condition!
+        printf("Thread incremented counter to: %d\n", counter);
+        // NO UNLOCK!
     }
+    return NULL;
+}
+
+int main() {
+    pthread_t thread1, thread2;
+    
+    pthread_create(&thread1, NULL, increment_function, NULL);
+    pthread_create(&thread2, NULL, increment_function, NULL);
+    
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    
+    printf("\nFinal counter value: %d\n", counter);
+    
+    return 0;
+}
+
+```
+
+**OUTPUT**
+
+```bash
+Thread incremented counter to: 199909
+Thread incremented counter to: 199910
+Thread incremented counter to: 199911
+Thread incremented counter to: 199912
+Thread incremented counter to: 199913
+Thread incremented counter to: 199914
+Thread incremented counter to: 199915
+Thread incremented counter to: 199916
+Thread incremented counter to: 199917
+Thread incremented counter to: 199918
+Thread incremented counter to: 199919
+Thread incremented counter to: 199920
+Thread incremented counter to: 199921
+Thread incremented counter to: 199922
+Thread incremented counter to: 199923
+
+Final counter value: 199923
+c@c:~/cos3105$ 
+```
+
+## Mutex Lock
+
+### Process
+
+```c
+#include <pthread.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+#define ARRAY_SIZE 100000
+
+struct Item {
+  int buffers[ARRAY_SIZE];
+  int in;
+  int out;
+  int counter;
+  pthread_mutex_t lock;
+};
+
+int main() {
+  struct Item *shared_items =
+      mmap(NULL, sizeof(struct Item), PROT_READ | PROT_WRITE,
+           MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+  pthread_mutexattr_t attr;
+  pthread_mutexattr_init(&attr);
+  pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+  pthread_mutex_init(&shared_items->lock, &attr);
+
+  shared_items->counter = 0;
+  shared_items->in = 0;   // Initialize
+  shared_items->out = 0;  // Initialize
+
+  if (fork() == 0) {
+    // Child process (Producer)
+    int value = 10;
+    for (int i = 0; i < 100000; i++) {
+      
+      pthread_mutex_lock(&shared_items->lock);  // LOCK EARLIER!
+      
+      // Wait while buffer is full
+      while (shared_items->counter == ARRAY_SIZE) {
+        pthread_mutex_unlock(&shared_items->lock);  // Release while waiting
+        pthread_mutex_lock(&shared_items->lock);    // Re-acquire
+      }
+      
+      // Critical section - all buffer operations protected
+      shared_items->buffers[shared_items->in] = value;
+      shared_items->in = (shared_items->in + 1) % ARRAY_SIZE;
+      shared_items->counter++;
+      
+      pthread_mutex_unlock(&shared_items->lock);  // UNLOCK AFTER ALL OPERATIONS
+      
+      printf("produce: %d, counter: %d\n", value, shared_items->counter);
+      value += 10;
+    }
+
+  } else {
+    // Parent process (Consumer)
+    for (int i = 0; i < 100000; i++) {
+      
+      pthread_mutex_lock(&shared_items->lock);  // LOCK EARLIER!
+      
+      // Wait while buffer is empty
+      while (shared_items->counter == 0) {
+        pthread_mutex_unlock(&shared_items->lock);  // Release while waiting
+        pthread_mutex_lock(&shared_items->lock);    // Re-acquire
+      }
+      
+      // Critical section - all buffer operations protected
+      int value = shared_items->buffers[shared_items->out];
+      shared_items->out = (shared_items->out + 1) % ARRAY_SIZE;
+      shared_items->counter--;
+      
+      pthread_mutex_unlock(&shared_items->lock);  // UNLOCK AFTER ALL OPERATIONS
+      
+      printf("consume: %d, counter: %d\n", value, shared_items->counter);
+    }
+
+    wait(NULL);
+    printf("\nFinal counter: %d\n", shared_items->counter);
+    pthread_mutex_destroy(&shared_items->lock);
+    munmap(shared_items, sizeof(struct Item));
+  }
+
+  return 0;
+}
+```
+
+**OUTPUT**
+
+```bash
+consume: 999860, counter: 14
+consume: 999870, counter: 13
+consume: 999880, counter: 12
+consume: 999890, counter: 11
+consume: 999900, counter: 10
+consume: 999910, counter: 9
+consume: 999920, counter: 8
+consume: 999930, counter: 7
+consume: 999940, counter: 6
+consume: 999950, counter: 5
+consume: 999960, counter: 4
+consume: 999970, counter: 3
+consume: 999980, counter: 2
+consume: 999990, counter: 1
+consume: 1000000, counter: 0
+
+Final counter: 0
+c@c:~/cos3105$ 
+```
+
+### Thread
+
+```c
+#include <stdio.h>
+#include <pthread.h>
+
+int counter = 0;           // Shared variable
+pthread_mutex_t lock;      // Mutex lock
+
+void* increment_function(void* arg) {
+    for (int i = 0; i < 100000; i++) {
+        
+        pthread_mutex_lock(&lock);      // Lock (Entry section)
+        
+        counter++;                       // Critical section
+        printf("Thread incremented counter to: %d\n", counter);
+        
+        pthread_mutex_unlock(&lock);    // Unlock (Exit section)
+    }
+    return NULL;
+}
+
+int main() {
+    pthread_t thread1, thread2;
+    
+    // Step 1: Initialize the mutex
+    pthread_mutex_init(&lock, NULL);
+    
+    // Step 2: Create two threads
+    pthread_create(&thread1, NULL, increment_function, NULL);
+    pthread_create(&thread2, NULL, increment_function, NULL);
+    
+    // Step 3: Wait for both threads to finish
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    
+    // Step 4: Print final result
+    printf("\nFinal counter value: %d\n", counter);
+    
+    // Step 5: Destroy the mutex
+    pthread_mutex_destroy(&lock);
+    
+    return 0;
+}
+
+```
+
+**OUTPUT**
+
+```bash
+Thread incremented counter to: 199986
+Thread incremented counter to: 199987
+Thread incremented counter to: 199988
+Thread incremented counter to: 199989
+Thread incremented counter to: 199990
+Thread incremented counter to: 199991
+Thread incremented counter to: 199992
+Thread incremented counter to: 199993
+Thread incremented counter to: 199994
+Thread incremented counter to: 199995
+Thread incremented counter to: 199996
+Thread incremented counter to: 199997
+Thread incremented counter to: 199998
+Thread incremented counter to: 199999
+Thread incremented counter to: 200000
+
+Final counter value: 200000
+c@c:~/cos3105$ 
+```
+
+## Semaphore
+
+### Busy Waiting (Spinlock Semaphore)
+
+```c
+#include <stdio.h>
+#include <stdbool.h>
+#include <pthread.h>
+#include <unistd.h>
+
+bool ready = false;  // Shared flag
+
+void* producer(void* arg) {
+    sleep(3);  // Simulate work for 3 seconds
+    printf("Producer: Data is ready!\n");
+    ready = true;  // Signal that data is ready
+    return NULL;
+}
+
+void* consumer(void* arg) {
+    printf("Consumer: Waiting for data...\n");
+    
+    // BUSY WAITING - keeps spinning!
+    while (!ready) {
+        // Do nothing, just keep checking
+        // CPU is at 100% usage here!
+    }
+    
+    printf("Consumer: Got the data!\n");
     return NULL;
 }
 
 int main() {
     pthread_t t1, t2;
     
-    pthread_create(&t1, NULL, increment, NULL);
-    pthread_create(&t2, NULL, increment, NULL);
+    pthread_create(&t2, NULL, consumer, NULL);
+    pthread_create(&t1, NULL, producer, NULL);
     
     pthread_join(t1, NULL);
     pthread_join(t2, NULL);
     
-    printf("Counter = %d\n", counter);
-    // Always outputs: 200000
-    
-    pthread_mutex_destroy(&mutex);
     return 0;
 }
 ```
 
----
+**OUTPUT**
 
-## Part 3: Core Mutex Functions
-
-### 1. Initialize
-```c
-// Method 1: Static
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-// Method 2: Dynamic
-pthread_mutex_t mutex;
-pthread_mutex_init(&mutex, NULL);
+```bash
+c@c:~/cos3105$ ./semaphore_busy_waiting 
+Consumer: Waiting for data...
+Producer: Data is ready!
+Consumer: Got the data!
 ```
 
-### 2. Lock
-```c
-pthread_mutex_lock(&mutex);
-// Blocks if mutex is already locked
-```
-
-### 3. Unlock
-```c
-pthread_mutex_unlock(&mutex);
-// Releases the mutex
-```
-
-### 4. Destroy
-```c
-pthread_mutex_destroy(&mutex);
-// Clean up when done
-```
-
----
-
-## Part 4: Practical Example - Bank Account
+### No Busy Waiting (Blocking Semaphore)
 
 ```c
 #include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
+#include <unistd.h>
 
+// Process structure (represents blocked thread)
+typedef struct process {
+    pthread_cond_t cond;     // For blocking/waking this process
+    struct process *next;    // Link to next in queue
+} process;
+
+// Semaphore structure
 typedef struct {
-    int balance;
-    pthread_mutex_t mutex;
-} BankAccount;
+    int value;
+    process *waiting_queue;  // Queue of blocked processes
+    pthread_mutex_t lock;    // Protects the semaphore
+} semaphore;
 
-void account_init(BankAccount *acc, int initial) {
-    acc->balance = initial;
-    pthread_mutex_init(&acc->mutex, NULL);
+// Global variable to track current process (thread-local in real OS)
+__thread process *current_process = NULL;
+
+// Add process to waiting queue
+void add_to_queue(process **queue, process *p) {
+    p->next = *queue;
+    *queue = p;
+    printf("    [Added to waiting queue]\n");
 }
 
-void deposit(BankAccount *acc, int amount) {
-    pthread_mutex_lock(&acc->mutex);
-    acc->balance += amount;
-    printf("Deposited %d, Balance: %d\n", amount, acc->balance);
-    pthread_mutex_unlock(&acc->mutex);
-}
-
-void withdraw(BankAccount *acc, int amount) {
-    pthread_mutex_lock(&acc->mutex);
-    if (acc->balance >= amount) {
-        acc->balance -= amount;
-        printf("Withdrew %d, Balance: %d\n", amount, acc->balance);
-    } else {
-        printf("Insufficient funds!\n");
-    }
-    pthread_mutex_unlock(&acc->mutex);
-}
-
-void* transaction_thread(void *arg) {
-    BankAccount *acc = (BankAccount*)arg;
+// Remove process from waiting queue
+process* remove_from_queue(process **queue) {
+    if (*queue == NULL) return NULL;
     
-    deposit(acc, 100);
-    withdraw(acc, 50);
+    process *p = *queue;
+    *queue = p->next;
+    printf("    [Removed from waiting queue]\n");
+    return p;
+}
+
+// Initialize semaphore
+void sem_init_blocking(semaphore *S, int initial_value) {
+    S->value = initial_value;
+    S->waiting_queue = NULL;
+    pthread_mutex_init(&S->lock, NULL);
+    printf("Semaphore initialized: value = %d\n\n", initial_value);
+}
+
+// Wait operation
+void wait(semaphore *S) {
+    pthread_mutex_lock(&S->lock);
+    
+    S->value--;
+    printf("  wait(): value = %d\n", S->value);
+    
+    if (S->value < 0) {
+        // Create current process structure
+        current_process = (process*)malloc(sizeof(process));
+        pthread_cond_init(&current_process->cond, NULL);
+        
+        // Add this process to waiting queue
+        add_to_queue(&S->waiting_queue, current_process);
+        
+        printf("  wait(): BLOCKING (going to sleep)...\n");
+        
+        // block() - Put process to sleep
+        pthread_cond_wait(&current_process->cond, &S->lock);
+        
+        printf("  wait(): WOKEN UP!\n");
+        
+        // Cleanup
+        pthread_cond_destroy(&current_process->cond);
+        free(current_process);
+        current_process = NULL;
+    }
+    
+    pthread_mutex_unlock(&S->lock);
+}
+
+// Signal operation
+void signal(semaphore *S) {
+    pthread_mutex_lock(&S->lock);
+    
+    S->value++;
+    printf("  signal(): value = %d\n", S->value);
+    
+    if (S->value <= 0) {
+        // Wake up a waiting process
+        process *P = remove_from_queue(&S->waiting_queue);
+        if (P != NULL) {
+            printf("  signal(): Waking up a process\n");
+            pthread_cond_signal(&P->cond);  // wakeup(P)
+        }
+    }
+    
+    pthread_mutex_unlock(&S->lock);
+}
+
+// Destroy semaphore
+void sem_destroy_blocking(semaphore *S) {
+    pthread_mutex_destroy(&S->lock);
+}
+
+// ========== Test Program ==========
+
+semaphore S;
+
+void* thread_function(void* arg) {
+    int id = *(int*)arg;
+    
+    printf("\nThread %d: Calling wait()\n", id);
+    wait(&S);
+    
+    printf("\nThread %d: In critical section (working...)\n", id);
+    sleep(2);
+    printf("Thread %d: Done working\n", id);
+    
+    printf("\nThread %d: Calling signal()\n", id);
+    signal(&S);
     
     return NULL;
 }
 
 int main() {
-    BankAccount account;
-    account_init(&account, 1000);
+    pthread_t threads[4];
+    int ids[4] = {1, 2, 3, 4};
     
-    pthread_t threads[3];
+    // Initialize semaphore with value 1
+    sem_init_blocking(&S, 1);
     
-    for (int i = 0; i < 3; i++) {
-        pthread_create(&threads[i], NULL, transaction_thread, &account);
+    // Create 4 threads
+    for (int i = 0; i < 4; i++) {
+        pthread_create(&threads[i], NULL, thread_function, &ids[i]);
+        usleep(200000);  // Small delay for clear output
     }
     
-    for (int i = 0; i < 3; i++) {
+    // Wait for all threads to finish
+    for (int i = 0; i < 4; i++) {
         pthread_join(threads[i], NULL);
     }
     
-    printf("Final balance: %d\n", account.balance);
+    printf("\n========== All threads finished ==========\n");
+    printf("Final semaphore value: %d\n", S.value);
     
-    pthread_mutex_destroy(&account.mutex);
+    sem_destroy_blocking(&S);
+    
     return 0;
 }
 ```
 
----
-
-## Part 5: Important Concepts
-
-### Critical Section
-The code between `lock()` and `unlock()` where shared data is accessed.
-
-```c
-pthread_mutex_lock(&mutex);
-// ← Critical section starts
-shared_data = new_value;
-// ← Critical section ends
-pthread_mutex_unlock(&mutex);
-```
-
-### Best Practices
-
-1. **Always unlock what you lock**
-   ```c
-   pthread_mutex_lock(&mutex);
-   if (error) {
-       pthread_mutex_unlock(&mutex);  // Don't forget!
-       return;
-   }
-   pthread_mutex_unlock(&mutex);
-   ```
-
-2. **Keep critical sections small**
-   ```c
-   // BAD: Lock too long
-   pthread_mutex_lock(&mutex);
-   complex_calculation();  // Doesn't need mutex!
-   shared_data = result;
-   pthread_mutex_unlock(&mutex);
-   
-   // GOOD: Lock only when needed
-   result = complex_calculation();
-   pthread_mutex_lock(&mutex);
-   shared_data = result;
-   pthread_mutex_unlock(&mutex);
-   ```
-
-3. **Avoid deadlocks**
-   ```c
-   // BAD: Can cause deadlock
-   Thread 1: lock(A) → lock(B)
-   Thread 2: lock(B) → lock(A)
-   
-   // GOOD: Always lock in same order
-   Thread 1: lock(A) → lock(B)
-   Thread 2: lock(A) → lock(B)
-   ```
-
----
-
-## Part 6: Try It Yourself - Exercises
-
-### Exercise 1: Producer-Consumer
-Create a shared buffer where one thread produces data and another consumes it. Use a mutex to protect the buffer.
-
-### Exercise 2: Thread-Safe Counter
-Implement a counter with separate increment, decrement, and get_value functions, all protected by a mutex.
-
-### Exercise 3: Find the Bug
-```c
-pthread_mutex_t m1, m2;
-
-void* thread1() {
-    pthread_mutex_lock(&m1);
-    sleep(1);
-    pthread_mutex_lock(&m2);
-    // work
-    pthread_mutex_unlock(&m2);
-    pthread_mutex_unlock(&m1);
-}
-
-void* thread2() {
-    pthread_mutex_lock(&m2);
-    sleep(1);
-    pthread_mutex_lock(&m1);
-    // work
-    pthread_mutex_unlock(&m1);
-    pthread_mutex_unlock(&m2);
-}
-```
-**Question:** What's wrong? How would you fix it?
-
----
-
-## Compilation and Testing
+**OUTPUT**
 
 ```bash
-# Compile
-gcc -pthread program.c -o program
+Semaphore initialized: value = 1
 
-# Run
-./program
 
-# Run multiple times to see race conditions
-for i in {1..10}; do ./program; done
+Thread 1: Calling wait()
+  wait(): value = 0
+
+Thread 1: In critical section (working...)
+
+Thread 2: Calling wait()
+  wait(): value = -1
+    [Added to waiting queue]
+  wait(): BLOCKING (going to sleep)...
+
+Thread 3: Calling wait()
+  wait(): value = -2
+    [Added to waiting queue]
+  wait(): BLOCKING (going to sleep)...
+
+Thread 4: Calling wait()
+  wait(): value = -3
+    [Added to waiting queue]
+  wait(): BLOCKING (going to sleep)...
+Thread 1: Done working
+
+Thread 1: Calling signal()
+  signal(): value = -2
+    [Removed from waiting queue]
+  signal(): Waking up a process
+  wait(): WOKEN UP!
+
+Thread 4: In critical section (working...)
+Thread 4: Done working
+
+Thread 4: Calling signal()
+  signal(): value = -1
+    [Removed from waiting queue]
+  signal(): Waking up a process
+  wait(): WOKEN UP!
+
+Thread 3: In critical section (working...)
+Thread 3: Done working
+
+Thread 3: Calling signal()
+  signal(): value = 0
+    [Removed from waiting queue]
+  signal(): Waking up a process
+  wait(): WOKEN UP!
+
+Thread 2: In critical section (working...)
+Thread 2: Done working
+
+Thread 2: Calling signal()
+  signal(): value = 1
+
+========== All threads finished ==========
+Final semaphore value: 1
 ```
-
----
-
-## Key Takeaways
-
-- **Mutex = Mutual Exclusion** - only one thread at a time
-- **Always pair lock/unlock** - like opening/closing a door
-- **Protect shared data** - anything accessed by multiple threads
-- **Keep it simple** - lock, modify, unlock
-- **Test thoroughly** - race conditions are hard to debug
-
----
-
-## Common Errors and Solutions
-
-| Error | Cause | Solution |
-|-------|-------|----------|
-| Deadlock | Waiting for mutex that never unlocks | Always unlock; use consistent lock order |
-| Data corruption | Forgot to lock | Identify all shared data and protect it |
-| Performance issues | Holding lock too long | Minimize critical section size |
-| Undefined behavior | Using uninitialized mutex | Always initialize before use |
-
----
-
-## Further Reading
-
-- `man pthread_mutex_lock`
-- "Operating System Concepts" by Silberschatz (Chapter on Synchronization)
-- Try implementing a thread-safe queue or hash table!
