@@ -2,7 +2,6 @@
 title: Lab1 - Boot Loader, System Call
 lastUpdated: 2024-12-20
 ---
-
 import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
 
 <LinkButton href={"/cos3105/print/lab1"} icon="seti:pdf" target={"_blank"}>Print</LinkButton>
@@ -42,6 +41,7 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 
 <TabItem label="Thai">
 
+---
 
 ## Boot Sector: พื้นที่จำกัดกับการใช้งานที่เหนือความคาดหมาย
 
@@ -49,6 +49,7 @@ import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/compo
 
 ด้วยข้อจำกัดของสภาพแวดล้อมดังกล่าว บ่อยครั้งที่ boot sector ถูกมองข้ามว่ามีหน้าที่อื่นนอกเหนือจากการบูตระบบ อย่างไรก็ตาม ตลอดหลายปีที่ผ่านมา มีคนสองกลุ่มที่ค้นพบการใช้งานทางเลือกสำหรับมัน กลุ่มหนึ่งคือ **นักเขียนไวรัส** และอีกกลุ่มคือ **ผู้สร้างเดโม (demo maker)**
 
+---
 
 ### Boot Sector กับไวรัสคอมพิวเตอร์
 
@@ -222,6 +223,26 @@ July 24, 2019
 
 </Card>
 
+## Bochs คืออะไร 
+
+- Bochs is a highly portable open source IA-32 (x86) PC emulator written in C++, that runs on most popular platforms.
+
+## ติดตั้ง Bochs Emulator
+
+<Card>
+<center>
+![Bochs Emulator](/cos3105/images/lab1/bochs_emulator.png)
+</center>
+
+<Steps>
+1. โหลด bochs emulator โดยไปที่ https://sourceforge.net/projects/bochs/files/bochs/2.8/Bochs-win64-2.8.exe/download
+2. ติดตั้ง bochs emulator
+3. เพิ่ม path ของโปรแกรมไปใน environment variables 
+![Environment Variables](/cos3105/images/lab1/environment_variables.png)
+![Environment Variables](/cos3105/images/lab1/environment_variables2.png)
+![Environment Variables](/cos3105/images/lab1/environment_variables3.png)
+</Steps>
+</Card>
 ## ติดตั้ง NASM Compiler
 
 <Card>
@@ -288,10 +309,59 @@ dw 0aa55h            	; Add boot magic word to mark us
             7654 3210
 ```
 :::
+
+
+:::note
+DOS (Disk Operating System), like MS-DOS, runs in **real mode**. This is because DOS was designed for early x86 processors, such as the Intel 8086 and 8088, which only supported real mode. Here's a quick breakdown:
+
+## Why DOS Runs in Real Mode:
+
+1. **16-Bit Architecture**:
+    
+    - DOS operates in real mode, limited to the 16-bit architecture of the early x86 processors.
+        
+    - It can address only the first 1 MB of memory (known as the "real mode memory limit").
+        
+2. **Direct Hardware Access**:
+    
+    - In real mode, programs and the operating system have direct access to hardware resources like disk drives, memory, and video output without any protection or abstraction.
+        
+3. **No Advanced Features**:
+    
+    - Real mode lacks features like memory protection, multitasking, and virtual memory, which are characteristics of protected mode.
+:::
 </Card>
 
+## การทำ Boot image
 
-## การทำ Boot image และรันโปรแกรม Boot loader 
+<Card>
+
+<Steps>
+1. นำโค๊ดด้านบนไปใส่ในไฟล์ boot.asm
+2. compile ไปเป็น .bin ไฟล์ 
+   ```ps
+   nasm -f bin boot.asm -o boot.bin
+   ```
+
+3. สร้างไฟล์ .bochsrc
+   ```bash frame="none"
+    ata0-master: type=disk, path="boot.bin", mode=flat, cylinders=1, heads=1, spt=1
+    boot: disk
+    megs: 128
+   ```
+4. กดรัน <kbd>bochs</kbd> + <kbd>Enter</kbd>
+    ```ps
+    bochs
+    ```
+
+    ![Bochs](/cos3105/images/lab1/run_bochs.png)
+
+    ![Bochs Bootloader](/cos3105/images/lab1/bochs_bootloader.png)
+</Steps>
+
+</Card>
+
+## การทำ Boot image และรันโปรแกรม Boot loader โดยไม่ใช้ Bochs
 
 <Card>
 
@@ -325,3 +395,449 @@ dw 0aa55h            	; Add boot magic word to mark us
 3. แตกไฟล์ rar
 </Steps>
 </Card>
+
+## เพิ่ม DOS6 ลงใน Virtual Box
+
+<Card>
+<Steps>
+1. เปิด Virtual Box แล้วกด Add
+![VirtualBox Dos6](/cos3105/images/lab1/virtualbox_dos6.png)
+![DOS6 VDI](/cos3105/images/lab1/select_dos6_vdi.png)
+2. กด Open
+3. กด Start จะรัน DOS6 ขึ้นมา
+![DOS6](/cos3105/images/lab1/dos6.png)
+</Steps>
+</Card>
+
+### ทำ Shared Folder
+<Card>
+<Steps>
+1. ไปที่ Settings ของ dos6hvd ที่เราเพิ่มเข้ามา
+2. ไปที่ Shared Folders
+3. เพิ่ม Shared folder ดังรูป ![Create Shared Folder](/cos3105/images/lab1/create_shared_folder.png)
+4. ตั้งค่า ![Shared Folder](/cos3105/images/lab1/shared_folder.png)
+</Steps>
+</Card>
+
+## Boot DOS6
+
+<Card>
+<Steps>
+1. เมื่อโหลด dos6 ขึ้นมา
+2. พิมพ์ `p` แล้วกด `Enter`
+3. เพื่อโหลดโปรแกรม Borland Compiler กับ Shared Folder ขึ้นมา ![Enable BC and Shared Folder](/cos3105/images/lab1/enable_bc_shared_folder.png)
+</Steps>
+</Card>
+
+### การเรียกใช้ Shared Folder
+<Card>
+<Steps>
+1. เมื่อโหลด dos6 ขึ้นมา
+2. พิมพ์ `p` แล้วกด `Enter`
+3. เพื่อโหลดโปรแกรม Borland Compiler กับ Shared Folder ขึ้นมา
+4. พิมพ์ `v` แล้วกด `Enter`
+5. Dos จะเปลี่ยนไปที่ Shared Folder ที่เรา map ไว้กับ Host เครื่อง ![V drive](/cos3105/images/lab1/v_shared_folder.png)
+</Steps>
+</Card>
+
+## ประเภทของ Interrupt
+
+:::note
+- **Hardware Interrupts**: เกิดจากฮาร์ดแวร์ เช่น คีย์บอร์ด, เมาส์, พอร์ต I/O
+- **Software Interrupts**: เกิดจากซอฟต์แวร์ เช่น การเรียกใช้ system call ผ่านคำสั่ง int ใน Assembly
+:::
+
+## System Call คืออะไร
+
+อ้างอิงจาก [Assembly เบื้องต้น มหาวิทยาลัยราชภัฏสุราษฎร์ธานี หน้า 24](https://freebsd.sru.ac.th/course/SCS0702-Computer-Systems-and-Architecture/Assembly%20Tutorial.pdf)
+
+<Card>
+### บริการของระบบปฏิบัติการ (System Calls)
+
+ การเขียนโปรแกรม จำเป็นต้องเรียกใช้บริการที่ระบบปฏิบัติการเตรียมไว้ให้โปรแกรมประยุกต์เรียกใช้ 
+บริการเช่นนี้เรียกว่า Application Programming Interface (API) หรือนิยมเรียกกันในกลุ่มผู้เขียนโปรแกรม
+ระบบ (System Programmer) ว่า System Call
+
+ บริการของระบบปฏิบัติการ  MS-DOS ให้บริการผ่าน Software Interrupt ผู้เขียนโปรแกรมสามารถ
+เรียกใช้ได้ผ่านคำสั่ง INT ของหน่วยประมวลผลกลาง แต่รายละเอียดของบริการแต่ละอย่างต้องศึกษาจากคู่มือ
+ของระบบปฏิบัติการ MS-DOS
+
+คำสั่ง INT – Generate Software Interrupt
+
+รูปแบบการใช้งาน : INT หมายเลขของ Software Interrupt
+
+**คำอธิบาย**
+ คำสั่ง  INT จะใช้หมายเลขของ Software Interrupt ที่ผู้เขียนโปรแกรมกำหนดให้เป็นดัชนีของตาราง
+ที่จัดเก็บตำแหน่งเริ่มต้น ( address) ของโปรแกรมย่อยที่ทำหน้าที่ตอบสนองต่อการ  Interrupt ซึ่งเก็บไว้ใน
+หน่วยความจำที่เรียกว่า  Interrupt Vector Table หรือ Interrupt Descriptor Table เมื่อได้ตำแหน่ง
+เริ่มต้นของโปรแกรมย่อยนั้นแล้วจะทำการส่งผ่านการทำงานโดยไม่มีเงื่อนไขไปยังตำแหน่งนั้น โปรแกรมย่อย
+ดังกล่าวนี้เรียกว่า  Interrupt Service Routine หรือ Interrupt Handler ซึ่งจะให้บริการตามหมายเลข 
+Interrupt ที่ร้องขอมาและเมื่อทำงานเสร็จแล้ว จะส่งผ่านการทำงานกลับคืนมายังจุดเดิม ทำให้สามารถทำงาน
+เดิมที่ค้างอยู่ต่อไปได้ เรื่องของ  Interrupt 
+
+ ระบบปฏิบัติการ  MS-DOS ทำการสงวนหมายเลข  Interrupt ระหว่าง 20H – 3FH ไว้สำหรับใช้งาน 
+โดยกำหนดให้  Interrupt หมายเลข 20 H (INT 20) ให้บริการในการจบการทำงานของโพรเซส ซึ่งต้อง
+ดำเนินการหลายอย่างทั้งการกำหนดค่าที่จำเป็น การจัดการกับหน่วยความจำที่ใช้พักข้อมูลของแฟ้ม ( buffer)
+การปิดแฟ้มที่ยังเปิดค้างอยู่ สำหรับ Interrupt หมายเลข 21H (INT 21) แยกออกเป็นบริการย่อยอีกประมาณ
+100 บริการ แต่ละบริการเรียกว่า  MS-DOS function call โดยทำการกำหนดหมายเลขฟังก์ชันที่ต้องการใน
+รีจิสเตอร์ AH ก่อนเรียกใช้คำสั่ง  INT 21H ในที่นี้จะกล่าวถึงเฉพาะบริการรับแสดงผลตัวอักขระหนึ่งตัวทาง
+อุปกรณ์นำข้อมูลเข้าและแสดงผลมาตรฐานก่อน
+</Card>
+
+
+
+## ตัวอย่างของ System Call
+
+
+<Card>
+**ตัวอย่าง System Call ที่เรียกผ่าน Library ของภาษา C**
+:::caution[คำเตือน]
+ตัวอย่างอันนี้จะใช้ได้ทั้ง Linux, Windows หรือ DOS
+:::
+
+```c
+#include <stdio.h>
+int main(void) {
+  printf("hello, world!\n"); //จะไปเรียก systemcall
+  return 0;
+}
+```
+
+
+**ตัวอย่าง 1 - ใช้ได้เฉพาะ Linux อันนี้จะขึ้นอยู่กับระบบปฏิบัติการ unix เพียงอย่างเดียว**
+
+```c
+#include <unistd.h>
+int main(void) {
+  write(1, "hello, world!\n", 14);
+  return 0;
+}
+```
+
+**ตัวอย่าง 2 - ใช้ได้เฉพาะ Linux อันนี้เป็นการเรียกใช้ system call โดยตรง แต่ข้อเสียคือ number ของ system call ที่เรียกใช้จะขึ้นอยู่กับ OS ที่เป็น unix** 
+
+```c
+#include <unistd.h>
+#include <sys/syscall.h>
+int main(void) {
+  syscall(SYS_write, 1, "hello, world!\n", 14);
+  return 0;
+}
+
+```
+
+</Card>
+
+
+## การใช้ Borland Compiler
+
+<Card>
+<Steps>
+
+1. พิมพ์คำสั่ง `bc` ตามด้วยชื่อไฟล์ `lab1.c` 
+
+   ```bat
+   C:\PRJ\bc lab1.c
+   ```
+
+2. พิมพ์โค๊ดภาษา C ลงไป
+
+    ```c
+    #include <stdio.h>
+    int main(){
+      printf("Hello World!");
+      return 0;
+    }
+    ```
+
+3. กด `ALT-F9` เพื่อ COMPILE 
+
+      ![COMPILE](/cos3105/images/lab1/bc_compile.png)
+
+4. กด `F9` เพื่อ Make
+
+      ![Make](/cos3105/images/lab1/make.png)
+
+5. กด `ALT-F` แล้วไปที่ Dos Shell
+
+      ![Execute lab1](/cos3105/images/lab1/execute_lab1.png)
+
+6. กด Exit เพื่อกลับไป Borland Compiler
+
+
+
+</Steps>
+</Card>
+
+## ตัวอย่างของ System Call ใน DOS6
+
+:::note
+จากตัวอย่างด้านล่างนี้จะใช้ **ภาษา C** และใช้ **inline assembly**  ซึ่ง syntax นี้จะใช้ได้เฉพาะ **Borland CPP 3.1**
+:::
+
+:::tip
+ดูข้อมูลเพิ่มเติมเกี่ยวกับ Interrupt ชนิดต่างๆ ได้จาก https://www.thaiall.com/assembly/interrupt.htm
+:::
+
+
+### Interrupt 21
+
+<Card>
+
+**ฟังก์ชั่น 2**
+
+```c ins={5,6}
+// i21_2.c
+#include <stdio.h>
+int main(){
+    asm {
+          mov ah, 0x2     // ใช้ function 2 ส่งอักขระไปยังจอภาพ
+          mov dl, 'a'        // ส่งตัวอักษร ‘a’ ไปจอภาพ
+          int 21h
+    }
+   return 0;
+}
+
+
+```
+
+**ฟังก์ชั่น 9**
+
+```c ins={7,8}
+// i21_9.c
+#include <stdio.h>
+int main(){
+    
+   char far* greetings = “Hello World!$”;
+   asm {
+        lds dx, greetings // ส่งข้อความไปยังจอภาพ
+        mov ah, 0x9        // ใช้ฟังก์ชั่น 9
+        int 21h
+   }
+   return 0;
+}
+```
+</Card>
+
+### Interrupt 10
+
+:::note
+**Interrupt 10** เป็น interrupt ของ **bios** สำหรับจัดการ **Video** กับ **Screen**
+:::
+
+<Card>
+```c
+// i10.c
+#include <stdio.h>
+int main(){  	
+  asm {       
+    mov ah,0x9      //ฟังก์ชั่น 9 พิมพ์ตัวอักษร
+    mov al,'b'       // ตัวอักษร b
+    mov bh,0x0       // 
+    mov bl,0xcc      // สีของตัวอักษร
+    mov cx,10        //จำนวนตัวอักษร
+    int 10h	
+  }   
+  return 0;
+}
+
+```
+</Card>
+
+
+### Interrupt 8
+
+:::note
+**Interrupt 8** เป็น interrupt ของ **bios** เป็น **System Timer**
+:::
+
+<Card>
+
+```c
+// i8.c
+#include <stdio.h>
+#include <dos.h>
+#include <bios.h>
+#include <conio.h>
+void far interrupt (*oldint_8h)(void);
+void far interrupt timer_hook(void);
+int m=0;
+int t=0;
+int active=0;
+char far* vga = (char far*)0xB8000000; // แสดงผลออกการ์ดจอ
+void far interrupt timer_hook(void){
+  int i;
+  if(active==1){
+  (*oldint_8h)();
+  return;
+  }
+  t++;
+  m++;
+  if(t>10){
+  active = 1;
+  t = 0;
+  for(i=0;i<200;i+=2){
+    *(vga + i) = m%2==0? 'A' : 'B';
+    *(vga + i + 1) = 0x7;
+  }
+  active=0;
+  }
+  (*oldint_8h)();
+}
+int main(void){
+  int ch;
+  asm {
+   mov ax, 0x3;
+   int 10h
+  }
+  oldint_8h = getvect(0x8);
+  setvect(0x8, timer_hook);
+  while(ch!='z'){
+    ch = getch();
+    putch(ch);
+  }
+  setvect(0x8, oldint_8h);
+  asm{
+  mov ah,0
+  mov al,3
+  int 10h
+  }
+  return 0;
+}
+
+```
+
+## ตัวอย่างของการเขียน assembly ใน Linux
+
+ตามปกติ assembly จะต้องขึ้นต้นด้วย
+
+- `section .text` The `.text` section is where the executable code resides, such as instructions for the processor to execute. Assemblers and linkers treat this section as the code segment.
+
+```asm
+section .text
+	global _start
+```
+
+- ถ้าประกาศตัวแปรพร้อมกับค่าเริ่มต้นจะใส่ใน `section .data`
+
+```asm
+section .data
+```
+
+- ถ้าประกาศตัวแปรเฉยๆ จะใส่ใน `section .bss`
+
+```asm
+section .bss
+buffer resb 256   ; Reserve 256 bytes for a buffer
+counter resd 1    ; Reserve 1 double word (4 bytes) for a counter
+```
+
+- แต่ nasm ไม่ได้สนใจ `section .text` ดังนั้น nasm จะไปสนใจ `global _start` เลย
+
+```asm
+global _start
+
+```
+
+
+1. `global` **Directive:** 
+	- This tells the assembler that the following label (in this case, `_start`) is something that can be accessed by external files, like the linker. It essentially makes the `_start` label a global symbol.
+2.  `_label` **Label:** 
+	- `_start` is commonly used as the entry point of an assembly program. It's where the execution begins. By convention, when you create an assembly program, you define this label, and the linker expects it.
+
+
+```asm
+global _start
+_start:
+    mov eax, 1
+    mov ebx, 42
+    sub ebx, 29
+    int 0x80
+```
+
+1. เป็นการเรียกใช้ system call ที่ชื่อว่า `exit` โดยการ assign `1` ให้กับ register `eax`
+2. เป็นการบอกว่า system call ที่ชื่อว่า `exit` นี้จะ return ค่าอะไรออกมา ซึ่ง return `42` ออกมา
+3. `sub` คือการลบค่า ดังนั้น `sub ebx, 29` จะได้ `13` เป็นค่าที่ return ออกมา
+4. `int 0x80` เป็นการเรียกใช้ software interrupt ดังนั้น kernel จึงจะอ่านค่าจาก `eax` และ `ebx` 
+
+
+ใช้ nasm ในการคอมไพล์
+
+```bash
+nasm -f elf32 ex1.asm -o ex1.o
+```
+
+1. `nasm` เป็นตัวแปลงภาษา assembly (human-readable low-level instructions) into machine code
+2. `-f elf32` This specifies the output format of the object file as 32-bit ELF (Executable and Linkable Format). ELF is commonly used on Linux systems.
+3. `ex1.asm` This is the input file, which contains your assembly code.
+4. `-o ex1.o` This specifies the output file name as `ex1.o`, the object file that will be generated
+
+```bash
+ld -m elf_i386 ex1.o -o ex1
+```
+
+- `ld`: Invokes the linker to combine the object file and any necessary libraries into a single executable file.
+    
+- `-m elf_i386`: Specifies the target as 32-bit ELF format (important for 32-bit programs). If you're on a 64-bit system, this ensures compatibility for running 32-bit code.
+    
+- `ex1.o`: The input object file created by NASM during the assembly step.
+    
+- `-o ex1`: Specifies the name of the final output executable (`ex1`).
+
+```bash
+./ex1
+```
+
+1. เวลารันโปรแกรมออกมา มันจะไม่ขึ้นอะไรบนจอ
+
+```bash
+echo $?
+```
+
+1. คำสั่งนี้จะทำให้รู้ว่า exit status ของคำสั่งล่าสุดคืออะไร จะใช้ใน unix กับ linux
+
+
+## Assembly สำหรับ Linux ยังไม่เป็น real mode
+- **Real Mode**:
+    
+    - Used by the BIOS and initial stages of bootloaders.
+        
+    - Limited to 1 MB of memory and doesn't support advanced features like virtual memory.
+        
+    - If you're writing assembly for bare-metal (like bootloaders or OS kernels before transitioning to protected mode), you'll be working in real mode.
+        
+- **Protected Mode**:
+    
+    - Linux and most modern operating systems use protected mode for their normal operation.
+        
+    - Linux assembly programs use protected mode features, meaning you have access to 32-bit or 64-bit registers and advanced memory management.
+        
+    - To run assembly on Linux, you typically interact with the operating system through **system calls**, which are executed in protected mode.
+
+
+## อันนี้คือตาราง system call ใน Linux
+
+- for 32bit
+
+| **System Call** | **Purpose**                                 |
+| --------------- | ------------------------------------------- |
+| `read`          | Reads data from a file descriptor.          |
+| `write`         | Writes data to a file descriptor.           |
+| `open`          | Opens a file and returns a file descriptor. |
+| `close`         | Closes an open file descriptor.             |
+| `fork`          | Creates a new process.                      |
+| `execve`        | Executes a program.                         |
+| `exit`          | Terminates a process.                       |
+| `wait`          | Waits for child process termination.        |
+| `mmap`          | Maps files or devices into memory.          |
+| `brk`           | Changes the memory allocation of a process. |
+| `ioctl`         | Manipulates I/O device parameters.          |
+| `socket`        | Creates a socket.                           |
+| `bind`          | Assigns an address to a socket.             |
+| `listen`        | Listens for socket connections.             |
+| `accept`        | Accepts a socket connection.                |
+
+</Card>
+
+
+
