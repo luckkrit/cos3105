@@ -1,0 +1,70 @@
+---
+title: Lab1 - Setup VM
+lastUpdated: 2025-11-29
+---
+
+import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
+
+## ติดตั้ง VM 
+
+<Steps>
+1. Download VM: https://drive.google.com/file/d/1orBRMplTzVuRwuaUqhlXepndEIQiaEaJ/view?usp=sharing
+2. Import VM: ![Import VM](/cos3105/images/lab3/import_vm.png)
+3. Select OVA File: ![OVA File](/cos3105/images/lab3/ova_file.png)
+4. กด Finish: ![Finish OVA File](/cos3105/images/lab3/finish_import_ova.png)
+5. รอ Import: ![Wait import](/cos3105/images/lab3/wait_for_import.png)
+</Steps>
+
+:::note[Forward PORT]
+
+- ชื่อผู้ใช้งาน
+
+```
+username: c
+password: c
+```
+
+
+- VM นี้ได้ทำการ Forward PORT ดังนี้
+
+
+<Steps>
+
+1. Settings → Network ![Settings Forward PORT](/cos3105/images/lab2/forward_port.png)
+2. Forward PORT **8080** สำหรับ **Code-Server** และ PORT: **22** ไปยัง **8822** สำหรับ **SSH** ![Forward PORT](/cos3105/images/lab2/forward_port2.png)
+3. Start VM แบบ Headless Start ด้วยการกดดังรูป ![Headless Start](/cos3105/images/lab2/headless_start.png) จะเป็นการไม่เปิดหน้าต่าง VM ขึ้นมา
+4. เปิด Powershell ขึ้นมาแล้วพิมพ์ 
+
+   ```bat
+   ssh c@127.0.0.1 -p 8822
+   ```
+5. พิมพ์ yes
+
+    ![Add Known Hosts](/cos3105/images/lab2/add_known_hosts.png)
+
+6. ถาม password
+    ![Asks for Password](/cos3105/images/lab2/ask_for_password.png)
+
+7. ถ้า Login สำเร็จจะขึ้นดังรูป
+    ![Login SSH](/cos3105/images/lab2/login_ssh.png)
+
+</Steps>
+
+:::
+
+## การ Shutdown Ubuntu Server
+
+```bash
+
+c@c:~$ poweroff
+```
+
+## เปิด CODE-SERVER ใน browser
+
+<Steps>
+1. Start VM: ![Start VM](/cos3105/images/lab3/start_vm.png)
+2. Open browser พิมพ์ http://localhost:8080
+![CODE SERVER](/cos3105/images/lab3/code_server.png)
+3. ตอน shutdown VM ใช้คำสั่ง `poweroff`
+</Steps>
+

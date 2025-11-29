@@ -1,0 +1,76 @@
+---
+title: Lab1 - System call
+lastUpdated: 2025-11-29
+---
+
+import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
+
+
+## ตัวอย่างของ System Call
+
+
+<Card>
+**ตัวอย่าง System Call ที่เรียกผ่าน Library ของภาษา C**
+:::caution[คำเตือน]
+ตัวอย่างอันนี้จะใช้ได้ทั้ง Linux, Windows หรือ DOS
+:::
+
+```c
+#include <stdio.h>
+int main(void) {
+  printf("hello, world!\n"); //จะไปเรียก systemcall
+  return 0;
+}
+```
+
+
+**ตัวอย่าง 1 - ใช้ได้เฉพาะ Linux อันนี้จะขึ้นอยู่กับระบบปฏิบัติการ unix เพียงอย่างเดียว**
+
+```c
+#include <unistd.h>
+int main(void) {
+  write(1, "hello, world!\n", 14);
+  return 0;
+}
+```
+
+**ตัวอย่าง 2 - ใช้ได้เฉพาะ Linux อันนี้เป็นการเรียกใช้ system call โดยตรง แต่ข้อเสียคือ number ของ system call ที่เรียกใช้จะขึ้นอยู่กับ OS ที่เป็น unix** 
+
+```c
+#include <unistd.h>
+#include <sys/syscall.h>
+int main(void) {
+  syscall(SYS_write, 1, "hello, world!\n", 14);
+  return 0;
+}
+
+```
+
+**ตัวอย่าง 3 - ใช้ inline assembly ใน linux เพื่อเรียกใช้ system call และ interrupt**
+
+```c
+#include <unistd.h>
+
+int main() {
+    const char *message = "Hello from inline assembly!\n";
+    int len = 29;
+    
+    // System call: write(stdout, message, length)
+    // syscall number 1 (write) on x86-64
+    asm volatile (
+        "movq $1, %%rax\n"      // syscall number (write)
+        "movq $1, %%rdi\n"      // file descriptor (stdout)
+        "movq %0, %%rsi\n"      // buffer address
+        "movq %1, %%rdx\n"      // count (length)
+        "syscall\n"             // interrupt
+        :
+        : "r" (message), "r" ((long)len)
+        : "rax", "rdi", "rsi", "rdx"
+    );
+    
+    return 0;
+}
+```
+
+</Card>
+
