@@ -321,4 +321,33 @@ dw 0aa55h            	; Add boot magic word to mark us
 6. กด Run
 </Steps>
 
+
+## Alternate Solution: บูตด้วย Hardisk แทน Floppy Disk
+
+<Steps>
+
+1. นำ boot.img มาขยายขนาด ด้วย python script
+    ```python
+    with open('boot.img', 'wb') as f:
+    f.write(b'\x00' * (10 * 1024 * 1024))
+
+    # Write bootloader to first sector
+    with open('boot.bin', 'rb') as boot:
+        bootloader = boot.read()
+        
+    with open('boot.img', 'r+b') as img:
+        img.seek(0)
+        img.write(bootloader)
+    ```
+
+2. เมื่อแปลงขนาด img ไฟล์ให้มีขนาดใหญ่ขึ้น ก็แปลงให้เป็น vdi ไฟล์
+    ```bash
+    "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" convertfromraw boot.img boot.vdi
+    ```
+    ![Convert Image](/cos3105/images/lab1/convert_img.png)
+
+3. เพิ่ม boot.vdi เข้าไปใน Hardisk
+    ![Attach VDI](/cos3105/images/lab1/attach_vdi.png)
+</Steps>
+
 </Card>
