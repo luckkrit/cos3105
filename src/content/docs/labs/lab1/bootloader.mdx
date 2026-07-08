@@ -1,0 +1,91 @@
+---
+title: Lab 1 - Boot Loader
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+
+- ให้ Clone Github Repository https://github.com/luckkrit/lab_cos3105
+- ไปเปิดใน Github Codespace https://github.com/codespaces
+
+![Create Github Codespace](../../../../assets/images/lab1/20260708151507.png)
+
+## Project Structure
+
+<FileTree>
+
+- lab1
+  - boot.asm
+
+</FileTree>
+
+## Create Bootloader
+
+1. สร้าง folder ที่ชื่อว่า lab1
+
+```bash
+mkdir lab1
+```
+
+2. เข้าไปใน folder lab1
+
+```bash
+cd lab1
+```
+
+3. สร้างไฟล์ boot.asm
+
+```bash
+touch boot.asm
+```
+
+4. copy โค๊ดตัวอย่างลงไปใน boot.asm
+
+```asm
+[org 0x7c00]
+mov ah, 0x0e    ; BIOS Teletype function (พิมพ์อักษรออกจอ)
+mov al, 'H'
+int 0x10
+mov al, 'I'
+int 0x10
+
+sleep:
+    hlt
+    jmp sleep
+
+times 510-($-$$) db 0
+dw 0xaa55
+```
+
+## Compile Bootloader
+
+1. compile boot.asm ไปเป็น boot.img
+
+```bash
+nasm -f bin boot.asm -o boot.img
+```
+
+## Run Bootloader
+
+1. run boot.img ผ่าน QEMU
+
+```bash
+qemu-system-x86_64 -fda boot.img -nographic -serial mon:stdio
+```
+
+2. จะได้ข้อความ HI ออกมาทางหน้าจอ
+
+```bash
+SeaBIOS (version 1.17.0-debian-1.17.0-1ubuntu1)
+
+
+iPXE (https://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+06FC8E00+06F08E00 CA00
+                                                                               
+
+
+Booting from Hard Disk...
+Boot failed: could not read the boot disk
+
+Booting from Floppy...
+HI
+```
