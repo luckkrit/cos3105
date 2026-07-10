@@ -4,7 +4,23 @@ lastUpdated: 2026-07-10
 ---
 
 import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
+import { FileTree } from '@astrojs/starlight/components';
 
+## Clone Lab
+
+![Create Github Codespace](../../../../assets/images/lab1/20260708151507.png)
+
+- ให้ Clone Github Repository https://github.com/luckkrit/lab_cos3105
+- ไปเปิดใน Github Codespace https://github.com/codespaces
+
+## Project Structure
+
+<FileTree>
+
+- lab2
+  - ex1.c
+
+</FileTree>
 
 ## ตัวอย่างของ System Call
 
@@ -34,6 +50,12 @@ int main(void) {
 }
 ```
 
+**compile**
+
+```bash
+gcc ex1.c -o ex1
+```
+
 **ตัวอย่าง 2 - ใช้ได้เฉพาะ Linux อันนี้เป็นการเรียกใช้ system call โดยตรง แต่ข้อเสียคือ number ของ system call ที่เรียกใช้จะขึ้นอยู่กับ OS ที่เป็น unix** 
 
 ```c
@@ -44,6 +66,12 @@ int main(void) {
   return 0;
 }
 
+```
+
+**compile**
+
+```bash
+gcc ex2.c -o ex2
 ```
 
 **ตัวอย่าง 3 - อ่านค่าจาก keyboard**
@@ -72,6 +100,12 @@ int main() {
     
     return 0;
 }
+```
+
+**compile**
+
+```bash
+gcc ex3.c -o ex3
 ```
 
 **ตัวอย่างที่ 4 - อ่านค่าจาก File**
@@ -143,6 +177,13 @@ int main() {
 }
 ```
 
+
+**compile**
+
+```bash
+gcc ex4.c -o ex4
+```
+
 **ตัวอย่างที่ 6 - เขียนข้อมูลลงไฟล์**
 
 ```c
@@ -171,6 +212,12 @@ int main() {
     
     return 0;
 }
+```
+
+**compile**
+
+```bash
+gcc ex6.c -o ex6
 ```
 
 </Card>
@@ -203,6 +250,12 @@ int main() {
     
     return 0;
 }
+```
+
+**compile**
+
+```bash
+gcc ex7.c -o ex7
 ```
 
 **ตัวอย่าง 8 - การอ่านค่าจาก keyboard**
@@ -253,6 +306,13 @@ int main() {
 }
 ```
 
+
+**compile**
+
+```bash
+gcc ex8.c -o ex8
+```
+
 **ตัวอย่าง 9 - การอ่านค่าจาก File**
 
 ```c
@@ -297,6 +357,12 @@ int main() {
 }
 ```
 
+**compile**
+
+```bash
+gcc ex9.c -o ex9
+```
+
 **ตัวอย่าง 10 - การอ่านค่าจาก File**
 
 ```c
@@ -331,6 +397,12 @@ int main() {
     
     return 0;
 }
+```
+
+**compile**
+
+```bash
+gcc ex10.c -o ex10
 ```
 </Card>
 
