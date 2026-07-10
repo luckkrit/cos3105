@@ -1,0 +1,186 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="numberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#43e97b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#38f9d7;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="imageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fa709a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fee140;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="audioGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a8edea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fed6e3;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="videoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffecd2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fcb69f;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="programGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="memoryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2c3e50;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#34495e;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Drop shadows -->
+    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="4" result="offset"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+    
+    <!-- Arrow marker -->
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#667eea" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#programGrad)" opacity="0.1"/>
+  
+  <!-- Title -->
+  <text x="400" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#667eea">
+    Data Processing Flow
+  </text>
+
+  <!-- Row 1: Number -->
+  <g transform="translate(0, 80)">
+    <!-- Input box -->
+    <rect x="50" y="10" width="120" height="60" rx="10" fill="url(#numberGrad)" filter="url(#dropShadow)"/>
+    <text x="110" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">65</text>
+    <text x="110" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">A number</text>
+    
+    <!-- Arrow -->
+    <line x1="180" y1="40" x2="250" y2="40" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Program box -->
+    <rect x="260" y="10" width="150" height="60" rx="10" fill="url(#programGrad)" filter="url(#dropShadow)"/>
+    <text x="335" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Program</text>
+    <text x="335" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Math routine</text>
+    
+    <!-- Arrow -->
+    <line x1="420" y1="40" x2="490" y2="40" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Memory box -->
+    <rect x="500" y="10" width="120" height="60" rx="10" fill="url(#memoryGrad)" filter="url(#dropShadow)"/>
+    <text x="560" y="30" text-anchor="middle" font-family="Courier New, monospace" font-size="12" font-weight="bold" fill="white">01000001</text>
+    <text x="560" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Memory</text>
+  </g>
+
+  <!-- Row 2: Character -->
+  <g transform="translate(0, 180)">
+    <!-- Input box -->
+    <rect x="50" y="10" width="120" height="60" rx="10" fill="url(#textGrad)" filter="url(#dropShadow)"/>
+    <text x="110" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white">"A"</text>
+    <text x="110" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Character typed</text>
+    <text x="110" y="62" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">on keyboard</text>
+    
+    <!-- Arrow -->
+    <line x1="180" y1="40" x2="250" y2="40" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Program box -->
+    <rect x="260" y="10" width="150" height="60" rx="10" fill="url(#programGrad)" filter="url(#dropShadow)"/>
+    <text x="335" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Program</text>
+    <text x="335" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Text editor</text>
+    
+    <!-- Arrow -->
+    <line x1="420" y1="40" x2="490" y2="40" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Memory box -->
+    <rect x="500" y="10" width="120" height="60" rx="10" fill="url(#memoryGrad)" filter="url(#dropShadow)"/>
+    <text x="560" y="30" text-anchor="middle" font-family="Courier New, monospace" font-size="12" font-weight="bold" fill="white">01000001</text>
+    <text x="560" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Memory</text>
+  </g>
+
+  <!-- Row 3: Image -->
+  <g transform="translate(0, 280)">
+    <!-- Input box -->
+    <rect x="50" y="10" width="120" height="60" rx="10" fill="url(#imageGrad)" filter="url(#dropShadow)"/>
+    <text x="110" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="white">🚶</text>
+    <text x="110" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="white">Part of an image</text>
+    
+    <!-- Arrow -->
+    <line x1="180" y1="40" x2="250" y2="40" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Program box -->
+    <rect x="260" y="10" width="150" height="60" rx="10" fill="url(#programGrad)" filter="url(#dropShadow)"/>
+    <text x="335" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Program</text>
+    <text x="335" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Image recorder</text>
+    
+    <!-- Arrow -->
+    <line x1="420" y1="40" x2="490" y2="40" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Memory box -->
+    <rect x="500" y="10" width="120" height="60" rx="10" fill="url(#memoryGrad)" filter="url(#dropShadow)"/>
+    <text x="560" y="30" text-anchor="middle" font-family="Courier New, monospace" font-size="12" font-weight="bold" fill="white">01...001</text>
+    <text x="560" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Memory</text>
+  </g>
+
+  <!-- Row 4: Audio -->
+  <g transform="translate(0, 380)">
+    <!-- Input box -->
+    <rect x="50" y="10" width="120" height="60" rx="10" fill="url(#audioGrad)" filter="url(#dropShadow)"/>
+    <text x="110" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#333">∿</text>
+    <text x="110" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#333">Part of a song</text>
+    
+    <!-- Arrow -->
+    <line x1="180" y1="40" x2="250" y2="40" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Program box -->
+    <rect x="260" y="10" width="150" height="60" rx="10" fill="url(#programGrad)" filter="url(#dropShadow)"/>
+    <text x="335" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Program</text>
+    <text x="335" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Music recorder</text>
+    
+    <!-- Arrow -->
+    <line x1="420" y1="40" x2="490" y2="40" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Memory box -->
+    <rect x="500" y="10" width="120" height="60" rx="10" fill="url(#memoryGrad)" filter="url(#dropShadow)"/>
+    <text x="560" y="30" text-anchor="middle" font-family="Courier New, monospace" font-size="12" font-weight="bold" fill="white">11...11111</text>
+    <text x="560" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Memory</text>
+  </g>
+
+  <!-- Row 5: Video -->
+  <g transform="translate(0, 480)">
+    <!-- Input box -->
+    <rect x="50" y="10" width="120" height="60" rx="10" fill="url(#videoGrad)" filter="url(#dropShadow)"/>
+    <text x="110" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#333">📺</text>
+    <text x="110" y="55" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#333">Part of a film</text>
+    
+    <!-- Arrow -->
+    <line x1="180" y1="40" x2="250" y2="40" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Program box -->
+    <rect x="260" y="10" width="150" height="60" rx="10" fill="url(#programGrad)" filter="url(#dropShadow)"/>
+    <text x="335" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">Program</text>
+    <text x="335" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="white">Video recorder</text>
+    
+    <!-- Arrow -->
+    <line x1="420" y1="40" x2="490" y2="40" stroke="#667eea" stroke-width="3" marker-end="url(#arrowhead)"/>
+    
+    <!-- Memory box -->
+    <rect x="500" y="10" width="120" height="60" rx="10" fill="url(#memoryGrad)" filter="url(#dropShadow)"/>
+    <text x="560" y="30" text-anchor="middle" font-family="Courier New, monospace" font-size="12" font-weight="bold" fill="white">01...11000</text>
+    <text x="560" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">Memory</text>
+  </g>
+</svg>
