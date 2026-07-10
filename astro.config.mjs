@@ -16,6 +16,10 @@ export default defineConfig({
 					label: 'Labs',
 					items: [{ autogenerate: { directory: 'labs' } }],
 				},
+				{
+					label: 'Tutorial',
+					items: [{ autogenerate: { directory: 'tutorial' } }],
+				},
 			],
 		}),
 	],
