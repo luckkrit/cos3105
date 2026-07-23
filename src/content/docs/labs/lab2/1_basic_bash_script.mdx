@@ -1,0 +1,1129 @@
+---
+title: Lab 2-1 - Basic Bash Script
+lastUpdated: 2025-08-03
+---
+import { Steps, Card, Tabs, TabItem, LinkButton } from "@astrojs/starlight/components";
+
+
+
+
+:::note
+Shell Script คือโปรแกรมที่คอยรับคำสั่งเพื่อส่งผ่านไปยัง Kernel เวลาเราต้องการใช้ทรัพยากร
+:::
+
+![Shell Script](../../../../assets/images/lab2/shell_script.png)
+
+[อ้างอิงจาก https://saixiii.com/basic-shell-script/](https://saixiii.com/basic-shell-script/)
+
+## ตัวอย่าง Shell มี่นิยมใช้เขียน Shell script
+
+<Card>
+
+- Bournr shell (/bin/sh) เป็น shell ในยุคแรกๆ ที่มีใช้กันอย่างแพร่หลาย มีการกำหนดโครงสร้างภาษาคล้ายๆ กับภาษาอัลกอ (Algo) สามารถเขียน shell script ได้ และยังเป็น starndard shell ที่มีใน UNIX ทุกตัว และยังสามารถย้าย shell script ไปยัง UNIX ระบบอื่นโดยไม่ต้องแก้ไขอะไรได้อีกด้วย จะมี default prompt เป็นเครื่องหมาย “ $ ”
+- C shell (/bin/csh) เป็น shell ที่พัฒนาขึ้นมาหลังจาก Bourne shell มีรูปแบบคำสั่งและไวยากรณ์เหมือนกับภาษา C มี function การทำงานหลายที่ดีและอย่างสะดวก อีกทั้งยังสามารถควบคุมการไหลของข้อมูลได้ดีกว่า Bourne shell และยังมีความสามารถในการเรียกใช้คำสั่งที่ใช้ไปแล้ว จะมี default prompt เป็นเครื่องหมาย “ % ”
+- Korn shell (/bin/ksh) เป็น shell ที่พัฒนามาจาดต้นแบบของ Bourne shell และ C shell สามารถทำงานใน function ของ Bourne shell ได้ทุกอย่าง การเขียน shell script ทำได้ง่ายและรัดกุมขึ้น  สามารถนำคำสั่งที่ใช้ไปแล้วกลับมา execute ไปใหม่ได้  ถือได้ว่า Korn shell เป็นการรวมเอาข้อดีของ Bourne shell  และ C shell มาไว้ด้วยกัน แต่ไม่ได้มีใน UNIX ทุกตัว จะมี default prompt เป็นเครื่องหมาย “ $ ”
+- Bournr again shell (/bin/bash หรือ /usr/local/bin/bash) เป็นการเอา Bournr shell นำกลับมาพัฒนาใหม่ สามารถทำงานแบบ line editing ได้ และยังได้เพิ่มประสิทธิภาพในการทำงานอีกหลายอย่าง bash shell นี้ไม่ใช่ standard UNIX shell แต่เป็น default shell ของ linux ในปัจจุบัน จะมี default prompt เป็นเครื่องหมาย “ $ ”
+
+</Card>
+
+
+<Card>
+
+## Shell Script File
+Shell script เป็น file text ธรรมดาสามารถสร้างด้วย editor ชนิดไหนก็ได้ เช่น nano หรือ vim
+
+    ```bash
+    nano ex1.sh
+    ```
+
+## shebang
+กำหนด interpreter หรือ shebang บรรทัดแรกของ shell script เราต้องกำหนด shebang เพื่อให้ program รู้ว่าควรใช้ interpreter ใดในการ load ข้อมูล file ซึ่งสัญลักษณ์ที่ใช้คือ `#!<shell program>`
+
+    - `#!/bin/sh`
+    - `#!/bin/csh`
+    - `#!/bin/bash`
+    - `#!/bin/ksh`
+    - `#!/usr/bin/perl`
+    - `#!/usr/bin/env python`
+
+## คำสั่ง command line
+ใส่ชุดคำสั่ง command line
+    ส่วนนี้คือ code program ที่เราต้องการให้ shell script ทำงาน ซึ่งสามารถศึกษาชุดคำสั่ง Shell ของ Unix และ Linux ได้ 
+
+|คำสั่ง|Linux|
+|:--|:--|
+|[display/output text](/cos3105/labs/lab2#echo)|echo "hello world"|
+|[create file](/cos3105/labs/lab2#touch)|touch a.txt|
+|[get content](/cos3105/labs/lab2#cat)|cat a.txt <br/> more a.txt <br/> less a.txt|
+|[clear console](/cos3105/labs/lab2#clear)|clear|
+|[copy file](/cos3105/labs/lab2#cp)|cp a.txt b.txt|
+|[move file](/cos3105/labs/lab2#mv)|mv a.txt ../b.txt|
+|[**delete file**](/cos3105/labs/lab2#rm)|rm -i a.txt|
+|[list directory](/cos3105/labs/lab2#ls)|ls .|
+|[list all files (include hidden)](/cos3105/labs/lab2#ls)|ls -a|
+|[create directory](/cos3105/labs/lab2#mkdir)|mkdir my_folder|
+|[**remove directory**](/cos3105/labs/lab2#rm--ri)|rm -ri my_folder|
+|[change directory](/cos3105/labs/lab2#cd)|cd my_folder|
+|[ดู manual/help ของคำสั่ง](/cos3105/labs/lab2#man)|man ls|
+
+#### echo
+
+![echo](/cos3105/2_68/images/lab2/echo.gif)
+
+#### touch
+
+![touch](/cos3105/2_68/images/lab2/touch.gif)
+
+#### cat
+
+![cat](/cos3105/2_68/images/lab2/cat.gif)
+
+#### clear
+
+![clear](/cos3105/2_68/images/lab2/clear.gif)
+
+#### mkdir
+
+![mkdir](/cos3105/2_68/images/lab2/mkdir.gif)
+
+#### cp
+
+![cp](/cos3105/2_68/images/lab2/cp.gif)
+
+#### mv
+![mv](/cos3105/2_68/images/lab2/mv.gif)
+
+#### rm
+![rm](/cos3105/2_68/images/lab2/rm.gif)
+
+#### ls
+![ls](/cos3105/2_68/images/lab2/ls.gif)
+
+#### rm -ri
+![rm](/cos3105/2_68/images/lab2/rm_r.gif)
+
+#### cd
+![cd](/cos3105/2_68/images/lab2/cd.gif)
+
+#### man
+![man](/cos3105/2_68/images/lab2/man.gif)
+
+
+
+## permission
+กำหนดสิทธิ์ execute ให้กับ shell script
+    หลักจากเราสร้าง Shell script ขึ้นมาได้แล้ว ลองสังเกตุจะเห็นว่า file ที่ได้มีสิทธิ์ หรือ permission ของ `user owner  (-rw-rw-r–)` เพียงแค่ write กับ read เท่านั้น ไม่สามารถ execute ได้ ซึ่งก็ไม่ต่างกับ text file ธรรมดา
+
+    ```bash
+    c@c:~/cos3105$ ls -ltr test.sh
+    -rw-r--r-- 1 c c 20 Jul 24 14:03 test.sh
+    ```
+
+    :::note
+
+    **รูปแบบของสิทธิ์**
+
+    ```bash
+    -rwxr-xr--
+    ```
+
+    **แบ่งเป็น 4 ส่วน**
+    | ตำแหน่ง              | ความหมาย                                                       |
+    | -------------------- | -------------------------------------------------------------- |
+    | ตัวแรก (`-`)         | ประเภทของไฟล์ (`-`= ไฟล์ปกติ, `d` = โฟลเดอร์, `l` = ลิงก์ ฯลฯ) |
+    | 3 ตัวถัดไป (`rwx`)   | สิทธิ์ของ **เจ้าของไฟล์ (owner)**                              |
+    | 3 ตัวถัดไป (`r-x`)   | สิทธิ์ของ **กลุ่ม (group)**                                    |
+    | 3 ตัวสุดท้าย (`r--`) | สิทธิ์ของ **ผู้ใช้อื่น (others)**                              |
+
+    **ประเภทของไฟล์**
+    | Character | Meaning               |
+    | --------- | --------------------- |
+    | `-`       | Regular file          |
+    | `d`       | Directory             |
+    | `l`       | Symbolic link         |
+    | `c`       | Character device file |
+    | `b`       | Block device file     |
+    | `s`       | Socket                |
+    | `p`       | Named pipe (FIFO)     |
+
+
+    **ความหมายของตัวอักษร**
+    | ตัวอักษร | ย่อมาจาก | ความหมาย                                         |
+    | -------- | -------- | ------------------------------------------------ |
+    | `r`      | read     | อ่านไฟล์ / ดูรายชื่อไฟล์ในโฟลเดอร์ได้            |
+    | `w`      | write    | แก้ไขไฟล์ / สร้าง-ลบไฟล์ในโฟลเดอร์ได้            |
+    | `x`      | execute  | รันไฟล์ได้ (เช่น shell script) / เข้าโฟลเดอร์ได้ |
+    | `-`      | -        | ไม่มีสิทธิ์นั้น ๆ                                |
+
+    **ตัวอย่างการแปลความหมาย**
+
+    ```bash
+    -rwxr-xr--
+    ```
+
+    **แปลได้ว่า:**
+    |ตัวอักษร|ความหมาย|
+    |:-:|:-:|
+    | `-` | เป็น ไฟล์ปกติ|
+    | `rwx` | เจ้าของไฟล์: อ่าน, เขียน, รัน|
+    |`r-x` | กลุ่ม: อ่าน, รัน|
+    |`r--` | คนอื่น: อ่านอย่างเดียว|
+
+:::
+
+## execute shell script
+ตอนจะรัน shell script ใช้คำสั่งดังนี้ แต่จากที่ผลลัพธ์คือรันไม่ได้
+
+    ```bash
+    c@c:~/cos3105$ ./test.sh
+    bash: ./test.sh: Permission denied
+    ```
+
+## chmod
+ต้องเปลี่ยน permission ของไฟล์ให้สามารถรันได้ก่อนนั่นก็คือ
+
+    ```bash
+    c@c:~/cos3105$ chmod 700 test.sh
+    c@c:~/cos3105$ ls -ltr test.sh
+    -rwx------ 1 c c 20 Jul 24 14:03 test.sh
+    ```
+
+ซึ่งเมื่อมีเครื่อง x แล้วนั้นหมายถึงเราสามารถ execute file นี้ได้แล้ว
+
+    ```bash
+    c@c:~/cos3105$ ./test.sh
+    Hello COS3105
+    ```
+
+:::note
+
+**ความหมายของสิทธิ์**
+
+| เลขฐาน 8 (Octal) | สิทธิ์ (rwx) | ความหมาย        |
+| ---------------- | ------------ | --------------- |
+| 7                | `rwx`          | อ่าน เขียน รัน  |
+| 6                | `rw-`          | อ่าน เขียน      |
+| 5                | `r-x`          | อ่าน รัน        |
+| 4                | `r--`          | อ่าน            |
+| 3                | `-wx`          | เขียน รัน       |
+| 2                | `-w-`         | เขียน           |
+| 1                | `--x`          | รัน             |
+| 0                | `---`          | ไม่มีสิทธิ์ใด ๆ |
+
+:::
+
+## Variable
+การสร้างตัวแปรใน shell script (variable)
+    เชลล์สคริปต์เหมือนกับโปรแกรมทั่วๆไปที่มีตัวแปรไว้เก็บค่าต่างๆ สำหรับใช้งาน ตัวแปรที่ใช้ในเชลล์นั้นไม่จำเป็นต้องประกาศชนิดตัวแปรเหมือนกับภาษา C  สามารถตั้งค่าแล้วนำไปใช้ได้ทันที
+
+    variable=value
+
+    :::note
+    ระวังเรื่อง space เพราะสำหรับ shell script แล้ว space คือการแบ่ง argument เพราะฉะนั้นห้ามมี space หน้าและหลัง “=” ซึ่งถ้าหากต้องการให้ค่าในตัวแปรมี space ให้ใช้ single quote (‘) หรือ double quote (“) ประกาศไว้หน้าและหลังคำที่ต้องการ
+    :::
+
+    ```bash
+    #!/bin/bash
+
+    var1=Hello
+    var2=COS3105
+    var3='Hello COS3105'
+    var4="Hello COS3105"
+
+    ```
+
+การเรียกใช้งานตัวแปรใน shell script (variable)
+    การเรียกใช้งานตัวแปรใน shell script (variable)
+
+    ```bash
+    #!/bin/bash
+
+    var1=Hello
+    var2=COS3105
+    var3='Hello COS3105'
+    var4="Hello COS3105"
+    var5='$var1 $var2'
+    var6="$var1 $var2"
+
+    echo $var1
+    echo $var2
+    echo $var3
+    echo $var4
+    echo $var5
+    echo $var6
+
+    ```
+
+    ซึ่งผลลัพธ์ที่ได้คือ เครื่องหมาย Quote ( ‘ )  จะมีค่าตามสิ่งที่พิมพ์ ส่วนในเครื่องหมาย Double quote ( “ ) จะเป็นการอ้างอิงนำผลลัพธ์ที่ตัวแปรเก็บไว้หรือค่าที่ตัวแปรเก็บไว้มาใช้
+
+    ```bash
+    c@c:~/cos3105$ ./test.sh
+    Hello
+    COS3105
+    Hello COS3105
+    Hello COS3105
+    $var1 $var2
+    Hello COS3105
+    ```
+
+## Environment variable
+
+การใช้งานตัวแปร environment (environment variable)
+    ตัวแปรที่ใช้ในเชลล์จะมีสองชนิดด้วยกัน คือ
+
+    - ตัวแปรธรรมดา (variable)
+    - ตัวแปรสภาพแวดล้อม (environment variable)
+
+    ```bash
+    #!/bin/bash
+
+    echo $PWD
+    echo $USER
+    ```
+
+    ซึ่งผลลัพธ์ที่ได้คือ `$PWD` คือ `Print Working Directory`
+
+    ```bash
+    c@c:~/cos3105$ ./test.sh
+    /home/c/cos3105
+    c
+    ```
+
+    ถ้าเราเรียกใช้ตัวแปรที่ไม่ได้อยู่ใน environment ผลลัพธ์ที่ได้จะมีค่าเป็น `null`
+
+    ```bash
+    #!/bin/bash
+
+    echo $NAME
+
+    ```
+
+    วิธีแก้คือ 
+
+    ```bash
+    c@c:~/cos3105$ export NAME="Krit Chomaitong"
+    ```
+
+    หลังจากนั้น
+
+    ```bash
+    c@c:~/cos3105$ ./test.sh
+    Krit Chomaitong
+    ```
+
+    หรือวิธีอื่นๆดังนี้
+
+    - วิธีที่ 1
+
+    ```bash
+    //export_environment_variable.sh
+
+    #!/bin/bash
+    export NAME="Krit Chomaitong"
+    ```
+
+    แล้วในอีกไฟล์จะมีการเรียกใช้
+
+    ```bash
+    // call_environment_variable.sh
+
+    #!/bin/bash
+    source ./export_environment_variable.sh    
+    echo 'call NAME='$NAME
+    ```
+
+    - วิธีที่ 2
+
+    ```bash
+    // export_environment_variable2.sh
+
+    #!/bin/bash
+    export NAME="Krit Chomaitong"
+    echo 'export NAME='$NAME
+
+    ./call_environment_variable2.sh    # NAME is inherited since call_environment_variable2.sh is a child process
+    ```
+
+    ไฟล์ที่มีการใช้ environment variable
+
+    ```bash
+    // call_environment_variable2.sh
+
+    #!/bin/bash
+
+    echo 'call NAME='$NAME
+    ```
+
+## Special Variable
+    ตัวแปรแบบพิเศษ
+  |ตัวแปร|ความหมาย|
+  |:--|:--|
+  |`$0 $1 $2` ...|ใช้สำหรับอ้างอิงชื่อ shell script และ Argument ของ shell script  เรียกว่า position parameter|
+  |`$#`|ใช้บอกจำนวน Argument ที่อยู่ใน shell script นั้นๆ|
+  |`$*`|แทน Argument ของ script เรียงกันทั้งหมด|
+  |`$@`|คล้ายกับ $* แต่จะใช้ช่องว่างคั่นระหว่าง position parameter|
+  |`$?`|ใช้แสดงสถานการณ์จบการทำงานครั้งสุดท้าย ถ้าสั่งได้ถูกต้องไม่มี error จะแสดงค่า 0 ออกมา  แต่ถ้าผิดพลาดจะแสดงค่าที่ไม่ใช่ 0 ออกมา|
+  |`$!`|ใช้แสดง process ID ของ shell ที่ทำงานอยู่|
+
+#### `$0 $1 $2`
+
+  ```bash
+  #!/bin/bash
+
+  echo $0 $1
+  ```
+
+```bash
+c@c:~/cos3105$ ./test.sh hello world
+./test.sh hello
+```
+
+#### `$#`
+
+  ```bash
+  #!/bin/bash
+
+  echo $#
+  ```
+
+```bash
+c@c:~/cos3105$ ./test.sh hello world
+2
+```
+
+#### `$*`
+
+  ```bash
+  #!/bin/bash
+
+  echo $*
+  ```
+
+```bash
+c@c:~/cos3105$ ./test.sh hello world aaa
+hello world aaa
+```
+
+#### `$@`
+
+  ```bash
+  #!/bin/bash
+
+  echo $@
+  ```
+
+```bash
+c@c:~/cos3105$ ./test.sh hello world aaa
+hello world aaa
+```
+
+#### `$?`
+
+  ```bash
+  #!/bin/bash
+  echo "hello"
+  echo $?
+  ```
+
+```bash
+c@c:~/cos3105$ ./test.sh
+hello
+0
+```
+
+#### `$!`
+
+  ```bash
+  #!/bin/bash
+
+  # ต้องใช้ long process อย่าง sleep ถึงจะบอกได้ว่า process ID คืออะไร
+  sleep 30 & echo $!
+  ```
+
+```bash
+c@c:~/cos3105$ ./test.sh
+14213
+```
+
+## การ Comment
+
+ใช้เครื่องหมาย `#` สำหรับการ comment (ยกเว้นบรรทัดแรกเพราะเป็น shebang)
+
+```bash
+#!/bin/bash
+
+# Test Comment
+var=hello
+echo $var
+```
+
+จากผลลัพธ์ที่ได้ โปรแกรมจะไม่แสดงบรรทัดที่ comment ออกมา
+
+```bash
+c@c:~/cos3105$ ./test.sh
+hello
+```
+
+## ตัวแปร Array
+
+```bash
+#!/bin/bash
+
+txt[0]="a"
+txt[1]="b"
+txt[2]="c"
+
+echo $txt[0] $txt[1] $txt[2]
+echo ${txt[0]} ${txt[1]} ${txt[2]}
+```
+
+ผลลัพธ์ที่ได้
+
+```bash
+c@c:~/cos3105$ ./test.sh
+a[0] a[1] a[2]
+a b c
+```
+
+## Command Substitution
+
+```bash
+#!/bin/bash
+
+result=$(ls)
+
+echo $result
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+bio.db bio.txt cron.log email.sh lab2-2.sh lab2.sh test.bak test.sh
+```
+
+## Arithmetic Expression
+
+- ใช้ `$(())` หรือ `let` ก็ได้
+
+```bash
+#!/bin/bash
+
+a=1
+b=0
+c=$((a/b))
+echo $c
+
+b=2
+let c=a*b
+echo $c
+```
+
+**OUTPUT**
+
+```bash
+./test.sh: line 3: a/b: division by 0 (error token is "b")
+
+2
+```
+
+## Expression
+
+
+- [integer](/cos3105/labs/lab2#integer)
+
+- [string](/cos3105/labs/lab2#string)
+
+- [file](/cos3105/labs/lab2#file)
+
+- [other](/cos3105/labs/lab2#other)
+
+#### integer
+
+```bash
+#!/bin/bash
+
+int1=1
+int2=2
+int3=1
+
+if [ "$int1" -eq "$int3" ]
+then
+    echo "$int1 equal $int3"
+fi
+
+if [ "$int1" -ne "$int2" ]
+then
+    echo "$int1 not equal $int2"
+fi
+
+if [ "$int2" -gt "$int1" ]
+then
+    echo "$int2 greater than $int1"
+fi
+
+if [ "$int2" -ge "$int1" ]
+then
+    echo "$int2 greater than or equal $int1"
+fi
+
+if [ "$int1" -lt "$int2" ]
+then
+    echo "$int1 less than $int2"
+fi
+
+if [ "$int1" -le "$int2" ]
+then
+    echo "$int1 less than or equal $int2"
+fi
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+1 equal 1
+1 not equal 2
+2 greater than 1
+2 greater than or equal 1
+1 less than 2
+1 less than or equal 2
+```
+
+#### string
+
+```bash
+#!/bin/bash
+
+str1="Hello"
+str2="Hello"
+str3="World"
+str4=" "
+str5=""
+
+if [ "$str1" = "$str2" ]
+then
+    echo "$str1 equal $str2"
+fi
+
+if [ "$str2" != "$str3" ]
+then
+    echo "$str1 not equal $str3"
+fi
+
+if [ -n "$str4" ]
+then
+    echo "$str4 is not empty"
+fi
+
+if [ "$str4" ]
+then
+    echo "$str4 contains space"
+fi
+
+if [ !"$str5" ]
+then
+    echo "$str5 is empty"
+fi
+
+if [ -z "$str5" ]
+then
+    echo "$str5 is also empty"
+fi
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Hello equal Hello
+Hello not equal World
+  is not empty
+  contains space
+ is empty
+ is also empty
+```
+
+#### file 
+
+```bash
+#!/bin/bash
+
+folderName="folder2"
+fileName="bio.txt"
+
+if [ -d "$folderName" ]
+then
+    echo "$folderName is a folder"
+fi
+
+if [ -f "$fileName" ]
+then
+    echo "$fileName is a file"
+fi
+
+if [ -r "$fileName" ]
+then
+    echo "$fileName is readable"
+fi
+
+if [ -w "$fileName" ]
+then
+    echo "$fileName is writable"
+fi
+
+if [ -x "$fileName" ]
+then
+    echo "$fileName is executable"
+fi
+
+if [ -s "$fileName" ]
+then
+    echo "$fileName is not empty"
+fi
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+folder2 is a folder
+bio.txt is a file
+bio.txt is readable
+bio.txt is writable
+bio.txt is not empty
+```
+
+#### other
+
+- && คือ and ต้องใช้ภายใต้ [[...]]
+- || คือ or ต้องใช้ภายใต้ [[...]]
+
+```bash
+#!/bin/bash
+
+a=5
+b=10
+
+if [[ $a -lt 10 && $b -gt 5 ]]; then
+    echo "Both conditions are true"
+fi
+
+if [[ $a -lt 5 || $b -gt 5 ]]; then
+    echo "At least one condition is true"
+fi
+
+```
+
+:::note
+
+- แบบเก่า -a คือ and ใช้ภายใต้ [...]
+- แบบเก่า -o คือ or ใช้ภายใต้ [...]
+
+```bash
+
+#!/bin/bash
+a=5
+b=10
+
+if [ "$a" -lt 10 -a "$b" -gt 5 ]; then
+    echo "Both conditions are true"
+fi
+
+if [ "$a" -lt 5 -o "$b" -gt 5 ]; then
+    echo "At least one condition is true"
+fi
+
+```
+:::
+
+## if elif else
+
+```bash
+#!/bin/bash
+
+a=5
+b=10
+
+if [ "$a" -eq "$b" ]; then
+    echo "$a equals $b"
+else
+    echo "$a not equals $b"
+fi
+
+if [ "$a" -eq "$b" ]; then
+   echo "$a equals $b"
+elif [ $((a * 2)) -eq "$b" ]; then
+   echo "$a * 2 equals $b"
+fi
+
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+5 not equals 10
+5 * 2 equals 10
+```
+
+## switch case
+
+- รูปแบบคำสั่ง
+
+```bash
+case string in
+   str1)
+         commands;;
+   str2)
+         commands;;
+   str3)
+         commands;;
+   *)
+         commands;;
+esac
+```
+
+**ตัวอย่าง**
+
+```bash
+#!/bin/bash
+
+var1="cat"
+
+case $var1 in
+ "ant")
+ echo "It is an ant";;
+ "bee")
+ echo "It is an bee";;
+ "cat")
+ echo "It is an cat";;
+ *)
+ echo "I don't know";;
+esac
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+It is an cat
+```
+
+## while loop
+
+- รูปแบบคำสั่ง
+
+```bash
+while [ expression ]
+do
+         commands
+          ………….
+done
+```
+
+**ตัวอย่าง**
+
+```bash
+#!/bin/bash
+
+num=1
+
+while [ $num -le 5 ]
+do
+ echo "Loop $num"
+ ((num = $num+1))
+done
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Loop 1
+Loop 2
+Loop 3
+Loop 4
+Loop 5
+```
+
+## for loop
+
+- รูปแบบคำสั่ง
+
+```bash
+for  var  in  list
+do
+         commands
+          ………….
+done
+```
+
+**ตัวอย่าง1**
+
+```bash
+#!/bin/bash
+
+for i in 1 2 3 4 5
+do
+ echo "Loop $i"
+done
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Loop 1
+Loop 2
+Loop 3
+Loop 4
+Loop 5
+```
+
+**ตัวอย่าง2**
+
+```bash
+#!/bin/bash
+
+for ((i=1;i<5;i++))
+do
+ echo "Loop $i"
+done
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Loop 1
+Loop 2
+Loop 3
+Loop 4
+```
+
+## การรับค่า input จาก script
+
+```bash
+#!/bin/bash
+
+var0=$0
+var1=$1
+var2=$2
+
+echo "$0, $1 , $2"
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh 1 2
+./test.sh , 1 , 2
+```
+
+## redirection
+
+- output redirection
+
+|คำสั่ง|ความหมาย|
+|:--|:--|
+|`echo "Hello" > file.txt`|Write output to file.txt (overwrite)|
+|`echo "Hello" >> file.txt`|Append output to file.txt|
+
+- input redirection
+
+|คำสั่ง|ความหมาย|
+|:--|:--|
+|`cat < file.txt`|Read from `file.txt`|
+
+## การรับค่าจาก Keyboard
+
+```bash
+#!/bin/bash
+echo "Enter your name:"
+read name
+echo "Hello, $name!"
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Enter your name:
+Krit
+Hello, Krit!
+```
+
+## การใช้ grep
+
+- grep = "global regular expression print"
+- ดึงค่า name: 
+
+```txt
+// bio.txt
+name: Krit Chomaitong
+birth date: 22/10/1999
+address: 123 Maplewood Lane, Fairview, CA 90210, USA
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ grep "name: " bio.txt 
+name: Krit Chomaitong
+```
+
+## การใช้ cut ร่วมกับ grep
+
+```bash
+#!/bin/bash
+
+cut -d':' -f2- bio.txt # -d for single character
+
+grep "^name:" bio.txt | cut -d':' -f2- # grep with cut
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+ Krit Chomaitong
+ 22/10/1999
+ 123 Maplewood Lane, Fairview, CA 90210, USA
+ Krit Chomaitong
+```
+
+## การใช้ sed 
+
+- ค้นหา `name:`
+
+```bash
+
+#!/bin/bash
+sed -n 's/^name:\(.*\)/\1/p' bio.txt
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+ Krit Chomaitong
+```
+
+- การอัพเดต `name: `
+
+```bash
+#!/bin/bash
+sed -i 's/^name:.*/name:Krit Chomaitong2/' bio.txt # update
+sed -n 's/^name:\(.*\)/\1/p' bio.txt # print match name:
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+ Krit Chomaitong2
+```
+
+## การใช้ history ร่วมกับ grep
+
+```bash
+history
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ history
+    1  curl -fsSL https://code-server.dev/install.sh | sh
+    2  sudo apt install neovim build-essential gcc g++ gdb
+    3  python
+```
+
+- การใช้ร่วมกับ grep โดยใช้ pipe
+
+```bash
+history | grep cat
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ history | grep cat
+   63  cat output.txt 
+   67  cat cron.log
+   71  cat cron.log 
+   76  cat output.txt
+   79  cat cron.log
+```
+
+## การแสดงวันที่ 
+
+```bash
+#!/bin/bash
+
+d=$(date)
+echo $d
+echo "$(date)"
+echo $(date)
+echo "`date`"
+date
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+Sun Aug 3 01:39:36 PM UTC 2025
+Sun Aug  3 01:39:36 PM UTC 2025
+Sun Aug 3 01:39:36 PM UTC 2025
+Sun Aug  3 01:39:36 PM UTC 2025
+Sun Aug  3 01:39:36 PM UTC 2025
+```
+
+- format date
+
+| Format | ความหมาย         | ตัวอย่าง |
+| ------ | ---------------- | -------- |
+| `%Y`   | ปี (4 หลัก)      | 2025     |
+| `%y`   | ปี (2 หลัก)      | 25       |
+| `%m`   | เดือน (01-12)    | 08       |
+| `%d`   | วัน (01-31)      | 03       |
+| `%H`   | ชั่วโมง (00–23)  | 19       |
+| `%M`   | นาที (00–59)     | 50       |
+| `%S`   | วินาที (00–59)   | 00       |
+| `%A`   | ชื่อวัน (เต็ม)   | Sunday   |
+| `%a`   | ชื่อวัน (ย่อ)    | Sun      |
+| `%B`   | ชื่อเดือน (เต็ม) | August   |
+| `%b`   | ชื่อเดือน (ย่อ)  | Aug      |
+
+**ตัวอย่าง**
+
+```bash
+#!/bin/bash
+date +"%Y-%m-%d"
+date +"%Y-%m-%d %H:%M:%S"
+date -d "tomorrow" +"%Y-%m-%d" # tomorrow
+```
+
+**OUTPUT**
+
+```bash
+c@c:~/cos3105$ ./test.sh
+2025-08-03
+2025-08-03 13:43:25
+2025-08-04
+```
+
+</Card>
+
+**แหล่งอ้างอิง**
+
+- https://saixiii.com/basic-shell-script/
+- https://panupong-simto.medium.com/linux-daily-commands-%E0%B8%A3%E0%B8%A7%E0%B8%A1%E0%B8%84%E0%B8%B3%E0%B8%AA%E0%B8%B1%E0%B9%88%E0%B8%87%E0%B8%A5%E0%B8%B4%E0%B8%99%E0%B8%B8%E0%B8%81%E0%B8%8B%E0%B9%8C%E0%B9%81%E0%B8%99%E0%B8%B0%E0%B8%99%E0%B8%B3%E0%B9%84%E0%B8%94%E0%B9%89%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B8%97%E0%B8%B8%E0%B8%81%E0%B8%A7%E0%B8%B1%E0%B8%99-675d40615524
+- https://sysadmin.psu.ac.th/shellscript-example-01/
+- https://nopnithi.medium.com/%E0%B8%AA%E0%B8%A3%E0%B8%B8%E0%B8%9B%E0%B8%84%E0%B8%AD%E0%B8%A3%E0%B9%8C%E0%B8%AA-introduction-to-bash-shell-scripting-%E0%B8%82%E0%B8%AD%E0%B8%87-coursera-75193563ca0a
+- https://kb.hostatom.com/content/2226/
+- https://www.baeldung.com/linux/echo-date-quotes-backticks
+- https://pongpitta.medium.com/%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B9%83%E0%B8%8A%E0%B9%89%E0%B8%87%E0%B8%B2%E0%B8%99-crontab-%E0%B8%9A%E0%B8%99-linux-server-6272d376ecdb
+- https://crontab.guru/examples.html
